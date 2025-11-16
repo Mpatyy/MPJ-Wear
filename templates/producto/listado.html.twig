@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Listado de Productos{% endblock %}
+
+{% block body %}
+<h1>Productos</h1>
+
+<ul>
+    {% for producto in productos %}
+        <li>
+            <a href="{{ path('producto_detalle', {'id': producto.id}) }}">
+                {{ producto.nombre }} - {{ producto.precio }} €
+            </a>
+            {% if producto.imagen %}
+                <br>
+                <img src="{{ asset('images/' ~ producto.imagen) }}" alt="Imagen de {{ producto.nombre }}" style="max-width:150px;">
+            {% endif %}
+        </li>
+    {% else %}
+        <li>No hay productos disponibles.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

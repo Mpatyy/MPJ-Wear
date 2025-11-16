@@ -1,17 +1,39 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Mi Tienda MPJ{% endblock %}</title>
+    {% block stylesheets %}
+        <!-- Aquí puedes incluir tus archivos CSS o enlaces a frameworks -->
+        <link rel="stylesheet" href="{{ asset('build/app.css') }}" />
+    {% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Mi Tienda Online MPJ</h1>
+            <!-- Menú de navegación básico -->
+            <ul>
+                <li><a href="{{ path('producto_listado') }}">Productos</a></li>
+                <!-- Añade más enlaces si tienes -->
+            </ul>
+        </nav>
+    </header>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
+    <main>
+        {% block body %}
+        <!-- Contenido de cada página va aquí -->
         {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    </main>
+
+    <footer>
+        <p>© 2025 Mi Tienda MPJ - Todos los derechos reservados</p>
+    </footer>
+
+    {% block javascripts %}
+        <!-- Scripts JS si los tienes -->
+        <script src="{{ asset('build/app.js') }}"></script>
+    {% endblock %}
+</body>
 </html>

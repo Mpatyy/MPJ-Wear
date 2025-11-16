@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Detalle de {{ producto.nombre }}{% endblock %}
+
+{% block body %}
+<h1>{{ producto.nombre }}</h1>
+<p>{{ producto.descripcion }}</p>
+<p>Precio base: {{ producto.precio }} €</p>
+
+<h2>Variaciones disponibles</h2>
+<ul>
+    {% for variacion in variaciones %}
+        <li>
+            Talla: {{ variacion.talla }}, Color: {{ variacion.color }}, Stock: {{ variacion.stock }}
+            {% if variacion.precio %}
+                , Precio especial: {{ variacion.precio }} €
+            {% endif %}
+            {% if variacion.imagen %}
+                <br>
+                <img src="{{ asset('images/' ~ variacion.imagen) }}" alt="Imagen {{ producto.nombre }}" style="max-width: 150px;">
+            {% endif %}
+        </li>
+    {% else %}
+        <li>Sin variaciones disponibles.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
