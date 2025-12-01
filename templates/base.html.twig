@@ -4,26 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Mi Tienda MPJ{% endblock %}</title>
+    
     {% block stylesheets %}
-        <!-- Aquí puedes incluir tus archivos CSS o enlaces a frameworks -->
-        <link rel="stylesheet" href="{{ asset('build/app.css') }}" />
-    {% endblock %}
+        {{ encore_entry_link_tags('app') }}
+        {% endblock %}
 </head>
 <body>
     <header>
         <nav>
             <h1>Mi Tienda Online MPJ</h1>
-            <!-- Menú de navegación básico -->
             <ul>
                 <li><a href="{{ path('producto_listado') }}">Productos</a></li>
-                <!-- Añade más enlaces si tienes -->
-            </ul>
+                </ul>
         </nav>
+        
+        <div class="container mt-4 mb-4">
+            <div id="react-buscador-avanzado"></div>
+        </div>
+
     </header>
 
     <main>
         {% block body %}
-        <!-- Contenido de cada página va aquí -->
         {% endblock %}
     </main>
 
@@ -32,8 +34,7 @@
     </footer>
 
     {% block javascripts %}
-        <!-- Scripts JS si los tienes -->
-        <script src="{{ asset('build/app.js') }}"></script>
-    {% endblock %}
+        {{ encore_entry_script_tags('app') }}
+        {% endblock %}
 </body>
 </html>
