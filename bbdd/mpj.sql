@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 16-11-2025 a las 16:27:03
+-- Servidor: 127.0.0.1:3306
+-- Tiempo de generación: 01-12-2025 a las 11:19:37
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -63,7 +63,11 @@ CREATE TABLE `categoria` (
 --
 
 INSERT INTO `categoria` (`id`, `nombre`, `descripcion`) VALUES
-(1, 'camiseta', 'Categoría de camisetas');
+(1, 'camiseta', 'Categoría de camisetas'),
+(2, 'Pantalones', NULL),
+(3, 'Zapatillas', NULL),
+(4, 'Sudaderas', NULL),
+(5, 'Abrigos', NULL);
 
 -- --------------------------------------------------------
 
@@ -191,7 +195,11 @@ CREATE TABLE `productos` (
 --
 
 INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `precio`, `imagen`, `talla`, `color`, `stock`, `categoria_id`) VALUES
-(2, 'Camiseta playera', 'Camiseta playera negra con estampado colorido.', 30.50, 'camiseta_frontal.jpg', 'S', 'Negro', 2, 1);
+(5, 'Camiseta básica MPJ', 'Camiseta unisex de algodón 100% con logo MPJ.', 19.99, 'camiseta_basica.png', NULL, NULL, 0, 1),
+(8, 'Pantalón vaquero MPJ', 'Vaquero slim fit elástico, lavado medio.', 34.90, 'pantalon_vaquero.png', NULL, NULL, 0, 2),
+(9, 'Zapatillas deportivas MPJ', 'Zapatillas ligeras con suela de goma antideslizante.', 49.99, 'zapatillas_mpj.png', NULL, NULL, 0, 3),
+(10, 'Sudadera MPJ con capucha', 'Sudadera unisex con capucha y bolsillo canguro.', 29.90, 'sudadera_mpj.png', NULL, NULL, 0, 4),
+(11, 'Abrigo MPJ invierno', 'Abrigo acolchado impermeable con capucha desmontable.', 79.90, 'abrigo_mpj.png', NULL, NULL, 0, 5);
 
 -- --------------------------------------------------------
 
@@ -208,6 +216,37 @@ CREATE TABLE `producto_variacion` (
   `precio` decimal(10,2) DEFAULT NULL,
   `imagen` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `producto_variacion`
+--
+
+INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`, `precio`, `imagen`) VALUES
+(6, 5, 'S', 'Negro', 10, 19.99, 'camiseta_negra_s.jpg'),
+(7, 5, 'M', 'Negro', 12, 19.99, 'camiseta_negra_m.jpg'),
+(8, 5, 'L', 'Negro', 7, 19.99, 'camiseta_negra_l.jpg'),
+(9, 5, 'S', 'Blanco', 9, 19.99, 'camiseta_blanca_s.jpg'),
+(10, 5, 'M', 'Blanco', 6, 19.99, 'camiseta_blanca_m.jpg'),
+(16, 8, '38', 'Azul', 8, 34.90, 'vaquero_azul_38.jpg'),
+(17, 8, '40', 'Azul', 10, 34.90, 'vaquero_azul_40.jpg'),
+(18, 8, '42', 'Azul', 5, 34.90, 'vaquero_azul_42.jpg'),
+(19, 8, '38', 'Negro', 6, 34.90, 'vaquero_negro_38.jpg'),
+(20, 8, '40', 'Negro', 4, 34.90, 'vaquero_negro_40.jpg'),
+(21, 9, '40', 'Blanco', 5, 49.99, 'zapatillas_blanco_40.jpg'),
+(22, 9, '41', 'Blanco', 7, 49.99, 'zapatillas_blanco_41.jpg'),
+(23, 9, '42', 'Negro', 6, 49.99, 'zapatillas_negro_42.jpg'),
+(24, 9, '43', 'Negro', 4, 49.99, 'zapatillas_negro_43.jpg'),
+(25, 9, '42', 'Azul', 3, 49.99, 'zapatillas_azul_42.jpg'),
+(26, 10, 'S', 'Gris', 10, 29.90, 'sudadera_gris_s.jpg'),
+(27, 10, 'M', 'Gris', 12, 29.90, 'sudadera_gris_m.jpg'),
+(28, 10, 'L', 'Negro', 8, 29.90, 'sudadera_negro_l.jpg'),
+(29, 10, 'XL', 'Negro', 6, 29.90, 'sudadera_negro_xl.jpg'),
+(30, 10, 'M', 'Azul marino', 5, 29.90, 'sudadera_azul_m.jpg'),
+(31, 11, 'M', 'Negro', 6, 79.90, 'abrigo_negro_m.jpg'),
+(32, 11, 'L', 'Negro', 4, 79.90, 'abrigo_negro_l.jpg'),
+(33, 11, 'M', 'Verde oliva', 5, 79.90, 'abrigo_oliva_m.jpg'),
+(34, 11, 'L', 'Verde oliva', 3, 79.90, 'abrigo_oliva_l.jpg'),
+(35, 11, 'XL', 'Azul marino', 2, 79.90, 'abrigo_azul_xl.jpg');
 
 -- --------------------------------------------------------
 
@@ -343,7 +382,7 @@ ALTER TABLE `carrito_producto`
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `comentario`
@@ -385,13 +424,13 @@ ALTER TABLE `pedido_producto`
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `producto_variacion`
 --
 ALTER TABLE `producto_variacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`

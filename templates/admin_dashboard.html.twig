@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Panel admin{% endblock %}
+
+{% block body %}
+    <h1>Panel de administración</h1>
+
+    <p>Hola, {{ app.user.nombre }} ({{ app.user.email }})</p>
+
+    <ul>
+        <li><a href="{{ path('admin_dashboard') }}">Inicio admin</a></li>
+        {# Aquí luego pondrás enlaces a gestionar productos, categorías, variaciones, pedidos, etc. #}
+    </ul>
+{% endblock %}
