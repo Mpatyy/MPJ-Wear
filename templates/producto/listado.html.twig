@@ -3,22 +3,41 @@
 {% block title %}Listado de Productos{% endblock %}
 
 {% block body %}
-<h1>Productos</h1>
+    <h1 class="mb-4">Productos</h1>
 
-<ul>
-    {% for producto in productos %}
-        <li>
-            <a href="{{ path('producto_detalle', {'id': producto.id}) }}">
-                {{ producto.nombre }} - {{ producto.precio }} €
-            </a>
-            {% if producto.imagen %}
-                <br>
-                <img src="{{ asset('images/' ~ producto.imagen) }}" alt="Imagen de {{ producto.nombre }}" style="max-width:150px;">
-            {% endif %}
-        </li>
+    {% if productos is not empty %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">
+            {% for producto in productos %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if producto.imagen %}
+                            <img
+                                src="{{ asset('images/' ~ producto.imagen) }}"
+                                class="card-img-top"
+                                alt="Imagen de {{ producto.nombre }}"
+                            >
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ producto.nombre }}</h5>
+                            <p class="card-text fw-bold mb-3">
+                                {{ producto.precio }} €
+                            </p>
+
+                            <a
+                                href="{{ path('producto_detalle', {'id': producto.id}) }}"
+                                class="btn btn-primary mt-auto"
+                            >
+                                Ver detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <li>No hay productos disponibles.</li>
-    {% endfor %}
-</ul>
-
+        <div class="alert alert-info">
+            No hay productos disponibles.
+        </div>
+    {% endif %}
 {% endblock %}

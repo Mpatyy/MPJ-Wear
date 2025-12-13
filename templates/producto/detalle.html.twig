@@ -3,26 +3,90 @@
 {% block title %}Detalle de {{ producto.nombre }}{% endblock %}
 
 {% block body %}
-<h1>{{ producto.nombre }}</h1>
-<p>{{ producto.descripcion }}</p>
-<p>Precio base: {{ producto.precio }} €</p>
-
-<h2>Variaciones disponibles</h2>
-<ul>
-    {% for variacion in variaciones %}
-        <li>
-            Talla: {{ variacion.talla }}, Color: {{ variacion.color }}, Stock: {{ variacion.stock }}
-            {% if variacion.precio %}
-                , Precio especial: {{ variacion.precio }} €
+    <div class="row">
+        <div class="col-md-5">
+            {% if producto.imagen %}
+                <img
+                    src="{{ asset('images/' ~ producto.imagen) }}"
+                    alt="Imagen de {{ producto.nombre }}"
+                    class="img-fluid mb-3"
+                >
             {% endif %}
-            {% if variacion.imagen %}
-                <br>
-                <img src="{{ asset('images/' ~ variacion.imagen) }}" alt="Imagen {{ producto.nombre }}" style="max-width: 150px;">
-            {% endif %}
-        </li>
-    {% else %}
-        <li>Sin variaciones disponibles.</li>
-    {% endfor %}
-</ul>
+        </div>
 
+        <div class="col-md-7">
+            <h1 class="mb-3">{{ producto.nombre }}</h1>
+            <p class="mb-3">{{ producto.descripcion }}</p>
+            <p class="h5 mb-4">Precio base: {{ producto.precio }} €</p>
+
+            <h2 class="h5 mb-3">Variaciones disponibles</h2>
+
+            {% if variaciones is not empty %}
+                <ul class="list-group">
+                    {% for variacion in variaciones %}
+                        <li class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                {% if producto.imagen %}
+                                    <div class="me-3">
+                                        <img
+                                            src="{{ asset('images/' ~ producto.imagen) }}"
+                                            alt="Imagen {{ producto.nombre }}"
+                                            class="img-fluid rounded"
+                                            style="max-width: 80px;"
+                                        >
+                                    </div>
+                                {% endif %}
+
+                                <div class="flex-grow-1">
+                                    <p class="mb-1">
+                                        <strong>Talla:</strong> {{ variacion.talla }}
+                                        &nbsp;|&nbsp;
+                                        <strong>Color:</strong> {{ variacion.color }}
+                                        &nbsp;|&nbsp;
+                                        <strong>Stock:</strong> {{ variacion.stock }}
+                                    </p>
+
+                                    {% if variacion.precio %}
+                                        <p class="mb-1">
+                                            <strong>Precio especial:</strong> {{ variacion.precio }} €
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="ms-3">
+                                    <form
+    action="{{ path('carrito_agregar') }}"
+    method="post"
+    class="d-flex align-items-center"
+>
+    <input type="hidden" name="producto_id" value="{{ producto.id }}">
+    <input type="hidden" name="talla" value="{{ variacion.talla }}">
+    <input type="hidden" name="color" value="{{ variacion.color }}">
+
+    <input
+        type="number"
+        name="cantidad"
+        value="1"
+        min="1"
+        max="{{ variacion.stock }}"
+        class="form-control form-control-sm me-2"
+        style="width: 70px;"
+    >
+
+    <button type="submit" class="btn btn-sm btn-primary">
+        Añadir
+    </button>
+</form>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info">
+                    Sin variaciones disponibles.
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mi carrito{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Mi carrito</h1>
+
+    {% if carrito is empty %}
+        <div class="alert alert-info">
+            Tu carrito está vacío.
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-end mb-3">
+        <form action="{{ path('carrito_vaciar') }}" method="post">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+                Vaciar carrito
+            </button>
+        </form>
+    </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Talla</th>
+                    <th>Color</th>
+                    <th>Cantidad</th>
+                    <th>Precio unidad</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+        <tbody>
+            {% set totalGeneral = 0 %}
+            {% for clave, item in carrito %}
+                {% set totalItem = item.cantidad * item.precio %}
+                {% set totalGeneral = totalGeneral + totalItem %}
+                <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.talla }}</td>
+                    <td>{{ item.color }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>{{ item.precio }} €</td>
+                    <td>{{ totalItem }} €</td>
+                    <td>
+                        <form
+                            action="{{ path('carrito_eliminar', {'clave': clave}) }}"
+                            method="post"
+                            style="display:inline"
+                        >
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">Total</th>
+                    <th>{{ totalGeneral }} €</th>
+                </tr>
+            </tfoot>
+        </table>
+    {% endif %}
+{% endblock %}
