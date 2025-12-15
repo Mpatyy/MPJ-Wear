@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pedido #{{ pedido.id }}{% endblock %}
+
+{% block body %}
+    <h1 class="mb-3">Pedido {{ pedido.id }}</h1>
+
+    <p><strong>Fecha:</strong> {{ pedido.fecha|date('d/m/Y H:i') }}</p>
+    <p><strong>Estado:</strong> {{ pedido.estado }}</p>
+    <p><strong>Total:</strong> {{ pedido.total }} €</p>
+
+    <h2 class="h5 mt-4 mb-3">Productos</h2>
+
+    {% if lineas is empty %}
+        <div class="alert alert-info">
+            Este pedido no tiene líneas asociadas.
+        </div>
+    {% else %}
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Talla</th>
+                    <th>Color</th>
+                    <th>Cantidad</th>
+                    <th>Precio unidad</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linea in lineas %}
+                    <tr>
+                        <td>{{ linea.producto.nombre }}</td>
+                        <td>{{ linea.talla }}</td>
+                        <td>{{ linea.color }}</td>
+                        <td>{{ linea.cantidad }}</td>
+                        <td>{{ linea.precioUnitario }} €</td>
+                        <td>{{ linea.subtotal }} €</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

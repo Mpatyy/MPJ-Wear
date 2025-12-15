@@ -55,12 +55,23 @@
                 </tr>
             {% endfor %}
         </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="5" class="text-end">Total</th>
-                    <th>{{ totalGeneral }} €</th>
-                </tr>
-            </tfoot>
+<tfoot>
+    <tr>
+        <th colspan="5" class="text-end">Total</th>
+        <th>{{ totalGeneral }} €</th>
+        <th></th>
+    </tr>
+</tfoot>
+</table>
+
+<div class="d-flex justify-content-end mt-3">
+    <form action="{{ path('carrito_confirmar') }}" method="post">
+        <button type="submit" class="btn btn-success">
+            Confirmar compra
+        </button>
+    </form>
+</div>
+
         </table>
     {% endif %}
 {% endblock %}

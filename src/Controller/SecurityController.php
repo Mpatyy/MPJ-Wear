@@ -20,4 +20,10 @@ class SecurityController extends AbstractController
             'error' => $error,
         ]);
     }
+        #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        // Symfony gestiona el logout automáticamente según security.yaml
+        throw new \LogicException('Este método puede estar vacío: será interceptado por el firewall de logout.');
+    }
 }

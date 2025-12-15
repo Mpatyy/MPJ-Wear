@@ -8,6 +8,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Entity\Pedidos;
+use App\Entity\LineaPedido;
+
 
 class CarritoController extends AbstractController
 {
@@ -92,5 +95,67 @@ public function vaciar(Request $request): Response
     $this->addFlash('success', 'Carrito vaciado.');
     return $this->redirectToRoute('carrito_ver');
 }
+#[Route('/carrito/confirmar', name: 'carrito_confirmar', methods: ['POST'])]
+    public function confirmar(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $session = $request->getSession();
+        $carrito = $session->get('carrito', []);
+
+        if (empty($carrito)) {
+            $this->addFlash('error', 'Tu carrito está vacío.');
+            return $this->redirectToRoute('carrito_ver');
+        }
+
+        $usuario = $this->getUser();
+
+        // 1) Calcular total
+        $total = 0;
+        foreach ($carrito as $item) {
+            $total += $item['cantidad'] * $item['precio'];
+        }
+
+        // 2) Crear pedido
+        $pedido = new Pedidos();
+        $pedido->setUsuario($usuario);
+        $pedido->setFecha(new \DateTime());
+        $pedido->setEstado('pendiente');
+        $pedido->setTotal(number_format($total, 2, '.', ''));
+
+        // De momento dejamos direccion y metodoPago a null
+        $em->persist($pedido);
+
+        // 3) Crear líneas de pedido
+        foreach ($carrito as $item) {
+            $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
+            if (!$producto) {
+                continue;
+            }
+
+            $linea = new LineaPedido();
+            $linea->setPedido($pedido);
+            $linea->setProducto($producto);
+            $linea->setTalla($item['talla']);
+            $linea->setColor($item['color']);
+            $linea->setCantidad($item['cantidad']);
+            $linea->setPrecioUnitario(number_format($item['precio'], 2, '.', ''));
+
+            $subtotal = $item['cantidad'] * $item['precio'];
+            $linea->setSubtotal(number_format($subtotal, 2, '.', ''));
+
+            $em->persist($linea);
+        }
+
+        // 4) Guardar en BD y vaciar carrito
+        $em->flush();
+        $session->remove('carrito');
+
+        $this->addFlash('success', 'Pedido realizado correctamente.');
+
+        return $this->redirectToRoute('perfil');
+    }
 
 }
