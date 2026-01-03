@@ -1,0 +1,90 @@
+/* 1. Contenedor Principal (La tarjeta del buscador) */
+#react-buscador-avanzado .card {
+    border: none;
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important; /* Sombra suave y moderna */
+    background: #ffffff;
+    transition: all 0.3s ease;
+}
+
+#react-buscador-avanzado .card:hover {
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 2. Inputs y Selects (Campos de texto y desplegables) */
+#react-buscador-avanzado .form-control,
+#react-buscador-avanzado .form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 10px 15px; /* Más espacio interno para que sea fácil de clicar */
+    background-color: #f8f9fa;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+#react-buscador-avanzado .form-control:focus,
+#react-buscador-avanzado .form-select:focus {
+    background-color: #fff;
+    border-color: #000; /* Borde negro al escribir (estilo minimalista) */
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 3. Contenedor de Resultados (La lista desplegable) */
+.results-list {
+    max-height: 400px; /* IMPORTANTE: Limita la altura para que no se haga infinita */
+    overflow-y: auto;  /* Añade barra de scroll si hay muchos productos */
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Personalizar la barra de scroll (Webkit: Chrome, Edge, Safari) */
+.results-list::-webkit-scrollbar {
+    width: 8px;
+}
+.results-list::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* 4. Elemento individual de la lista (Cada producto) */
+.results-list .list-group-item {
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 15px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+    text-decoration: none; /* Quitar subrayado de enlaces */
+    color: inherit;
+}
+
+.results-list .list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Efecto Hover (cuando pasas el ratón por encima) */
+.results-list .list-group-item:hover {
+    background-color: #f1f3f5;
+    transform: translateX(5px); /* Pequeño desplazamiento a la derecha */
+    border-left: 3px solid #000; /* Línea negra decorativa a la izquierda */
+}
+
+/* 5. Imágenes de los productos en la lista */
+.results-list img {
+    border-radius: 6px;
+    border: 1px solid #eee;
+    background-color: #fff;
+}
+
+/* 6. Precio (Badge) */
+.results-list .badge {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    background-color: #212529 !important; /* Negro Bootstrap */
+}
+
+/* Texto de "No se encontraron resultados" */
+.alert-warning {
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
