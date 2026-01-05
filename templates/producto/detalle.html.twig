@@ -116,6 +116,7 @@
                 class="img-principal"
                 src="{{ asset('images/' ~ img) }}"
                 alt="Imagen de {{ producto.nombre }}"
+                onerror="this.src='{{ asset('images/placeholder.png') }}'"
             >
         {% else %}
             <div class="img-principal d-flex align-items-center justify-content-center" style="height:520px;">
@@ -127,7 +128,7 @@
     <!-- DER: INFO + COLORES + TALLAS + AÑADIR -->
     <div>
         <h1 class="titulo-prod">{{ producto.nombre }}</h1>
-        <div class="precio-prod">{{ producto.precio }} €</div>
+        <div class="precio-prod">{{ producto.precio|number_format(2, ',', '.') }} €</div>
         <div class="descripcion-prod">{{ producto.descripcion }}</div>
 
         <!-- ✅ COLORES -->
@@ -144,7 +145,7 @@
                             class="swatch {{ esBlanco ? 'borde-fuerte' : '' }}"
                             aria-label="Color {{ c.color }}"
                             data-color="{{ c.color }}"
-                            data-img="{% if c.imagen %}{{ asset('images/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{% endif %}"
+                            data-img="{% if c.imagen %}{{ asset('images/productos/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{% endif %}"
                             style="{% if c.hex %}background: {{ c.hex }};{% endif %}"
                             title="{{ c.color }}"
                         ></button>

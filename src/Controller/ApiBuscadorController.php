@@ -3,50 +3,177 @@
 namespace App\Controller;
 
 use App\Repository\ProductosRepository;
+use App\Repository\ProductoVariacionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-// El prefijo de la ruta base para todas las APIs relacionadas con el buscador
-#[Route('/api', name: 'api_')]
+#[Route('/api/buscador', name: 'api_buscador')]
 class ApiBuscadorController extends AbstractController
 {
+    private ProductosRepository $productosRepository;
+    private ProductoVariacionRepository $variacionRepository;
+
+    public function __construct(
+        ProductosRepository $productosRepository,
+        ProductoVariacionRepository $variacionRepository
+    ) {
+        $this->productosRepository = $productosRepository;
+        $this->variacionRepository = $variacionRepository;
+    }
+
     /**
-     * Endpoint para el buscador dinámico de React.
-     * * Recibe los filtros por GET y devuelve una lista de productos en formato JSON.
-     * La URL a la que React hace la petición es: /api/buscar-productos
+     * Obtener sugerencias de autocompletado
      */
-    #[Route('/buscar-productos', name: 'buscar_productos', methods: ['GET'])]
-    public function buscar(Request $request, ProductosRepository $repo): JsonResponse
+    #[Route('/sugerencias', name: 'sugerencias', methods: ['GET'])]
+    public function obtenerSugerencias(Request $request): JsonResponse
     {
-        // 1. Recogemos los parámetros que envía React
-        // React envía: q, talla, color, precio
-        $texto = $request->query->get('q', '');       // Nombre o descripción
-        $talla = $request->query->get('talla');       // Talla
-        $color = $request->query->get('color');       // Color
-        $precio = $request->query->get('precio');     // Precio Máximo
+        $q = $request->query->get('q', '');
 
-        // 2. Llamamos al repositorio con los filtros
-        // Asegúrate de que tu método buscarFiltros() en ProductosRepository.php acepta estos 4 parámetros
-        $productos = $repo->buscarFiltros($texto, $talla, $color, $precio);
-
-        // 3. Convertimos los objetos Doctrine a un Array JSON simple
-        $data = [];
-        foreach ($productos as $p) {
-            $data[] = [
-                'id' => $p->getId(),
-                'nombre' => $p->getNombre(),
-                'precio' => $p->getPrecio(),
-                // Si la imagen puede ser null, protegemos la llamada
-                'imagen' => $p->getImagen() ? $p->getImagen() : null, 
-                'talla' => $p->getTalla(),
-                'color' => $p->getColor()
-                // Si tienes otros campos necesarios (ej. slug, categoria), añádelos aquí.
-            ];
+        if (strlen($q) < 1) {
+            return $this->json(['sugerencias' => []]);
         }
 
-        // 4. Devolvemos la respuesta JSON
-        return new JsonResponse($data);
+        $productos = $this->productosRepository->findAll();
+        
+        $sugerencias = [];
+        foreach ($productos as $p) {
+            if (stripos($p->getNombre(), $q) !== false) {
+                $sugerencias[$p->getNombre()] = true;
+            }
+        }
+
+        return $this->json(['sugerencias' => array_keys($sugerencias)]);
+    }
+
+    /**
+     * Obtener filtros DINÁMICOS según búsqueda
+     * Si busca "Camiseta", solo muestra tallas/colores de camisetas
+     */
+    #[Route('/filtros', name: 'filtros', methods: ['GET'])]
+    public function obtenerFiltros(Request $request): JsonResponse
+    {
+        $nombre = $request->query->get('nombre', '');
+
+        // Si hay búsqueda, filtrar por nombre
+        if (!empty($nombre)) {
+            $productos = $this->productosRepository->createQueryBuilder('p')
+                ->where('LOWER(p.nombre) LIKE LOWER(:nombre)')
+                ->setParameter('nombre', '%' . $nombre . '%')
+                ->getQuery()
+                ->getResult();
+        } else {
+            $productos = $this->productosRepository->findAll();
+        }
+
+        $tallas = ['Todas'];
+        $colores = ['Todos'];
+
+        // Obtener tallas y colores SOLO de los productos encontrados
+        foreach ($productos as $p) {
+            $variaciones = $this->variacionRepository->findBy(['producto' => $p]);
+            
+            foreach ($variaciones as $v) {
+                if ($v->getTalla() && !in_array($v->getTalla(), $tallas)) {
+                    $tallas[] = $v->getTalla();
+                }
+                if ($v->getColor() && !in_array($v->getColor(), $colores)) {
+                    $colores[] = $v->getColor();
+                }
+            }
+        }
+
+        sort($tallas);
+        sort($colores);
+
+        return $this->json([
+            'tallas' => $tallas,
+            'colores' => $colores,
+        ]);
+    }
+
+    /**
+     * Obtener productos filtrados (con variaciones)
+     */
+    #[Route('/productos', name: 'productos', methods: ['GET'])]
+    public function obtenerProductos(Request $request): JsonResponse
+    {
+        $nombre = $request->query->get('nombre', '');
+        $talla = $request->query->get('talla', '');
+        $color = $request->query->get('color', '');
+        $precioMax = $request->query->get('precio_max', null);
+
+        // Obtener productos por nombre
+        if (!empty($nombre)) {
+            $todosProductos = $this->productosRepository->createQueryBuilder('p')
+                ->where('LOWER(p.nombre) LIKE LOWER(:nombre)')
+                ->setParameter('nombre', '%' . $nombre . '%')
+                ->getQuery()
+                ->getResult();
+        } else {
+            $todosProductos = $this->productosRepository->findAll();
+        }
+        
+        $productosArray = [];
+        $procesados = [];
+
+        foreach ($todosProductos as $p) {
+            // Obtener variaciones del producto
+            $variaciones = $this->variacionRepository->findBy(['producto' => $p]);
+
+            if (empty($variaciones)) {
+                continue;
+            }
+
+            $variacionesArray = [];
+
+            foreach ($variaciones as $v) {
+                // Filtro por talla
+                if (!empty($talla) && $talla !== 'Todas' && $v->getTalla() !== $talla) {
+                    continue;
+                }
+
+                // Filtro por color
+                if (!empty($color) && $color !== 'Todos' && $v->getColor() !== $color) {
+                    continue;
+                }
+
+                // Filtro por precio
+                if ($precioMax !== null && $precioMax !== '' && $p->getPrecio() > (float)$precioMax) {
+                    continue;
+                }
+
+                // Solo stock disponible
+                if ($v->getStock() <= 0) {
+                    continue;
+                }
+
+                $variacionesArray[] = [
+                    'id' => $v->getId(),
+                    'talla' => $v->getTalla(),
+                    'color' => $v->getColor(),
+                    'stock' => $v->getStock(),
+                    'imagen' => $v->getImagen() ?: $p->getImagen(),
+                ];
+            }
+
+            // Si hay variaciones que cumplen los filtros
+            if (!empty($variacionesArray) && !in_array($p->getId(), $procesados)) {
+                $productosArray[] = [
+                    'id' => $p->getId(),
+                    'nombre' => $p->getNombre(),
+                    'descripcion' => $p->getDescripcion(),
+                    'precio' => $p->getPrecio(),
+                    'imagen' => $p->getImagen(),
+                    'variaciones' => $variacionesArray,
+                ];
+                $procesados[] = $p->getId();
+            }
+        }
+
+        usort($productosArray, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
+
+        return $this->json(['productos' => array_slice($productosArray, 0, 50)]);
     }
 }
