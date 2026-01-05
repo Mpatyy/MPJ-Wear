@@ -14,7 +14,7 @@ class ProductoVariacion
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Producto::class, inversedBy: 'variaciones')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Producto $producto = null;
 
     #[ORM\Column(length: 50)]
@@ -25,9 +25,6 @@ class ProductoVariacion
 
     #[ORM\Column(type: 'integer')]
     private ?int $stock = null;
-
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?string $precio = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagen = null;
@@ -81,18 +78,6 @@ class ProductoVariacion
     public function setStock(int $stock): self
     {
         $this->stock = $stock;
-
-        return $this;
-    }
-
-    public function getPrecio(): ?string
-    {
-        return $this->precio;
-    }
-
-    public function setPrecio(?string $precio): self
-    {
-        $this->precio = $precio;
 
         return $this;
     }

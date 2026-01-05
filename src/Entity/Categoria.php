@@ -20,6 +20,10 @@ class Categoria
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $descripcion = null;
 
+    // ✅ NUEVO: slug
+    #[ORM\Column(type: 'string', length: 50, unique: true)]
+    private ?string $slug = null;
+
     #[ORM\OneToMany(mappedBy: "categoria", targetEntity: Producto::class)]
     private Collection $productos;
 
@@ -52,6 +56,18 @@ class Categoria
     public function setDescripcion(?string $descripcion): self
     {
         $this->descripcion = $descripcion;
+        return $this;
+    }
+
+    // ✅ getters/setters slug
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
         return $this;
     }
 

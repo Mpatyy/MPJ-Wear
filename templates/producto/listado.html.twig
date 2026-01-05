@@ -5,6 +5,27 @@
 {% block body %}
     <h1 class="mb-4">Productos</h1>
 
+    {# Filtro de categorías #}
+    {% if categorias is defined and categorias is not empty %}
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            <a
+                class="btn btn-outline-dark {% if slugActiva is empty %}active{% endif %}"
+                href="{{ path('producto_listado') }}"
+            >
+                Ver todo
+            </a>
+
+            {% for cat in categorias %}
+                <a
+                    class="btn btn-outline-dark {% if slugActiva == cat.slug %}active{% endif %}"
+                    href="{{ path('producto_listado') }}?categoria={{ cat.slug }}"
+                >
+                    {{ cat.nombre }}
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {% if productos is not empty %}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">
             {% for producto in productos %}

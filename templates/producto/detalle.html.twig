@@ -3,90 +3,317 @@
 {% block title %}Detalle de {{ producto.nombre }}{% endblock %}
 
 {% block body %}
-    <div class="row">
-        <div class="col-md-5">
-            {% if producto.imagen %}
-                <img
-                    src="{{ asset('images/' ~ producto.imagen) }}"
-                    alt="Imagen de {{ producto.nombre }}"
-                    class="img-fluid mb-3"
-                >
+<style>
+    .zona-producto{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:32px;
+        align-items:start;
+    }
+    @media (max-width: 992px){
+        .zona-producto{ grid-template-columns: 1fr; }
+    }
+
+    .img-principal-wrap{ position: sticky; top: 16px; }
+    .img-principal{
+        width:100%;
+        border-radius:10px;
+        background:#f7f7f7;
+        object-fit:cover;
+    }
+
+    .titulo-prod{ font-size:28px; letter-spacing:.2px; margin-bottom:6px; }
+    .precio-prod{ font-size:18px; font-weight:600; margin-bottom:14px; }
+    .descripcion-prod{ color:#444; margin-bottom:18px; line-height:1.4; }
+
+    .bloque{ border-top:1px solid #eaeaea; padding-top:16px; margin-top:16px; }
+
+    /* ✅ SWATCHES (círculos) */
+    .swatches{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:10px;
+    }
+    .swatch{
+        width:22px;
+        height:22px;
+        border-radius:999px;
+        border:1px solid #ddd;
+        cursor:pointer;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        position:relative;
+        background:#fff;
+        padding:0;
+    }
+    .swatch::after{
+        content:"";
+        position:absolute;
+        inset:-3px;
+        border-radius:999px;
+        border:2px solid transparent;
+        transition:border-color .15s ease;
+    }
+    .swatch:hover::after{ border-color:#bbb; }
+    .swatch.activo::after{ border-color:#111; }
+    .swatch.borde-fuerte{ border-color:#999; }
+
+    .swatch-nombre{
+        font-size:12px;
+        color:#666;
+        margin-top:8px;
+        text-transform:uppercase;
+        letter-spacing:.6px;
+    }
+
+    /* ✅ Tallas */
+    .lista-tallas{
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top:10px;
+    }
+    .talla-pill{
+        border:1px solid #ddd;
+        padding:6px 10px;
+        border-radius:999px;
+        font-size:13px;
+        background:#fff;
+        cursor:pointer;
+        user-select:none;
+    }
+    .talla-pill:hover{ border-color:#111; }
+    .talla-pill.activa{
+        border-color:#111;
+        background:#111;
+        color:#fff;
+    }
+    .talla-pill.sin-stock{
+        opacity:.4;
+        cursor:not-allowed;
+        text-decoration:line-through;
+    }
+
+    .mensaje-seleccion{ color:#777; font-size:13px; margin-top:10px; }
+    .oculto{ display:none !important; }
+
+    .btn-zara{
+        border-radius:999px;
+        padding-left:16px;
+        padding-right:16px;
+    }
+</style>
+
+<div class="zona-producto">
+    <!-- IZQ: IMAGEN PRINCIPAL -->
+    <div class="img-principal-wrap">
+        {% set img = imagenInicial ?? producto.imagen %}
+        {% if img %}
+            <img
+                id="img-principal"
+                class="img-principal"
+                src="{{ asset('images/' ~ img) }}"
+                alt="Imagen de {{ producto.nombre }}"
+            >
+        {% else %}
+            <div class="img-principal d-flex align-items-center justify-content-center" style="height:520px;">
+                <span class="text-muted">Sin imagen</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- DER: INFO + COLORES + TALLAS + AÑADIR -->
+    <div>
+        <h1 class="titulo-prod">{{ producto.nombre }}</h1>
+        <div class="precio-prod">{{ producto.precio }} €</div>
+        <div class="descripcion-prod">{{ producto.descripcion }}</div>
+
+        <!-- ✅ COLORES -->
+        <div class="bloque">
+            <div class="fw-semibold">Color</div>
+
+            {% if colores is not empty %}
+                <div class="swatches" id="swatches">
+                    {% for c in colores %}
+                        {% set esBlanco = c.hex is not null and (c.hex|lower) in ['#ffffff', '#f5f5f5', '#fafafa'] %}
+
+                        <button
+                            type="button"
+                            class="swatch {{ esBlanco ? 'borde-fuerte' : '' }}"
+                            aria-label="Color {{ c.color }}"
+                            data-color="{{ c.color }}"
+                            data-img="{% if c.imagen %}{{ asset('images/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{% endif %}"
+                            style="{% if c.hex %}background: {{ c.hex }};{% endif %}"
+                            title="{{ c.color }}"
+                        ></button>
+                    {% endfor %}
+                </div>
+
+                <div class="swatch-nombre" id="color-seleccionado">
+                    Selecciona un color
+                </div>
+            {% else %}
+                <div class="text-muted">No hay colores disponibles.</div>
             {% endif %}
         </div>
 
-        <div class="col-md-7">
-            <h1 class="mb-3">{{ producto.nombre }}</h1>
-            <p class="mb-3">{{ producto.descripcion }}</p>
-            <p class="h5 mb-4">Precio base: {{ producto.precio }} €</p>
+        <!-- ✅ TALLAS (OCULTAS HASTA ELEGIR COLOR) -->
+        <div class="bloque">
+            <div class="fw-semibold mb-2">Talla</div>
 
-            <h2 class="h5 mb-3">Variaciones disponibles</h2>
+            <div class="mensaje-seleccion" id="msg-color">
+                Primero selecciona un color para ver las tallas.
+            </div>
 
-            {% if variaciones is not empty %}
-                <ul class="list-group">
-                    {% for variacion in variaciones %}
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                {% if producto.imagen %}
-                                    <div class="me-3">
-                                        <img
-                                            src="{{ asset('images/' ~ producto.imagen) }}"
-                                            alt="Imagen {{ producto.nombre }}"
-                                            class="img-fluid rounded"
-                                            style="max-width: 80px;"
-                                        >
-                                    </div>
-                                {% endif %}
+            <div class="lista-tallas oculto" id="lista-tallas"></div>
 
-                                <div class="flex-grow-1">
-                                    <p class="mb-1">
-                                        <strong>Talla:</strong> {{ variacion.talla }}
-                                        &nbsp;|&nbsp;
-                                        <strong>Color:</strong> {{ variacion.color }}
-                                        &nbsp;|&nbsp;
-                                        <strong>Stock:</strong> {{ variacion.stock }}
-                                    </p>
+            <div class="text-danger small mt-2 oculto" id="msg-sin-stock">
+                No hay stock disponible para este color.
+            </div>
+        </div>
 
-                                    {% if variacion.precio %}
-                                        <p class="mb-1">
-                                            <strong>Precio especial:</strong> {{ variacion.precio }} €
-                                        </p>
-                                    {% endif %}
-                                </div>
+        <!-- ✅ AÑADIR (DESACTIVADO HASTA ELEGIR TALLA) -->
+        <form action="{{ path('carrito_agregar') }}" method="post" class="mt-3" id="form-carrito">
+            <input type="hidden" name="producto_id" value="{{ producto.id }}">
+            <input type="hidden" name="color" id="input-color" value="">
+            <input type="hidden" name="talla" id="input-talla" value="">
 
-                                <div class="ms-3">
-                                    <form
-    action="{{ path('carrito_agregar') }}"
-    method="post"
-    class="d-flex align-items-center"
->
-    <input type="hidden" name="producto_id" value="{{ producto.id }}">
-    <input type="hidden" name="talla" value="{{ variacion.talla }}">
-    <input type="hidden" name="color" value="{{ variacion.color }}">
+            <div class="d-flex align-items-center gap-2">
+                <input
+                    type="number"
+                    name="cantidad"
+                    id="input-cantidad"
+                    value="1"
+                    min="1"
+                    class="form-control"
+                    style="max-width: 110px;"
+                    disabled
+                >
+                <button type="submit" class="btn btn-dark btn-zara" id="btn-add" disabled>
+                    Añadir
+                </button>
+            </div>
 
-    <input
-        type="number"
-        name="cantidad"
-        value="1"
-        min="1"
-        max="{{ variacion.stock }}"
-        class="form-control form-control-sm me-2"
-        style="width: 70px;"
-    >
+            <div class="text-muted small mt-2" id="msg-elegir">
+                Elige un color y una talla para poder añadir al carrito.
+            </div>
+        </form>
 
-    <button type="submit" class="btn btn-sm btn-primary">
-        Añadir
-    </button>
-</form>
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="alert alert-info">
-                    Sin variaciones disponibles.
-                </div>
-            {% endif %}
+        <!-- Variaciones ocultas para que JS construya tallas/stock -->
+        <div id="variaciones" class="oculto">
+            {% for v in variaciones %}
+                <div
+                    class="variacion-card"
+                    data-color="{{ v.color }}"
+                    data-talla="{{ v.talla }}"
+                    data-stock="{{ v.stock }}"
+                ></div>
+            {% endfor %}
         </div>
     </div>
+</div>
+
+<script>
+(function () {
+    const imgPrincipal = document.getElementById('img-principal');
+    const swatches = document.querySelectorAll('#swatches .swatch');
+    const colorTxt = document.getElementById('color-seleccionado');
+
+    const listaTallas = document.getElementById('lista-tallas');
+    const msgColor = document.getElementById('msg-color');
+    const msgSinStock = document.getElementById('msg-sin-stock');
+
+    const inputColor = document.getElementById('input-color');
+    const inputTalla = document.getElementById('input-talla');
+    const inputCantidad = document.getElementById('input-cantidad');
+    const btnAdd = document.getElementById('btn-add');
+    const msgElegir = document.getElementById('msg-elegir');
+
+    const variaciones = Array.from(document.querySelectorAll('#variaciones .variacion-card'));
+
+    function resetTalla() {
+        inputTalla.value = '';
+        inputCantidad.value = 1;
+        inputCantidad.disabled = true;
+        btnAdd.disabled = true;
+        document.querySelectorAll('.talla-pill').forEach(x => x.classList.remove('activa'));
+    }
+
+    function pintarTallasDelColor(colorSeleccionado) {
+        msgSinStock.classList.add('oculto');
+        listaTallas.innerHTML = '';
+
+        const varsColor = variaciones.filter(v => (v.dataset.color || '').toLowerCase() === (colorSeleccionado || '').toLowerCase());
+
+        const seen = new Set();
+        const tallas = [];
+
+        varsColor.forEach(v => {
+            const talla = v.dataset.talla || '';
+            if (!talla || seen.has(talla)) return;
+            seen.add(talla);
+            tallas.push({
+                talla,
+                stock: parseInt(v.dataset.stock || '0', 10)
+            });
+        });
+
+        if (tallas.length === 0 || !tallas.some(t => t.stock > 0)) {
+            msgSinStock.classList.remove('oculto');
+        }
+
+        tallas.forEach(t => {
+            const btn = document.createElement('div');
+            btn.className = 'talla-pill' + (t.stock <= 0 ? ' sin-stock' : '');
+            btn.textContent = t.talla;
+            btn.title = t.stock <= 0 ? 'Sin stock' : ('Stock: ' + t.stock);
+
+            btn.addEventListener('click', () => {
+                if (t.stock <= 0) return;
+
+                document.querySelectorAll('.talla-pill').forEach(x => x.classList.remove('activa'));
+                btn.classList.add('activa');
+
+                inputTalla.value = t.talla;
+                inputCantidad.disabled = false;
+                inputCantidad.max = t.stock;
+
+                if (parseInt(inputCantidad.value, 10) > t.stock) inputCantidad.value = t.stock;
+
+                btnAdd.disabled = false;
+                msgElegir.textContent = `Stock disponible: ${t.stock}.`;
+            });
+
+            listaTallas.appendChild(btn);
+        });
+    }
+
+    function activarSwatch(swatch) {
+        swatches.forEach(s => s.classList.remove('activo'));
+        swatch.classList.add('activo');
+
+        const color = swatch.dataset.color || '';
+        const img = swatch.dataset.img || '';
+
+        inputColor.value = color;
+        if (colorTxt) colorTxt.textContent = color;
+        if (imgPrincipal && img) imgPrincipal.src = img;
+
+        msgColor.classList.add('oculto');
+        listaTallas.classList.remove('oculto');
+
+        resetTalla();
+        pintarTallasDelColor(color);
+
+        msgElegir.textContent = 'Ahora elige una talla para poder añadir al carrito.';
+    }
+
+    // No activar ninguna por defecto
+    swatches.forEach(swatch => {
+        swatch.addEventListener('click', () => activarSwatch(swatch));
+    });
+})();
+</script>
 {% endblock %}

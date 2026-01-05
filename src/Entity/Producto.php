@@ -4,7 +4,6 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Entity\ProductoVariacion;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'productos')]
@@ -13,40 +12,33 @@ class Producto
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 150)]
     private string $nombre;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $descripcion;
+    private ?string $descripcion = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?string $precio = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $imagen;
-
-    #[ORM\Column(type: 'string', length: 10, nullable: true)]
-    private ?string $talla;
-
-    #[ORM\Column(type: 'string', length: 30, nullable: true)]
-    private ?string $color;
-
-    #[ORM\Column(type: 'integer')]
-    private int $stock;
+    private ?string $imagen = null;
 
     #[ORM\ManyToOne(targetEntity: Categoria::class, inversedBy: 'productos')]
-    #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'id', nullable: true)]
-    private ?Categoria $categoria;
+    #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Categoria $categoria = null;
 
-
-    #[ORM\OneToMany(mappedBy: 'producto', targetEntity: ProductoVariacion::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'producto', targetEntity: ProductoVariacion::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $variaciones;
 
-    // Getters y setters
+    public function __construct()
+    {
+        $this->variaciones = new ArrayCollection();
+    }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -95,39 +87,6 @@ class Producto
         return $this;
     }
 
-    public function getTalla(): ?string
-    {
-        return $this->talla;
-    }
-
-    public function setTalla(?string $talla): self
-    {
-        $this->talla = $talla;
-        return $this;
-    }
-
-    public function getColor(): ?string
-    {
-        return $this->color;
-    }
-
-    public function setColor(?string $color): self
-    {
-        $this->color = $color;
-        return $this;
-    }
-
-    public function getStock(): int
-    {
-        return $this->stock;
-    }
-
-    public function setStock(int $stock): self
-    {
-        $this->stock = $stock;
-        return $this;
-    }
-
     public function getCategoria(): ?Categoria
     {
         return $this->categoria;
@@ -137,10 +96,6 @@ class Producto
     {
         $this->categoria = $categoria;
         return $this;
-    }
-    public function __construct()
-    {
-        $this->variaciones = new ArrayCollection();
     }
 
     public function getVariaciones(): Collection
@@ -161,6 +116,7 @@ class Producto
     public function removeVariacion(ProductoVariacion $variacion): self
     {
         if ($this->variaciones->removeElement($variacion)) {
+            // orphanRemoval=true se encarga del borrado si ya no está referenciado
             if ($variacion->getProducto() === $this) {
                 $variacion->setProducto(null);
             }
