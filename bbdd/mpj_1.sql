@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 01-12-2025 a las 11:19:37
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 03-01-2026 a las 19:36:46
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -116,6 +116,40 @@ CREATE TABLE `doctrine_migration_versions` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `lineas_pedido`
+--
+
+CREATE TABLE `lineas_pedido` (
+  `id` int(11) NOT NULL,
+  `pedido_id` int(11) NOT NULL,
+  `producto_id` int(11) NOT NULL,
+  `talla` varchar(10) NOT NULL,
+  `color` varchar(30) NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `lineas_pedido`
+--
+
+INSERT INTO `lineas_pedido` (`id`, `pedido_id`, `producto_id`, `talla`, `color`, `cantidad`, `precio_unitario`, `subtotal`) VALUES
+(1, 1, 8, '38', 'Azul', 1, 34.90, 34.90),
+(2, 1, 5, 'S', 'Negro', 1, 19.99, 19.99),
+(3, 2, 5, 'S', 'Negro', 1, 19.99, 19.99),
+(4, 3, 8, '38', 'Azul', 1, 34.90, 34.90),
+(5, 3, 8, '38', 'Negro', 1, 34.90, 34.90),
+(6, 4, 8, '40', 'Azul', 1, 34.90, 34.90),
+(7, 4, 8, '38', 'Azul', 1, 34.90, 34.90),
+(8, 5, 5, 'S', 'Negro', 1, 19.99, 19.99),
+(9, 6, 8, '40', 'Azul', 2, 34.90, 69.80),
+(10, 6, 8, '38', 'Azul', 1, 34.90, 34.90),
+(11, 7, 5, 'L', 'Negro', 1, 19.99, 19.99);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `messenger_messages`
 --
 
@@ -157,6 +191,19 @@ CREATE TABLE `pedidos` (
   `direccion_id` int(11) DEFAULT NULL,
   `metodo_pago_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `pedidos`
+--
+
+INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccion_id`, `metodo_pago_id`) VALUES
+(1, 1, '2025-12-13 16:00:18', 'pendiente', 54.89, NULL, NULL),
+(2, 1, '2025-12-13 16:00:28', 'pendiente', 19.99, NULL, NULL),
+(3, 1, '2025-12-13 16:03:01', 'pendiente', 69.80, NULL, NULL),
+(4, 1, '2025-12-13 16:12:33', 'pendiente', 69.80, NULL, NULL),
+(5, 1, '2025-12-15 19:23:25', 'pendiente', 19.99, NULL, NULL),
+(6, 1, '2025-12-15 19:35:09', 'pendiente', 104.70, NULL, NULL),
+(7, 2, '2026-01-03 18:08:23', 'pendiente', 19.99, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -258,9 +305,18 @@ CREATE TABLE `usuarios` (
   `id` int(11) NOT NULL,
   `nombre` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `contraseña` varchar(255) NOT NULL,
-  `telefono` varchar(11) NOT NULL
+  `password` varchar(255) NOT NULL,
+  `telefono` varchar(11) NOT NULL,
+  `roles` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`roles`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`) VALUES
+(1, 'Mikel', 'giyouwaquize-6481@yopmail.com', '$2y$13$pqG6QMsg0ae3LNgFfycrAO74iUw5BxCvKcNjRjljB4SPDgodN7Kf6', '612345678', '[\"ROLE_USER\"]'),
+(2, 'Armando', 'feromin417@emaxasp.com', '$2y$13$dhfcJtnXlx.cnPDro5VEIehAWbYG.l3oFMI/qYl.ISFzYBLiSyBIC', '6123456789', '[\"ROLE_USER\"]');
 
 --
 -- Índices para tablas volcadas
@@ -307,6 +363,14 @@ ALTER TABLE `direccion`
 --
 ALTER TABLE `doctrine_migration_versions`
   ADD PRIMARY KEY (`version`);
+
+--
+-- Indices de la tabla `lineas_pedido`
+--
+ALTER TABLE `lineas_pedido`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_linea_pedido_pedido` (`pedido_id`),
+  ADD KEY `fk_linea_pedido_producto` (`producto_id`);
 
 --
 -- Indices de la tabla `messenger_messages`
@@ -397,6 +461,12 @@ ALTER TABLE `direccion`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `lineas_pedido`
+--
+ALTER TABLE `lineas_pedido`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
 -- AUTO_INCREMENT de la tabla `messenger_messages`
 --
 ALTER TABLE `messenger_messages`
@@ -412,7 +482,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `pedido_producto`
@@ -436,7 +506,7 @@ ALTER TABLE `producto_variacion`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Restricciones para tablas volcadas
@@ -467,6 +537,13 @@ ALTER TABLE `comentario`
 --
 ALTER TABLE `direccion`
   ADD CONSTRAINT `fk_direccion_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `lineas_pedido`
+--
+ALTER TABLE `lineas_pedido`
+  ADD CONSTRAINT `fk_linea_pedido_pedido` FOREIGN KEY (`pedido_id`) REFERENCES `pedidos` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_linea_pedido_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`);
 
 --
 -- Filtros para la tabla `pedidos`
