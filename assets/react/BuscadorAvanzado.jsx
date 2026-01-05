@@ -1,176 +1,333 @@
 import React, { useState, useEffect } from 'react';
 
-// Este componente implementa el buscador dinámico y los filtros.
-export default function BuscadorAvanzado() {
-    // ESTADO: Almacena los valores de los 4 filtros
+const BuscadorAvanzado = () => {
+    const [nombre, setNombre] = useState('');
+    const [talla, setTalla] = useState('Todas');
+    const [color, setColor] = useState('Todos');
+    const [precioMax, setPrecioMax] = useState('');
+    
+    const [sugerencias, setSugerencias] = useState([]);
+    const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+    
     const [filtros, setFiltros] = useState({
-        q: '',      // Nombre
-        talla: '',  // Talla
-        color: '',  // Color
-        precio: ''  // Precio Máximo
+        tallas: ['Todas'],
+        colores: ['Todos']
     });
-
-    const [resultados, setResultados] = useState([]);
+    
+    const [productos, setProductos] = useState([]);
     const [cargando, setCargando] = useState(false);
-    const [mostrarResultados, setMostrarResultados] = useState(false);
+    const [sinResultados, setSinResultados] = useState(false);
+    const [busquedaRealizada, setBusquedaRealizada] = useState(false);
 
-    // OPTIMIZACIÓN DE CARGA (Debounce)
-    // Se ejecuta cada vez que cambia 'filtros'
-    useEffect(() => {
-        // Determinamos si hay algún filtro activo.
-        // Convertimos el precio a string para la comprobación
-        const precioStr = filtros.precio === 0 ? '' : String(filtros.precio);
-        
-        const estaActivo = (
-            filtros.q.trim() !== '' ||
-            filtros.talla !== '' ||
-            filtros.color !== '' ||
-            precioStr !== ''
-        );
-        
-        if (!estaActivo) {
-            setResultados([]);
-            setMostrarResultados(false);
+    const cargarFiltros = async (nombreBusqueda = '') => {
+        try {
+            const params = new URLSearchParams();
+            if (nombreBusqueda) {
+                params.append('nombre', nombreBusqueda);
+            }
+            
+            const response = await fetch(`/api/buscador/filtros?${params.toString()}`);
+            const data = await response.json();
+            
+            console.log('Filtros cargados:', data);
+            
+            setFiltros({
+                tallas: data.tallas || ['Todas'],
+                colores: data.colores || ['Todos']
+            });
+            
+            setTalla('Todas');
+            setColor('Todos');
+        } catch (error) {
+            console.error('Error cargando filtros:', error);
+        }
+    };
+
+    const cargarSugerencias = async (valor) => {
+        if (valor.length < 1) {
+            setSugerencias([]);
+            setMostrarSugerencias(false);
             return;
         }
 
-        // Tarea: Optimización de carga dinámica (Debounce: 400ms de espera)
-        const timer = setTimeout(() => {
-            fetchProductos();
-        }, 400);
+        try {
+            const response = await fetch(`/api/buscador/sugerencias?q=${encodeURIComponent(valor)}`);
+            const data = await response.json();
+            setSugerencias(data.sugerencias || []);
+            setMostrarSugerencias(true);
+        } catch (error) {
+            console.error('Error cargando sugerencias:', error);
+        }
+    };
 
-        return () => clearTimeout(timer); // Limpieza del timer si el usuario escribe rápido
-    }, [filtros]);
+    const handleNombreChange = (e) => {
+        const valor = e.target.value;
+        setNombre(valor);
+        
+        cargarSugerencias(valor);
+        
+        if (valor.length > 0) {
+            cargarFiltros(valor);
+        } else {
+            cargarFiltros('');
+        }
+    };
 
-    // COMUNICACIÓN AJAX Y API REST
-    const fetchProductos = async () => {
+    const seleccionarSugerencia = (sugerencia) => {
+        setNombre(sugerencia);
+        setMostrarSugerencias(false);
+        cargarFiltros(sugerencia);
+    };
+
+    // BUSCAR PRODUCTOS
+    const handleBuscar = async (e) => {
+        e.preventDefault();
+        console.log('🔍 INICIANDO BÚSQUEDA...');
+        
         setCargando(true);
-        // Construimos la URL: /api/buscar-productos?q=camiseta&talla=M...
-        // Nota: El endpoint es /api/buscar-productos para coincidir con el controlador.
-        const queryParams = new URLSearchParams(filtros).toString();
+        setSinResultados(false);
+        setBusquedaRealizada(true);
         
         try {
-            const response = await fetch(`/api/buscar-productos?${queryParams}`);
-            if (response.ok) {
-                const data = await response.json();
-                setResultados(data);
-                setMostrarResultados(true);
+            const params = new URLSearchParams();
+            if (nombre) params.append('nombre', nombre);
+            if (talla && talla !== 'Todas') params.append('talla', talla);
+            if (color && color !== 'Todos') params.append('color', color);
+            if (precioMax) params.append('precio_max', precioMax);
+
+            const urlBusqueda = `/api/buscador/productos?${params.toString()}`;
+            console.log('📡 Llamando:', urlBusqueda);
+
+            const response = await fetch(urlBusqueda);
+            const data = await response.json();
+
+            console.log('✅ Respuesta recibida:', data);
+
+            if (data.productos && data.productos.length > 0) {
+                console.log(`✨ ${data.productos.length} productos encontrados`);
+                setProductos(data.productos);
+                setSinResultados(false);
             } else {
-                 // Manejo de errores si la respuesta HTTP no es 200 (ej. 404, 500)
-                console.error(`Error ${response.status} en la API:`, await response.text());
-                setResultados([]);
-                setMostrarResultados(true); // Mostrar que no hay resultados por error
+                console.log('❌ Sin resultados');
+                setProductos([]);
+                setSinResultados(true);
             }
         } catch (error) {
-            console.error("Error buscando productos (fallo de red/parsing):", error);
-            setResultados([]);
-            setMostrarResultados(true); 
+            console.error('🚨 Error en búsqueda:', error);
+            setSinResultados(true);
+        } finally {
+            setCargando(false);
         }
-        setCargando(false);
     };
 
-    // Manejador genérico para actualizar el estado de los filtros
-    const handleChange = (e) => {
-        let value = e.target.value;
-        const name = e.target.name;
+    const handleLimpiar = (e) => {
+        e.preventDefault();
+        console.log('🗑️ Limpiando filtros');
+        setNombre('');
+        setTalla('Todas');
+        setColor('Todos');
+        setPrecioMax('');
+        setProductos([]);
+        setSugerencias([]);
+        setMostrarSugerencias(false);
+        setSinResultados(false);
+        setBusquedaRealizada(false);
+        cargarFiltros('');
+    };
 
-        // Aseguramos que el precio sea un número o cadena vacía
-        if (name === 'precio' && value !== '') {
-            value = parseFloat(value) || ''; 
-        }
+    const irAlProducto = (productoId) => {
+        window.location.href = `/productos/${productoId}`;
+    };
+
+    const obtenerUrlImagen = (imagen) => {
+        if (!imagen) return '/images/placeholder.png';
         
-        setFiltros(prevFiltros => ({
-            ...prevFiltros,
-            [name]: value
-        }));
+        if (!imagen.startsWith('http') && !imagen.startsWith('/')) {
+            return `/images/productos/${imagen}`;
+        }
+        return imagen;
     };
+
+    // ⭐ FUNCIÓN PARA CONVERTIR PRECIO A NÚMERO
+    const formatearPrecio = (precio) => {
+        const precioNumero = typeof precio === 'string' ? parseFloat(precio) : precio;
+        return isNaN(precioNumero) ? '0.00' : precioNumero.toFixed(2);
+    };
+
+    useEffect(() => {
+        cargarFiltros('');
+    }, []);
 
     return (
-        <div className="card shadow-sm p-3 mb-4 bg-body rounded">
-            <h5 className="mb-3">Buscador Avanzado y Filtros</h5>
-            
-            {/* INPUTS DE FILTRO */}
-            <div className="row g-2">
-                {/* 1. Nombre (Buscador principal) */}
-                <div className="col-md-5">
-                    <input 
-                        type="text" 
-                        name="q"
-                        className="form-control" 
-                        placeholder="Buscar por nombre o descripción..."
-                        value={filtros.q}
-                        onChange={handleChange}
-                    />
-                </div>
+        <div className="buscador-wrapper">
+            {/* BUSCADOR SIEMPRE VISIBLE */}
+            <div className="buscador-container">
 
-                {/* 2. Talla */}
-                <div className="col-md-2">
-                    <select name="talla" className="form-select" value={filtros.talla} onChange={handleChange}>
-                        <option value="">Talla</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        {/* Aquí puedes añadir las tallas que uses en tu BD */}
-                    </select>
-                </div>
+                <form onSubmit={handleBuscar}>
+                    {/* INPUT PRINCIPAL */}
+                    <div className="buscador-inputs" style={{ position: 'relative', marginBottom: '15px' }}>
+                        <input
+                            type="text"
+                            className="buscador-input"
+                            placeholder="Buscar productos..."
+                            value={nombre}
+                            onChange={handleNombreChange}
+                            onFocus={() => nombre && cargarSugerencias(nombre)}
+                            autoComplete="off"
+                        />
 
-                {/* 3. Color */}
-                <div className="col-md-3">
-                    <select name="color" className="form-select" value={filtros.color} onChange={handleChange}>
-                        <option value="">Color</option>
-                        <option value="Negro">Negro</option>
-                        <option value="Blanco">Blanco</option>
-                        <option value="Rojo">Rojo</option>
-                        <option value="Azul">Azul</option>
-                        {/* Aquí puedes añadir los colores que uses en tu BD */}
-                    </select>
-                </div>
+                        {/* SUGERENCIAS */}
+                        {mostrarSugerencias && sugerencias.length > 0 && (
+                            <div className="autocomplete-suggestions">
+                                {sugerencias.map((sugerencia, index) => (
+                                    <div
+                                        key={index}
+                                        className="autocomplete-suggestion"
+                                        onClick={() => seleccionarSugerencia(sugerencia)}
+                                    >
+                                        {sugerencia}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-                {/* 4. Precio Máximo */}
-                <div className="col-md-2">
-                   <input 
-                        type="number" 
-                        name="precio"
-                        className="form-control" 
-                        placeholder="Precio Máx (€)"
-                        value={filtros.precio}
-                        onChange={handleChange}
-                    />
-                </div>
+                    {/* FILTROS */}
+                    <div className="filtros-container">
+                        <div className="filtro-grupo">
+                            <label className="filtro-label">TALLA</label>
+                            <select
+                                className="filtro-select"
+                                value={talla}
+                                onChange={(e) => setTalla(e.target.value)}
+                            >
+                                {filtros.tallas.map((t, index) => (
+                                    <option key={index} value={t}>
+                                        {t}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filtro-grupo">
+                            <label className="filtro-label">COLOR</label>
+                            <select
+                                className="filtro-select"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                            >
+                                {filtros.colores.map((c, index) => (
+                                    <option key={index} value={c}>
+                                        {c}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="filtro-grupo">
+                            <label className="filtro-label">PRECIO MÁXIMO</label>
+                            <input
+                                type="number"
+                                className="filtro-input"
+                                placeholder="Sin límite"
+                                value={precioMax}
+                                onChange={(e) => setPrecioMax(e.target.value)}
+                                step="0.01"
+                                min="0"
+                            />
+                        </div>
+                    </div>
+
+                    {/* BOTONES */}
+                    <div className="botones-container">
+                        <button type="submit" className="btn-buscar" disabled={cargando}>
+                            {cargando ? '⏳ Buscando...' : '🔍 BUSCAR'}
+                        </button>
+                        <button type="button" className="btn-limpiar" onClick={handleLimpiar}>
+                            🗑️ LIMPIAR
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            {/* INDICADOR DE CARGA Y RESULTADOS */}
-            {cargando && <div className="mt-3 text-center text-primary small">Buscando y aplicando filtros...</div>}
+            {/* RESULTADOS */}
+            <div className="resultados-section">
+                {cargando && (
+                    <div className="cargando">
+                        ⏳ Cargando productos...
+                    </div>
+                )}
 
-            {/* LISTA DE RESULTADOS (Autocompletado y Filtro) */}
-            {mostrarResultados && (
-                <div className="mt-3 list-group results-list">
-                    {resultados.length > 0 ? (
-                         resultados.map((prod) => (
-                            <a href={`/producto/${prod.id}`} key={prod.id} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                <div className="d-flex align-items-center">
-                                    {/* Asegúrate de que '/uploads/' es la ruta correcta donde sirves tus imágenes */}
-                                    <img 
-                                        src={prod.imagen ? `/uploads/${prod.imagen}` : 'https://via.placeholder.com/40'} 
-                                        alt={prod.nombre}
-                                        style={{width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px'}}
-                                        className="me-3"
-                                    />
-                                    <div>
-                                        <h6 className="mb-0">{prod.nombre}</h6>
-                                        <small className="text-muted">Talla: {prod.talla} | Color: {prod.color}</small>
+                {sinResultados && !cargando && busquedaRealizada && (
+                    <div className="sin-resultados">
+                        😕 No se encontraron productos que coincidan con tu búsqueda.
+                    </div>
+                )}
+
+                {productos.length > 0 && !cargando && (
+                    <div className="resultados-container">
+                        <h3 className="resultados-titulo">
+                            {productos.length} producto{productos.length !== 1 ? 's' : ''} encontrado{productos.length !== 1 ? 's' : ''}
+                        </h3>
+
+                        <div className="productos-grid">
+                            {productos.map((producto) => (
+                                <div key={producto.id} className="producto-card">
+                                    <div className="producto-imagen">
+                                        {producto.variaciones && producto.variaciones.length > 0 && producto.variaciones[0].imagen ? (
+                                            <img 
+                                                src={obtenerUrlImagen(producto.variaciones[0].imagen)}
+                                                alt={producto.nombre}
+                                                onError={(e) => {
+                                                    e.target.src = '/images/placeholder.png';
+                                                }}
+                                            />
+                                        ) : (
+                                            <img 
+                                                src={obtenerUrlImagen(producto.imagen)}
+                                                alt={producto.nombre}
+                                                onError={(e) => {
+                                                    e.target.src = '/images/placeholder.png';
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="producto-info">
+                                        <h4 className="producto-nombre">{producto.nombre}</h4>
+                                        <p className="producto-descripcion">{producto.descripcion}</p>
+                                        
+                                        {/* ⭐ PRECIO CORREGIDO */}
+                                        <div className="producto-precio">
+                                            {formatearPrecio(producto.precio)}€
+                                        </div>
+
+                                        {producto.variaciones && producto.variaciones.length > 0 ? (
+                                            <div className="producto-stock stock-disponible">
+                                                ✓ Disponible
+                                            </div>
+                                        ) : (
+                                            <div className="producto-stock stock-agotado">
+                                                ✗ Agotado
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            className="btn-ver-producto"
+                                            onClick={() => irAlProducto(producto.id)}
+                                        >
+                                            Ver producto →
+                                        </button>
                                     </div>
                                 </div>
-                                <span className="badge bg-dark rounded-pill">{prod.precio} €</span>
-                            </a>
-                        ))
-                    ) : (
-                         <div className="mt-0 alert alert-warning">No se encontraron productos que coincidan con los filtros.</div>
-                    )}
-                </div>
-            )}
-            
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
-}
+};
+
+export default BuscadorAvanzado;

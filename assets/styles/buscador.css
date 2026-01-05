@@ -1,90 +1,210 @@
-/* 1. Contenedor Principal (La tarjeta del buscador) */
+/* ========================================
+   BUSCADOR COMPLETO - FONDO BLANCO 
+   Más pequeño, discreto, sin colores
+======================================= */
+
+/* 1. RESET - Elimina TODO color/azul de Bootstrap */
+#react-buscador-avanzado * {
+    --bs-primary: #000 !important;
+    --bs-primary-rgb: 0,0,0 !important;
+}
+
+/* 1. Contenedor Principal (BLANCO, compacto) */
 #react-buscador-avanzado .card {
-    border: none;
-    border-radius: 12px; /* Bordes más redondeados */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important; /* Sombra suave y moderna */
-    background: #ffffff;
-    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    background: #ffffff !important;
+    padding: 12px;
+    max-width: 400px;
+    transition: all 0.2s ease;
 }
 
 #react-buscador-avanzado .card:hover {
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
 }
 
-/* 2. Inputs y Selects (Campos de texto y desplegables) */
+/* 2. Inputs y Selects (Blanco/gris claro) */
 #react-buscador-avanzado .form-control,
-#react-buscador-avanzado .form-select {
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    padding: 10px 15px; /* Más espacio interno para que sea fácil de clicar */
-    background-color: #f8f9fa;
-    transition: border-color 0.2s, background-color 0.2s;
+#react-buscador-avanzado .form-select,
+.buscador-input {
+    border-radius: 6px !important;
+    border: 1px solid #d0d0d0 !important;
+    padding: 8px 12px !important;
+    background-color: #ffffff !important;
+    color: #333 !important;
+    font-size: 0.9rem !important;
 }
 
 #react-buscador-avanzado .form-control:focus,
-#react-buscador-avanzado .form-select:focus {
-    background-color: #fff;
-    border-color: #000; /* Borde negro al escribir (estilo minimalista) */
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+#react-buscador-avanzado .form-select:focus,
+.buscador-input:focus {
+    background-color: #ffffff !important;
+    border-color: #999 !important;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1) !important;
+    color: #000 !important;
+    outline: none !important;
 }
 
-/* 3. Contenedor de Resultados (La lista desplegable) */
-.results-list {
-    max-height: 400px; /* IMPORTANTE: Limita la altura para que no se haga infinita */
-    overflow-y: auto;  /* Añade barra de scroll si hay muchos productos */
-    border-radius: 8px;
-    margin-top: 15px;
-    border: 1px solid #eee;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+/* 3. Resultados (Blanco) */
+.results-list,
+.autocomplete-suggestions {
+    background: #ffffff !important;
+    border: 1px solid #d0d0d0 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Personalizar la barra de scroll (Webkit: Chrome, Edge, Safari) */
-.results-list::-webkit-scrollbar {
-    width: 8px;
-}
-.results-list::-webkit-scrollbar-thumb {
-    background-color: #ccc;
-    border-radius: 4px;
+.results-list::-webkit-scrollbar,
+.autocomplete-suggestions::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* 4. Elemento individual de la lista (Cada producto) */
-.results-list .list-group-item {
-    border: none;
-    border-bottom: 1px solid #f0f0f0;
-    padding: 12px 15px;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-    cursor: pointer;
-    text-decoration: none; /* Quitar subrayado de enlaces */
-    color: inherit;
+.results-list::-webkit-scrollbar-thumb,
+.autocomplete-suggestions::-webkit-scrollbar-thumb {
+    background-color: #ccc !important;
+    border-radius: 3px;
 }
 
-.results-list .list-group-item:last-child {
-    border-bottom: none;
+.results-list::-webkit-scrollbar-track,
+.autocomplete-suggestions::-webkit-scrollbar-track {
+    background-color: #f5f5f5 !important;
 }
 
-/* Efecto Hover (cuando pasas el ratón por encima) */
-.results-list .list-group-item:hover {
-    background-color: #f1f3f5;
-    transform: translateX(5px); /* Pequeño desplazamiento a la derecha */
-    border-left: 3px solid #000; /* Línea negra decorativa a la izquierda */
+/* 4. Items de lista */
+.results-list .list-group-item,
+.autocomplete-suggestion {
+    background: #ffffff !important;
+    color: #333 !important;
+    border-bottom: 1px solid #e8e8e8 !important;
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
 }
 
-/* 5. Imágenes de los productos en la lista */
+.results-list .list-group-item:hover,
+.autocomplete-suggestion:hover {
+    background-color: #f8f8f8 !important;
+    border-left: 2px solid #999 !important;
+}
+
+/* 5. Imágenes */
 .results-list img {
-    border-radius: 6px;
-    border: 1px solid #eee;
-    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0 !important;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
 }
 
-/* 6. Precio (Badge) */
-.results-list .badge {
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    background-color: #212529 !important; /* Negro Bootstrap */
+/* 6. Precios y badges (Gris neutro) */
+.results-list .badge,
+.producto-precio {
+    background-color: #999 !important;
+    color: #ffffff !important;
+    font-size: 0.8rem !important;
 }
 
-/* Texto de "No se encontraron resultados" */
-.alert-warning {
-    border-radius: 8px;
-    font-size: 0.95rem;
+/* 7. Alertas (Gris claro) */
+.alert-warning,
+.sin-resultados {
+    background-color: #fff8e1 !important;
+    border: 1px solid #ffca28 !important;
+    color: #333 !important;
+}
+
+.cargando {
+    color: #666 !important;
+}
+
+/* 8. Botones (Grises neutros) */
+.btn-buscar {
+    background-color: #666 !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 500;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-buscar:hover:not(:disabled) {
+    background-color: #555 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-limpiar {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #d0d0d0 !important;
+    color: #333 !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+}
+
+.btn-limpiar:hover {
+    background-color: #e8e8e8 !important;
+}
+
+/* 9. Grid productos (Blanco) */
+.productos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.producto-card {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+.producto-nombre {
+    color: #333 !important;
+}
+
+.producto-descripcion {
+    color: #666 !important;
+}
+
+.stock-disponible {
+    background: #f0f9f0 !important;
+    color: #2d5a2d !important;
+    border: 1px solid #c3e6c3 !important;
+}
+
+.stock-agotado {
+    background: #fdf2f2 !important;
+    color: #8b1e1e !important;
+    border: 1px solid #f5c2c2 !important;
+}
+
+/* 10. Filtros */
+.filtros-container {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.filtro-label {
+    color: #555 !important;
+    font-size: 0.8rem !important;
+}
+
+.filtro-select,
+.filtro-input {
+    background-color: #ffffff !important;
+    border: 1px solid #d0d0d0 !important;
+}
+
+/* 11. Responsive */
+@media (max-width: 768px) {
+    #react-buscador-avanzado .card {
+        max-width: 100%;
+        margin: 0 8px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .productos-grid {
+        grid-template-columns: 1fr;
+    }
 }

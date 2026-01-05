@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Producto;
 use App\Entity\Categoria;
+use App\Entity\ProductoVariacion;
+use App\Repository\ProductosRepository;
 
 class ProductoController extends AbstractController
 {
@@ -40,15 +42,18 @@ class ProductoController extends AbstractController
         ]);
     }
 
-    #[Route('/producto/{id}', name: 'producto_detalle')]
-    public function detalle(EntityManagerInterface $entityManager, int $id): Response
+   #[Route('/productos/{id}', name: 'producto_detalle', requirements: ['id' => '\d+'])]
+    public function detalle(EntityManagerInterface $em, int $id): Response
     {
-        $producto = $entityManager->getRepository(Producto::class)->find($id);
+        // ✅ Buscar el producto
+        $producto = $em->getRepository(Producto::class)->find($id);
+
         if (!$producto) {
             throw $this->createNotFoundException('Producto no encontrado');
         }
 
-        $variaciones = $producto->getVariaciones();
+        // ✅ Buscar las variaciones del producto
+        $variaciones = $em->getRepository(ProductoVariacion::class)->findBy(['producto' => $id]);
 
         // Mapa opcional para pintar los swatches
         $mapaHex = [
