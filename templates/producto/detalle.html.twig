@@ -319,6 +319,14 @@
     swatches.forEach(swatch => {
         swatch.addEventListener('click', () => activarSwatch(swatch));
     });
+
+        // ✅ Auto-seleccionar color si viene por URL (?color=...)
+    const colorUrl = "{{ colorUrl|default('')|e('js') }}".toLowerCase().trim();
+    if (colorUrl) {
+        const sw = Array.from(swatches).find(s => (s.dataset.color || '').toLowerCase().trim() === colorUrl);
+        if (sw) activarSwatch(sw);
+    }
+
 })();
 </script>
 {% endblock %}

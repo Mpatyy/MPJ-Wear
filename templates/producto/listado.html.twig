@@ -5,6 +5,13 @@
 {% block body %}
     <h1 class="mb-4">Productos</h1>
 
+    {# ✅ Calculamos hayFiltros SIEMPRE #}
+    {% set hayFiltros =
+        (filtros.talla is defined and filtros.talla is not empty) or
+        (filtros.color is defined and filtros.color is not empty) or
+        (filtros.precioMax is defined and filtros.precioMax is not empty and filtros.precioMax != '0')
+    %}
+
     {# ================== CATEGORÍAS ================== #}
     {% if categorias is defined and categorias is not empty %}
         <div class="d-flex flex-wrap gap-2 mb-4">
@@ -27,44 +34,39 @@
     {% endif %}
     {# ================================================= #}
 
-
     {# ==================== FILTROS ==================== #}
     <form method="get" class="mb-4 border rounded p-3 bg-light">
 
-        {# Mantener categoría activa #}
         {% if slugActiva %}
             <input type="hidden" name="categoria" value="{{ slugActiva }}">
         {% endif %}
 
         <div class="row g-3 align-items-end">
 
-            {# TALLA #}
             <div class="col-12 col-md-3">
                 <label class="form-label fw-semibold">Talla</label>
                 <select name="talla" class="form-select">
                     <option value="">Todas</option>
                     {% for talla in tallasDisponibles %}
-                        <option value="{{ talla }}" {{ filtros.talla == talla ? 'selected' }}>
+                        <option value="{{ talla }}" {{ (filtros.talla ?? '') == talla ? 'selected' : '' }}>
                             {{ talla }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
-            {# COLOR #}
             <div class="col-12 col-md-3">
                 <label class="form-label fw-semibold">Color</label>
                 <select name="color" class="form-select">
                     <option value="">Todos</option>
-                    {% for color in coloresDisponibles %}
-                        <option value="{{ color }}" {{ filtros.color == color ? 'selected' }}>
-                            {{ color }}
+                    {% for c in coloresDisponibles %}
+                        <option value="{{ c }}" {{ (filtros.color ?? '') == c ? 'selected' : '' }}>
+                            {{ c }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
-            {# PRECIO MÁXIMO #}
             <div class="col-12 col-md-3">
                 <label class="form-label fw-semibold">Precio máximo (€)</label>
                 <input
@@ -74,11 +76,10 @@
                     min="0"
                     step="0.01"
                     placeholder="Ej: 50"
-                    value="{{ filtros.precioMax }}"
+                    value="{{ filtros.precioMax ?? '' }}"
                 >
             </div>
 
-            {# BOTONES #}
             <div class="col-12 col-md-3 d-flex gap-2">
                 <button type="submit" class="btn btn-dark w-100">
                     Filtrar
@@ -96,9 +97,58 @@
     </form>
     {# ================================================= #}
 
+    {# ✅ Si el controller decide modoTarjetas, pintamos tarjetas #}
+    {% set usarTarjetas = (modoTarjetas is defined and modoTarjetas) %}
 
-    {# ================== PRODUCTOS =================== #}
-    {% if productos is not empty %}
+    {# ================== TARJETAS =================== #}
+    {% if usarTarjetas and tarjetas is defined and tarjetas is not empty %}
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">
+            {% for row in tarjetas %}
+                {% set producto = row.producto %}
+                {% set color = row.color %}
+                {% set imagenColor = row.imagenColor %}
+
+                <div class="col">
+                    <div class="card h-100">
+
+                        {% if imagenColor %}
+                            <img
+                                src="{{ asset('images/' ~ imagenColor) }}"
+                                class="card-img-top"
+                                alt="Imagen de {{ producto.nombre }} en color {{ color }}"
+                            >
+                        {% elseif producto.imagen %}
+                            <img
+                                src="{{ asset('images/' ~ producto.imagen) }}"
+                                class="card-img-top"
+                                alt="Imagen de {{ producto.nombre }}"
+                            >
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-1">{{ producto.nombre }}</h5>
+                            <div class="text-muted small mb-2">Color: {{ color }}</div>
+
+                            <p class="card-text fw-bold mb-3">
+                                {{ producto.precio }} €
+                            </p>
+
+                            <a
+                                href="{{ path('producto_detalle', {'id': producto.id}) }}?color={{ color|url_encode }}"
+                                class="btn btn-primary mt-auto"
+                            >
+                                Ver detalle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    {# ================== PRODUCTOS (SIN COLOR FILTRADO) =================== #}
+    {% elseif productos is not empty %}
+
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">
             {% for producto in productos %}
                 <div class="col">
@@ -130,11 +180,11 @@
                 </div>
             {% endfor %}
         </div>
+
     {% else %}
         <div class="alert alert-info">
             No hay productos disponibles con estos filtros.
         </div>
     {% endif %}
-    {# ================================================= #}
 
 {% endblock %}

@@ -6,6 +6,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+
 use App\Entity\Producto;
 use App\Entity\Categoria;
 use App\Entity\ProductoVariacion;
@@ -14,77 +15,107 @@ use App\Repository\ProductosRepository;
 class ProductoController extends AbstractController
 {
     #[Route('/productos', name: 'producto_listado')]
-    public function listado(Request $request, EntityManagerInterface $entityManager): Response
+    public function listado(Request $request, EntityManagerInterface $entityManager, ProductosRepository $repo): Response
     {
-        // 🔹 Categoría por querystring
-        $slug = $request->query->get('categoria');
+    // ✅ Categoría (limpia)
+    $slug = trim((string) $request->query->get('categoria', ''));
+    $slug = $slug === '' ? null : $slug;
 
-        // 🔹 Filtros
-        $talla     = $request->query->get('talla');
-        $color     = $request->query->get('color');
-        $precioMax = $request->query->get('precioMax');
+    // ✅ Filtros (limpios)
+    $talla     = trim((string) $request->query->get('talla', ''));
+    $color     = trim((string) $request->query->get('color', ''));
+    $precioMax = trim((string) $request->query->get('precioMax', ''));
 
-        $categorias = $entityManager->getRepository(Categoria::class)
-            ->findBy([], ['nombre' => 'ASC']);
+    $talla     = $talla === '' ? null : $talla;
+    $color     = $color === '' ? null : $color;
+    $precioMax = $precioMax === '' ? null : $precioMax;
 
+    $categorias = $entityManager->getRepository(Categoria::class)
+        ->findBy([], ['nombre' => 'ASC']);
+
+    $categoriaActiva = null;
+    if ($slug) {
+        $categoriaActiva = $entityManager
+            ->getRepository(Categoria::class)
+            ->findOneBy(['slug' => $slug]);
+    }
+
+    // ✅ Si el slug no existe, lo tratamos como "ver todo"
+    if ($slug && !$categoriaActiva) {
+        $slug = null;
         $categoriaActiva = null;
-        if ($slug) {
-            $categoriaActiva = $entityManager
-                ->getRepository(Categoria::class)
-                ->findOneBy(['slug' => $slug]);
-        }
+    }
 
-        if ($slug && !$categoriaActiva) {
-            $slug = null;
-        }
+    // ✅ Hay filtros SOLO si hay valores reales
+    $hayFiltros = ($talla !== null) || ($color !== null) || ($precioMax !== null);
 
-        /** @var ProductosRepository $repo */
-        $repo = $entityManager->getRepository(Producto::class);
+    // ✅ Modo tarjetas si:
+    // - no hay filtros (ver todo)
+    // - o hay filtro por COLOR (con o sin talla)
+    $modoTarjetas = (!$hayFiltros) || ($color !== null);
 
-        // 🔹 Usamos el repository con filtros
-        if ($categoriaActiva || $talla || $color || $precioMax) {
-            $productos = $repo->buscarConCategoriaYFiltros(
+    $productos = [];
+    $tarjetas  = [];
+
+    if ($modoTarjetas) {
+        if ($hayFiltros) {
+            // 🔥 Con filtros y color -> tarjetas filtradas (para que salga la imagen del color)
+            $tarjetas = $repo->listarTarjetasPorColorConFiltros(
                 $categoriaActiva,
                 $talla,
                 $color,
                 $precioMax
             );
         } else {
-            $productos = $repo->findBy([], ['id' => 'DESC']);
+            // 🔥 Sin filtros -> ver todo por color
+            $tarjetas = $repo->listarTarjetasPorColor($categoriaActiva);
         }
-
-        // 🔹 Datos para pintar filtros
-        $tallasDisponibles  = $repo->obtenerTallasUnicas();
-        $coloresDisponibles = $repo->obtenerColoresUnicos();
-
-        return $this->render('producto/listado.html.twig', [
-            'productos'          => $productos,
-            'categorias'         => $categorias,
-            'slugActiva'         => $slug,
-            'tallasDisponibles'  => $tallasDisponibles,
-            'coloresDisponibles' => $coloresDisponibles,
-            'filtros' => [
-                'talla'     => $talla,
-                'color'     => $color,
-                'precioMax' => $precioMax,
-            ],
-        ]);
+    } else {
+        // 🔹 Sin color (ej: solo talla, o talla+precio) -> productos normales
+        $productos = $repo->buscarConCategoriaYFiltros(
+            $categoriaActiva,
+            $talla,
+            $color,
+            $precioMax
+        );
     }
 
-   #[Route('/productos/{id}', name: 'producto_detalle', requirements: ['id' => '\d+'])]
-    public function detalle(EntityManagerInterface $em, int $id): Response
+    $tallasDisponibles  = $repo->obtenerTallasUnicas();
+    $coloresDisponibles = $repo->obtenerColoresUnicos();
+
+    return $this->render('producto/listado.html.twig', [
+        'productos'          => $productos,
+        'tarjetas'           => $tarjetas,
+        'modoTarjetas'       => $modoTarjetas,
+        'categorias'         => $categorias,
+        'slugActiva'         => $slug,
+        'tallasDisponibles'  => $tallasDisponibles,
+        'coloresDisponibles' => $coloresDisponibles,
+        'filtros' => [
+            'talla'     => $talla,
+            'color'     => $color,
+            'precioMax' => $precioMax,
+        ],
+    ]);
+}
+
+
+
+    #[Route('/productos/{id}', name: 'producto_detalle', requirements: ['id' => '\d+'])]
+    public function detalle(Request $request, EntityManagerInterface $em, int $id): Response
     {
-        // ✅ Buscar el producto
         $producto = $em->getRepository(Producto::class)->find($id);
 
         if (!$producto) {
             throw $this->createNotFoundException('Producto no encontrado');
         }
 
-        // ✅ Buscar las variaciones del producto
         $variaciones = $em->getRepository(ProductoVariacion::class)->findBy(['producto' => $id]);
 
-        // Mapa opcional para pintar los swatches
+        // ✅ Color que viene desde el listado: /productos/1?color=Azul%20marino
+        $colorUrl = trim((string) $request->query->get('color', ''));
+        $colorUrl = $colorUrl === '' ? null : $colorUrl;
+
         $mapaHex = [
             'negro' => '#111111',
             'blanco' => '#F5F5F5',
@@ -98,7 +129,7 @@ class ProductoController extends AbstractController
             'marrón' => '#7C4A2D',
         ];
 
-        // Imagen inicial: primera variación con imagen, si no la del producto
+        // ✅ Imagen inicial: primera variación con imagen, si no la del producto
         $imagenInicial = $producto->getImagen();
         foreach ($variaciones as $v) {
             if ($v->getImagen()) {
@@ -107,28 +138,29 @@ class ProductoController extends AbstractController
             }
         }
 
-        // Colores únicos (cada color con su imagen y su hex opcional)
+        // ✅ Colores únicos (cada color con su imagen y su hex opcional)
         $colores = [];
         foreach ($variaciones as $v) {
-            $color = $v->getColor();
-            if (!$color) continue;
+            $colorVar = $v->getColor();
+            if (!$colorVar) continue;
 
-            $key = mb_strtolower(trim($color));
+            $key = mb_strtolower(trim($colorVar));
 
             if (!isset($colores[$key])) {
                 $colores[$key] = [
-                    'color' => $color,
-                    'imagen' => $v->getImagen(), // imagen por color
+                    'color' => $colorVar,
+                    'imagen' => $v->getImagen(),
                     'hex' => $mapaHex[$key] ?? null,
                 ];
             }
         }
 
         return $this->render('producto/detalle.html.twig', [
-            'producto' => $producto,
-            'variaciones' => $variaciones,
-            'colores' => array_values($colores),
+            'producto'      => $producto,
+            'variaciones'   => $variaciones,
+            'colores'       => array_values($colores),
             'imagenInicial' => $imagenInicial,
+            'colorUrl'      => $colorUrl,
         ]);
     }
 }
