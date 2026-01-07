@@ -3,75 +3,92 @@
 {% block title %}Mi carrito{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Mi carrito</h1>
+<h1 class="mb-4">Mi carrito</h1>
 
-    {% if carrito is empty %}
-        <div class="alert alert-info">
-            Tu carrito está vacío.
-        </div>
-    {% else %}
-        <div class="d-flex justify-content-end mb-3">
-        <form action="{{ path('carrito_vaciar') }}" method="post">
-            <button type="submit" class="btn btn-sm btn-outline-danger">
-                Vaciar carrito
-            </button>
-        </form>
+{% if carrito is empty %}
+    <div class="alert alert-info">
+        Tu carrito está vacío.
     </div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Talla</th>
-                    <th>Color</th>
-                    <th>Cantidad</th>
-                    <th>Precio unidad</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        <tbody>
-            {% set totalGeneral = 0 %}
-            {% for clave, item in carrito %}
-                {% set totalItem = item.cantidad * item.precio %}
-                {% set totalGeneral = totalGeneral + totalItem %}
-                <tr>
-                    <td>{{ item.nombre }}</td>
-                    <td>{{ item.talla }}</td>
-                    <td>{{ item.color }}</td>
-                    <td>{{ item.cantidad }}</td>
-                    <td>{{ item.precio }} €</td>
-                    <td>{{ totalItem }} €</td>
-                    <td>
-                        <form
-                            action="{{ path('carrito_eliminar', {'clave': clave}) }}"
-                            method="post"
-                            style="display:inline"
+{% else %}
+
+<form action="{{ path('carrito_vaciar') }}" method="post" class="mb-3 text-end">
+    <button type="submit" class="btn btn-outline-danger btn-sm">
+        Vaciar carrito
+    </button>
+</form>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Color</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% set totalGeneral = 0 %}
+
+        {% for clave, item in carrito %}
+            {% set totalItem = item.cantidad * item.precio %}
+            {% set totalGeneral = totalGeneral + totalItem %}
+
+            <tr>
+                <td class="d-flex align-items-center">
+                    {# Imagen del producto (desde public/images) #}
+                    {% if item.imagen is defined and item.imagen %}
+                        <img
+                            src="{{ asset('images/' ~ item.imagen) }}"
+                            alt="{{ item.nombre }}"
+                            style="width:80px; height:auto;"
+                            class="me-2"
                         >
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                Eliminar
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-<tfoot>
-    <tr>
-        <th colspan="5" class="text-end">Total</th>
-        <th>{{ totalGeneral }} €</th>
-        <th></th>
-    </tr>
-</tfoot>
+                    {% else %}
+                        <img
+                            src="{{ asset('images/no-image.png') }}"
+                            alt="Sin imagen"
+                            style="width:80px; height:auto;"
+                            class="me-2"
+                        >
+                    {% endif %}
+
+                    <span>{{ item.nombre }}</span>
+                </td>
+
+                <td>{{ item.talla }}</td>
+                <td>{{ item.color }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.precio }} €</td>
+                <td>{{ totalItem }} €</td>
+                <td>
+                    <form action="{{ path('carrito_eliminar', { clave: clave }) }}" method="post">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+
+    <tfoot>
+        <tr>
+            <th colspan="5" class="text-end">Total</th>
+            <th>{{ totalGeneral }} €</th>
+            <th></th>
+        </tr>
+    </tfoot>
 </table>
 
-<div class="d-flex justify-content-end mt-3">
-    <form action="{{ path('carrito_confirmar') }}" method="post">
-        <button type="submit" class="btn btn-success">
-            Confirmar compra
-        </button>
-    </form>
+<div class="text-end mt-4">
+    <a href="{{ path('pasarela_pago') }}" class="btn btn-success btn-lg">
+        Realizar compra
+    </a>
 </div>
 
-        </table>
-    {% endif %}
+{% endif %}
 {% endblock %}
