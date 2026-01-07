@@ -1,0 +1,90 @@
+.zara-overlay{
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+}
+
+.zara-top{
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.zara-top-inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.zara-input{
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 34px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.zara-cerrar{
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.zara-contenido{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 16px 40px;
+}
+
+.zara-bloque{ margin-top: 18px; }
+.zara-titulo{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.zara-vacio{ color:#777; padding: 10px 0; }
+
+.zara-recientes{ display:flex; flex-wrap:wrap; gap:10px; }
+.zara-chip{
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.zara-lista{ list-style:none; padding:0; margin:0; }
+.zara-item{
+  width:100%;
+  display:flex;
+  gap:12px;
+  padding: 12px 10px;
+  border: none;
+  background: #fff;
+  text-align:left;
+  cursor:pointer;
+  border-top: 1px solid #f0f0f0;
+}
+.zara-item.activo{ background:#f7f7f7; }
+
+.zara-thumb{
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  background:#f2f2f2;
+}
+.zara-thumb-vacio{ background:#f2f2f2; }
+
+.zara-nombre{ font-size: 14px; color:#111; }
+.zara-precio{ font-size: 12px; color:#666; margin-top: 3px; }

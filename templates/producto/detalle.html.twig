@@ -145,7 +145,8 @@
                             class="swatch {{ esBlanco ? 'borde-fuerte' : '' }}"
                             aria-label="Color {{ c.color }}"
                             data-color="{{ c.color }}"
-                            data-img="{% if c.imagen %}{{ asset('images/productos/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{% endif %}"
+                            {# ✅ CAMBIO CLAVE: images/ (no images/productos/) #}
+                            data-img="{% if c.imagen %}{{ asset('images/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{{ asset('images/placeholder.png') }}{% endif %}"
                             style="{% if c.hex %}background: {{ c.hex }};{% endif %}"
                             title="{{ c.color }}"
                         ></button>
@@ -296,11 +297,15 @@
         swatch.classList.add('activo');
 
         const color = swatch.dataset.color || '';
-        const img = swatch.dataset.img || '';
+        const img = swatch.dataset.img || "{{ asset('images/placeholder.png') }}";
 
         inputColor.value = color;
         if (colorTxt) colorTxt.textContent = color;
-        if (imgPrincipal && img) imgPrincipal.src = img;
+
+        if (imgPrincipal) {
+            imgPrincipal.src = img;
+            imgPrincipal.onerror = () => { imgPrincipal.src = "{{ asset('images/placeholder.png') }}"; };
+        }
 
         msgColor.classList.add('oculto');
         listaTallas.classList.remove('oculto');
@@ -311,7 +316,6 @@
         msgElegir.textContent = 'Ahora elige una talla para poder añadir al carrito.';
     }
 
-    // No activar ninguna por defecto
     swatches.forEach(swatch => {
         swatch.addEventListener('click', () => activarSwatch(swatch));
     });
