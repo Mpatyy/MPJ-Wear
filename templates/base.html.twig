@@ -13,7 +13,7 @@
 		<style>
 			html, body { background: #fff !important; min-height: 100%; }
 
-			/* Botón lupa estilo Zara */
+			/* Botón lupa */
 			.btn-lupa {
 				border: 0;
 				background: transparent;
@@ -94,6 +94,9 @@
 			{# ✅ Contenedor React: aquí se monta el overlay (no debe ocupar espacio) #}
 			<div id="react-buscador-avanzado"></div>
 		</header>
+		{% block hero %}
+        {% endblock %}
+
 
 		<main class="container mt-4">
 			{% block body %}{% endblock %}
