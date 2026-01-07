@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nueva contraseña{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <h1 class="mb-4 text-center">Nueva contraseña</h1>
+
+        {% if app.user %}
+            <span id="user-email" data-email="{{ app.user.email }}" class="d-none"></span>
+        {% endif %}
+
+        {{ form_start(resetForm, {
+            attr: { class: 'card p-4 shadow-sm' }
+        }) }}
+
+            <div class="mb-3">
+                {{ form_label(resetForm.plainPassword.first, 'Nueva contraseña', {
+                    label_attr: { class: 'form-label fw-semibold mb-2' }
+                }) }}
+                {{ form_widget(resetForm.plainPassword.first, {
+                    attr: {
+                        class: 'form-control',
+                    }
+                }) }}
+                {{ form_errors(resetForm.plainPassword.first) }}
+
+                <ul class="mt-2 small" id="password-rules">
+                    <li id="rule-length" class="text-danger">Mínimo 8 caracteres</li>
+                    <li id="rule-lower"  class="text-danger">Al menos una letra minúscula</li>
+                    <li id="rule-upper"  class="text-danger">Al menos una letra mayúscula</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(resetForm.plainPassword.second, 'Repetir contraseña', {
+                    label_attr: { class: 'form-label fw-semibold mb-2' }
+                }) }}
+                {{ form_widget(resetForm.plainPassword.second, {
+                    attr: {
+                        class: 'form-control',
+                        id: 'password2'
+                    }
+                }) }}
+                {{ form_errors(resetForm.plainPassword.second) }}
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-2">
+                Actualizar contraseña
+            </button>
+
+        {{ form_end(resetForm) }}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Id real generado por Symfony (lo viste en el inspector)
+    const input = document.getElementById('change_password_form_plainPassword_first');
+    if (!input) return;
+
+    const emailData = document.getElementById('user-email');
+    const userEmail = emailData ? emailData.getAttribute('data-email') : '';
+
+    function evaluatePassword(value) {
+        let ok = 0;
+
+        // Regla 1: mínimo 8 caracteres
+        if (value.length >= 8) ok++;
+
+        // Regla 2: al menos una minúscula
+        if (/[a-z]/.test(value)) ok++;
+
+        // Regla 3: al menos una mayúscula
+        if (/[A-Z]/.test(value)) ok++;
+
+        // Regla 4: no igual al email (si lo tenemos)
+        if (userEmail && value !== userEmail) ok++;
+
+        return ok;
+    }
+
+    function updateColor(count) {
+        // quitamos clases previas
+        input.classList.remove('is-invalid', 'is-warning', 'is-valid', 'border-danger', 'border-warning', 'border-success');
+
+        if (count === 0) {
+            // nada cumplido: rojo
+            input.classList.add('is-invalid', 'border-danger');
+        } else if (count > 0 && count < 4) {
+            // algunas cumplidas: amarillo
+            input.classList.add('border-warning');
+        } else if (count === 4) {
+            // todas cumplidas: verde
+            input.classList.add('is-valid', 'border-success');
+        }
+    }
+
+    input.addEventListener('input', function () {
+        const value = input.value;
+        const okCount = evaluatePassword(value);
+        updateColor(okCount);
+    });
+});
+</script>
+
+{% endblock %}

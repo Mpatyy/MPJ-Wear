@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Restablecer contraseña</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color:#f5f5f5; margin:0; padding:20px;">
+    <div style="max-width:600px; margin:0 auto; background:#ffffff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <h1 style="text-align:center; margin-bottom:24px; color:#333;">Bienvenido de nuevo</h1>
+
+        <p style="margin-bottom:16px;">
+            Para restaurar la contraseña, por favor haz clic en el siguiente enlace:
+        </p>
+
+        <p style="text-align:center; margin:24px 0;">
+            <a href="{{ url('app_reset_password', {token: resetToken.token}) }}"
+               style="display:inline-block; padding:10px 20px; background-color:#198754; color:#ffffff; text-decoration:none; border-radius:4px;">
+                Restablecer contraseña
+            </a>
+        </p>
+
+        <p style="margin-bottom:8px;">
+            Este enlace expirará en:
+            {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
+        </p>
+
+        <p style="margin-top:24px;">
+            Gracias por formar parte de MPJ.
+        </p>
+    </div>
+</body>
+</html>
