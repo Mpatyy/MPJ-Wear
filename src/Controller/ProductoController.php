@@ -16,29 +16,58 @@ class ProductoController extends AbstractController
     #[Route('/productos', name: 'producto_listado')]
     public function listado(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // categoría por querystring: /productos?categoria=camisetas
+        // 🔹 Categoría por querystring
         $slug = $request->query->get('categoria');
 
-        $categorias = $entityManager->getRepository(Categoria::class)->findBy([], ['nombre' => 'ASC']);
+        // 🔹 Filtros
+        $talla     = $request->query->get('talla');
+        $color     = $request->query->get('color');
+        $precioMax = $request->query->get('precioMax');
+
+        $categorias = $entityManager->getRepository(Categoria::class)
+            ->findBy([], ['nombre' => 'ASC']);
 
         $categoriaActiva = null;
-        if (!empty($slug)) {
-            $categoriaActiva = $entityManager->getRepository(Categoria::class)->findOneBy(['slug' => $slug]);
+        if ($slug) {
+            $categoriaActiva = $entityManager
+                ->getRepository(Categoria::class)
+                ->findOneBy(['slug' => $slug]);
         }
 
-        // Si el slug no existe, lo tratamos como "ver todo"
         if ($slug && !$categoriaActiva) {
             $slug = null;
         }
 
-        $productos = $categoriaActiva
-            ? $entityManager->getRepository(Producto::class)->findBy(['categoria' => $categoriaActiva], ['id' => 'DESC'])
-            : $entityManager->getRepository(Producto::class)->findBy([], ['id' => 'DESC']);
+        /** @var ProductosRepository $repo */
+        $repo = $entityManager->getRepository(Producto::class);
+
+        // 🔹 Usamos el repository con filtros
+        if ($categoriaActiva || $talla || $color || $precioMax) {
+            $productos = $repo->buscarConCategoriaYFiltros(
+                $categoriaActiva,
+                $talla,
+                $color,
+                $precioMax
+            );
+        } else {
+            $productos = $repo->findBy([], ['id' => 'DESC']);
+        }
+
+        // 🔹 Datos para pintar filtros
+        $tallasDisponibles  = $repo->obtenerTallasUnicas();
+        $coloresDisponibles = $repo->obtenerColoresUnicos();
 
         return $this->render('producto/listado.html.twig', [
-            'productos' => $productos,
-            'categorias' => $categorias,
-            'slugActiva' => $slug,
+            'productos'          => $productos,
+            'categorias'         => $categorias,
+            'slugActiva'         => $slug,
+            'tallasDisponibles'  => $tallasDisponibles,
+            'coloresDisponibles' => $coloresDisponibles,
+            'filtros' => [
+                'talla'     => $talla,
+                'color'     => $color,
+                'precioMax' => $precioMax,
+            ],
         ]);
     }
 

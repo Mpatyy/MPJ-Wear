@@ -143,4 +143,53 @@ class ProductosRepository extends ServiceEntityRepository
 
         return array_slice($res, 0, $limite);
     }
+
+    public function buscarConCategoriaYFiltros(
+        ?\App\Entity\Categoria $categoria,
+        ?string $talla,
+        ?string $color,
+        ?string $precioMax
+    ): array {
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.variaciones', 'v')
+            ->groupBy('p.id');
+
+        if ($categoria) {
+            $qb->andWhere('p.categoria = :categoria')
+                ->setParameter('categoria', $categoria);
+        }
+
+        if ($talla) {
+            $qb->andWhere('v.talla = :talla')
+                ->setParameter('talla', $talla);
+        }
+
+        if ($color) {
+            $qb->andWhere('v.color = :color')
+                ->setParameter('color', $color);
+        }
+
+        $hayHaving = false;
+
+        if ($precioMax !== null && $precioMax !== '' && is_numeric(str_replace(',', '.', $precioMax))) {
+            $precioFloat = (float) str_replace(',', '.', $precioMax);
+
+            $qb->having('MAX(COALESCE(v.precio, p.precio)) <= :precio')
+                ->setParameter('precio', $precioFloat);
+
+            $hayHaving = true;
+        }
+
+        // Solo productos con stock
+        if ($hayHaving) {
+            $qb->andHaving('SUM(v.stock) > 0');
+        } else {
+            $qb->having('SUM(v.stock) > 0');
+        }
+
+        return $qb
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
