@@ -1,65 +1,35 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inicio{% endblock %}
+{% block title %}Inicio | Mi Tienda MPJ{% endblock %}
 
 {% block body %}
-<div class="hero-zara">
-    <div class="hero-zara__overlay">
-        <h1 class="hero-zara__title">MPJ WEAR</h1>
-        <p class="hero-zara__subtitle">Nueva colección</p>
 
-        <div class="hero-zara__buttons">
-            <a href="{{ path('producto_listado', {}, {'query': {'categoria': 'camisetas'}}) }}" class="btn btn-light">
-                Camisetas
-            </a>
-            <a href="{{ path('producto_listado', {}, {'query': {'categoria': 'sudaderas'}}) }}" class="btn btn-light">
-                Sudaderas
-            </a>
-            <a href="{{ path('producto_listado', {}, {'query': {'categoria': 'pantalones'}}) }}" class="btn btn-light">
-                Pantalones
-            </a>
-        </div>
+<div class="text-center mb-5">
+    <h1 class="fw-bold">Bienvenido a MPJ</h1>
+    <p class="text-muted">
+        Descubre nuestras últimas prendas y novedades
+    </p>
+
+    <a href="{{ path('producto_listado') }}" class="btn btn-dark mt-3">
+        Ver productos
+    </a>
+</div>
+
+<hr class="my-5">
+
+<div class="row text-center">
+    <div class="col-md-4">
+        <h5 class="fw-semibold">Calidad</h5>
+        <p class="text-muted">Prendas seleccionadas con cuidado</p>
+    </div>
+    <div class="col-md-4">
+        <h5 class="fw-semibold">Diseño</h5>
+        <p class="text-muted">Estilo moderno y actual</p>
+    </div>
+    <div class="col-md-4">
+        <h5 class="fw-semibold">Comodidad</h5>
+        <p class="text-muted">Pensadas para el día a día</p>
     </div>
 </div>
 
-<style>
-.hero-zara{
-    height: 80vh;
-    border-radius: 14px;
-    background-image: url("{{ asset('images/portada_home.jpg') }}");
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    overflow: hidden;
-}
-.hero-zara__overlay{
-    position:absolute;
-    inset:0;
-    background: rgba(0,0,0,.35);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    padding: 30px;
-}
-.hero-zara__title{
-    color:#fff;
-    font-size: 44px;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-}
-.hero-zara__subtitle{
-    color:#fff;
-    font-size: 16px;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-}
-.hero-zara__buttons{
-    display:flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content:center;
-}
-</style>
 {% endblock %}
