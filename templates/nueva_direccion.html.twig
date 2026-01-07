@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nueva dirección{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h2 class="h5 mb-0">Añadir dirección</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ path('nueva_direccion') }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="calle">Calle Completa <br>  Ej: Calle ejemplo 21 Bj A</label>
+                        <input type="text" id="calle" name="calle" required class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="ciudad">Ciudad</label>
+                        <input type="text" id="ciudad" name="ciudad" required class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="cp">Código postal</label>
+                        <input type="text" id="cp" name="cp" required class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="provincia">Provincia</label>
+                        <input type="text" id="provincia" name="provincia" required class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="pais">País</label>
+                        <input type="text" id="pais" name="pais" required class="form-control" value="España">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="tipo">Tipo</label>
+                        <input type="text" id="tipo" name="tipo" required class="form-control" placeholder="Casa, trabajo...">
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        Guardar dirección
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

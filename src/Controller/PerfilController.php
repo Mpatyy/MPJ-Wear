@@ -8,6 +8,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\LineaPedido;
+use App\Entity\Direccion;
+use Symfony\Component\HttpFoundation\Request;
+
+
+use App\Repository\DireccionRepository;
 
 
 class PerfilController extends AbstractController
@@ -53,4 +58,52 @@ class PerfilController extends AbstractController
             'lineas' => $lineas,
         ]);
     }
+#[Route('/perfil/direcciones', name: 'mis_direcciones')]
+public function misDirecciones(EntityManagerInterface $em): Response
+{
+    $usuario = $this->getUser();
+
+    $direcciones = $em->getRepository(Direccion::class)->findBy(
+        ['usuario' => $usuario],
+        ['id' => 'DESC']
+    );
+
+    return $this->render('mis_direcciones.html.twig', [
+        'direcciones' => $direcciones,
+    ]);
+}
+#[Route('/perfil/direcciones/nueva', name: 'nueva_direccion')]
+public function nuevaDireccion(Request $request, EntityManagerInterface $em): Response
+{
+    $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+    $usuario = $this->getUser();
+
+    if ($request->isMethod('POST')) {
+        $calle     = $request->request->get('calle');
+        $ciudad    = $request->request->get('ciudad');
+        $cp        = $request->request->get('cp');
+        $provincia = $request->request->get('provincia');
+        $pais      = $request->request->get('pais');
+        $tipo      = $request->request->get('tipo');
+
+        $dir = new Direccion();
+        $dir->setUsuario($usuario);
+        $dir->setCalle($calle);
+        $dir->setCiudad($ciudad);
+        $dir->setCp($cp);
+        $dir->setProvincia($provincia);
+        $dir->setPais($pais);
+        $dir->setTipo($tipo);
+
+        $em->persist($dir);
+        $em->flush();
+
+        return $this->redirectToRoute('mis_direcciones');
+    }
+
+    return $this->render('nueva_direccion.html.twig');
+}
+
+
 }

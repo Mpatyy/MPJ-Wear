@@ -13,6 +13,7 @@ class Direccion
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Usuario::class, inversedBy: "direcciones")]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Usuario $usuario = null;
 
     #[ORM\Column(type: 'string', length: 100)]
