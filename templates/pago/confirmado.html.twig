@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pago confirmado{% endblock %}
+
+{% block body %}
+<div class="container mt-5 text-center">
+    <h2 class="text-success mb-3">✅ Pago realizado con éxito</h2>
+    <p class="mb-3">Tu pedido ha sido procesado correctamente.</p>
+    <p class="mb-4"><strong>Total pagado:</strong> {{ total }} €</p>
+
+    <a href="{{ path('producto_listado') }}" class="btn btn-primary">
+        Volver a la tienda
+    </a>
+</div>
+{% endblock %}
