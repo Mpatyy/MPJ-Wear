@@ -15,8 +15,14 @@ function ZaraSearchApp() {
   }, []);
 
   const onIrAProducto = (r) => {
-    // r.url viene del backend
-    window.location.href = r.url;
+    // ✅ si backend manda url, la usamos; si no, fallback por id
+    if (r?.url) {
+      window.location.href = r.url;
+      return;
+    }
+    if (r?.id) {
+      window.location.href = `/productos/${r.id}`;
+    }
   };
 
   return (

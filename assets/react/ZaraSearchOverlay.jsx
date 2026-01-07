@@ -20,14 +20,17 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
 
   const recientesKey = "mpj_recientes";
   const recientes = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem(recientesKey) || "[]"); }
-    catch { return []; }
-  }, [abierto]); // recalcula al abrir
+    try {
+      return JSON.parse(localStorage.getItem(recientesKey) || "[]");
+    } catch {
+      return [];
+    }
+  }, [abierto]);
 
   const guardarReciente = (texto) => {
     const limpio = texto.trim();
     if (!limpio) return;
-    const base = recientes.filter(x => x !== limpio);
+    const base = recientes.filter((x) => x !== limpio);
     const nuevo = [limpio, ...base].slice(0, 6);
     localStorage.setItem(recientesKey, JSON.stringify(nuevo));
   };
@@ -54,12 +57,14 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
         }
       }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [abierto, resultados, activo, q, onCerrar, onIrAProducto]);
 
   useEffect(() => {
     if (!abierto) return;
+
     setActivo(-1);
 
     if (!debounced) {
@@ -67,24 +72,34 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
       return;
     }
 
-    let cancelado = false;
+    const controller = new AbortController();
+
     (async () => {
       setCargando(true);
       try {
-        const resp = await fetch(`/api/buscar?q=${encodeURIComponent(debounced)}`, {
-          headers: { "Accept": "application/json" }
-        });
+        // ✅ EndPoint correcto
+        const resp = await fetch(
+          `/api/buscador/productos?nombre=${encodeURIComponent(debounced)}`,
+          {
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          }
+        );
+
         if (!resp.ok) throw new Error("Error de búsqueda");
+
         const data = await resp.json();
-        if (!cancelado) setResultados(data.resultados || []);
-      } catch {
-        if (!cancelado) setResultados([]);
+
+        // ✅ reemplaza resultados, no acumula
+        setResultados(Array.isArray(data.productos) ? data.productos : []);
+      } catch (e) {
+        if (e.name !== "AbortError") setResultados([]);
       } finally {
-        if (!cancelado) setCargando(false);
+        setCargando(false);
       }
     })();
 
-    return () => { cancelado = true; };
+    return () => controller.abort();
   }, [debounced, abierto]);
 
   if (!abierto) return null;
@@ -100,7 +115,9 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
-          <button className="zara-cerrar" onClick={onCerrar} aria-label="Cerrar">✕</button>
+          <button className="zara-cerrar" onClick={onCerrar} aria-label="Cerrar">
+            ✕
+          </button>
         </div>
       </div>
 
@@ -133,7 +150,7 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
               Resultados {cargando ? "(buscando…)" : ""}
             </div>
 
-            {(!cargando && resultados.length === 0) ? (
+            {!cargando && resultados.length === 0 ? (
               <div className="zara-vacio">No hay resultados.</div>
             ) : (
               <ul className="zara-lista">
@@ -142,7 +159,10 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
                     <button
                       className={"zara-item " + (idx === activo ? "activo" : "")}
                       onMouseEnter={() => setActivo(idx)}
-                      onClick={() => { guardarReciente(q); onIrAProducto(r); }}
+                      onClick={() => {
+                        guardarReciente(q);
+                        onIrAProducto(r);
+                      }}
                       type="button"
                     >
                       <div className="zara-item-izq">
@@ -154,7 +174,7 @@ export default function ZaraSearchOverlay({ abierto, onCerrar, onIrAProducto }) 
                       </div>
                       <div className="zara-item-der">
                         <div className="zara-nombre">{r.nombre}</div>
-                        <div className="zara-precio">{r.precio}</div>
+                        <div className="zara-precio">{r.precio} €</div>
                       </div>
                     </button>
                   </li>

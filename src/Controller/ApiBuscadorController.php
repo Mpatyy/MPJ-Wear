@@ -23,157 +23,109 @@ class ApiBuscadorController extends AbstractController
         $this->variacionRepository = $variacionRepository;
     }
 
-    /**
-     * Obtener sugerencias de autocompletado
-     */
     #[Route('/sugerencias', name: 'sugerencias', methods: ['GET'])]
     public function obtenerSugerencias(Request $request): JsonResponse
     {
-        $q = $request->query->get('q', '');
+        $q = trim((string) $request->query->get('q', ''));
 
-        if (strlen($q) < 1) {
+        if (mb_strlen($q) < 1) {
             return $this->json(['sugerencias' => []]);
         }
 
-        $productos = $this->productosRepository->findAll();
-        
-        $sugerencias = [];
-        foreach ($productos as $p) {
-            if (stripos($p->getNombre(), $q) !== false) {
-                $sugerencias[$p->getNombre()] = true;
-            }
-        }
+        $limite = (int) $request->query->get('limite', 8);
+        if ($limite <= 0) $limite = 8;
+        if ($limite > 20) $limite = 20;
 
-        return $this->json(['sugerencias' => array_keys($sugerencias)]);
+        $sugerencias = $this->productosRepository->obtenerSugerencias($q, $limite);
+
+        return $this->json(['sugerencias' => $sugerencias]);
     }
 
-    /**
-     * Obtener filtros DINÁMICOS según búsqueda
-     * Si busca "Camiseta", solo muestra tallas/colores de camisetas
-     */
-    #[Route('/filtros', name: 'filtros', methods: ['GET'])]
-    public function obtenerFiltros(Request $request): JsonResponse
-    {
-        $nombre = $request->query->get('nombre', '');
-
-        // Si hay búsqueda, filtrar por nombre
-        if (!empty($nombre)) {
-            $productos = $this->productosRepository->createQueryBuilder('p')
-                ->where('LOWER(p.nombre) LIKE LOWER(:nombre)')
-                ->setParameter('nombre', '%' . $nombre . '%')
-                ->getQuery()
-                ->getResult();
-        } else {
-            $productos = $this->productosRepository->findAll();
-        }
-
-        $tallas = ['Todas'];
-        $colores = ['Todos'];
-
-        // Obtener tallas y colores SOLO de los productos encontrados
-        foreach ($productos as $p) {
-            $variaciones = $this->variacionRepository->findBy(['producto' => $p]);
-            
-            foreach ($variaciones as $v) {
-                if ($v->getTalla() && !in_array($v->getTalla(), $tallas)) {
-                    $tallas[] = $v->getTalla();
-                }
-                if ($v->getColor() && !in_array($v->getColor(), $colores)) {
-                    $colores[] = $v->getColor();
-                }
-            }
-        }
-
-        sort($tallas);
-        sort($colores);
-
-        return $this->json([
-            'tallas' => $tallas,
-            'colores' => $colores,
-        ]);
-    }
-
-    /**
-     * Obtener productos filtrados (con variaciones)
-     */
     #[Route('/productos', name: 'productos', methods: ['GET'])]
     public function obtenerProductos(Request $request): JsonResponse
     {
-        $nombre = $request->query->get('nombre', '');
-        $talla = $request->query->get('talla', '');
-        $color = $request->query->get('color', '');
-        $precioMax = $request->query->get('precio_max', null);
+        $nombre = trim((string) $request->query->get('nombre', ''));
+        $talla  = trim((string) $request->query->get('talla', ''));
+        $color  = trim((string) $request->query->get('color', ''));
+        $precioMaxRaw = $request->query->get('precio_max', null);
 
-        // Obtener productos por nombre
-        if (!empty($nombre)) {
-            $todosProductos = $this->productosRepository->createQueryBuilder('p')
-                ->where('LOWER(p.nombre) LIKE LOWER(:nombre)')
-                ->setParameter('nombre', '%' . $nombre . '%')
-                ->getQuery()
-                ->getResult();
-        } else {
-            $todosProductos = $this->productosRepository->findAll();
+        // ✅ si no hay nombre, devolvemos vacío (para no listar todo al abrir)
+        if ($nombre === '') {
+            return $this->json(['productos' => []]);
         }
-        
+
+        $tallaFiltro = ($talla !== '' && $talla !== 'Todas') ? $talla : null;
+        $colorFiltro = ($color !== '' && $color !== 'Todos') ? $color : null;
+
+        $precioMax = null;
+        if ($precioMaxRaw !== null) {
+            $p = str_replace(',', '.', trim((string) $precioMaxRaw));
+            if ($p !== '' && is_numeric($p)) $precioMax = (float) $p;
+        }
+
+        // ✅ empieza por (NO contiene)
+        $todosProductos = $this->productosRepository->createQueryBuilder('p')
+            ->where('LOWER(p.nombre) LIKE LOWER(:nombre)')
+            ->setParameter('nombre', $nombre . '%')
+            ->orderBy('p.nombre', 'ASC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+
         $productosArray = [];
-        $procesados = [];
 
         foreach ($todosProductos as $p) {
-            // Obtener variaciones del producto
-            $variaciones = $this->variacionRepository->findBy(['producto' => $p]);
 
-            if (empty($variaciones)) {
+            if ($precioMax !== null && (float) $p->getPrecio() > $precioMax) {
                 continue;
             }
 
-            $variacionesArray = [];
+            $variaciones = $this->variacionRepository->findBy(['producto' => $p]);
+            if (!$variaciones) continue;
+
+            $variacionesFiltradas = [];
 
             foreach ($variaciones as $v) {
-                // Filtro por talla
-                if (!empty($talla) && $talla !== 'Todas' && $v->getTalla() !== $talla) {
-                    continue;
-                }
+                if ((int) $v->getStock() <= 0) continue;
 
-                // Filtro por color
-                if (!empty($color) && $color !== 'Todos' && $v->getColor() !== $color) {
-                    continue;
-                }
+                $tVar = trim((string) $v->getTalla());
+                $cVar = trim((string) $v->getColor());
 
-                // Filtro por precio
-                if ($precioMax !== null && $precioMax !== '' && $p->getPrecio() > (float)$precioMax) {
-                    continue;
-                }
+                if ($tallaFiltro !== null && $tVar !== $tallaFiltro) continue;
+                if ($colorFiltro !== null && $cVar !== $colorFiltro) continue;
 
-                // Solo stock disponible
-                if ($v->getStock() <= 0) {
-                    continue;
-                }
+                $imgVar = $v->getImagen() ?: $p->getImagen();
 
-                $variacionesArray[] = [
-                    'id' => $v->getId(),
+                $variacionesFiltradas[] = [
+                    'id'    => $v->getId(),
                     'talla' => $v->getTalla(),
                     'color' => $v->getColor(),
                     'stock' => $v->getStock(),
-                    'imagen' => $v->getImagen() ?: $p->getImagen(),
+                    'imagen'=> $imgVar ? '/images/' . $imgVar : null,
                 ];
             }
 
-            // Si hay variaciones que cumplen los filtros
-            if (!empty($variacionesArray) && !in_array($p->getId(), $procesados)) {
-                $productosArray[] = [
-                    'id' => $p->getId(),
-                    'nombre' => $p->getNombre(),
-                    'descripcion' => $p->getDescripcion(),
-                    'precio' => $p->getPrecio(),
-                    'imagen' => $p->getImagen(),
-                    'variaciones' => $variacionesArray,
-                ];
-                $procesados[] = $p->getId();
+            if (count($variacionesFiltradas) === 0) continue;
+
+            // ✅ imagen principal del resultado = primera variación filtrada si hay filtros
+            $imgPrincipal = $p->getImagen();
+            if ($tallaFiltro !== null || $colorFiltro !== null) {
+                $imgPrincipal = $variacionesFiltradas[0]['imagen'] ?? null;
+            } else {
+                $imgPrincipal = $imgPrincipal ? '/images/' . $imgPrincipal : null;
             }
+
+            $productosArray[] = [
+                'id'          => $p->getId(),
+                'nombre'      => $p->getNombre(),
+                'descripcion' => $p->getDescripcion(),
+                'precio'      => $p->getPrecio(),
+                'imagen'      => $imgPrincipal,
+                'url'         => '/productos/' . $p->getId(),
+                'variaciones' => $variacionesFiltradas,
+            ];
         }
 
-        usort($productosArray, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
-
-        return $this->json(['productos' => array_slice($productosArray, 0, 50)]);
+        return $this->json(['productos' => $productosArray]);
     }
 }
