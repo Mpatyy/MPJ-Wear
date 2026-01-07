@@ -13,36 +13,61 @@
 
     <div class="mb-3">
         <label class="form-label">Número de tarjeta</label>
-        <input type="text"
-               name="numero_tarjeta"
-               class="form-control"
-               maxlength="16"
-               pattern="\d{16}"
-               required>
+        <input
+            type="text"
+            name="numero_tarjeta"
+            class="form-control"
+            maxlength="16"
+            pattern="\d{16}"
+            inputmode="numeric"
+            required
+        >
     </div>
 
     <div class="mb-3">
         <label class="form-label">Fecha de caducidad (MM/YY)</label>
-        <input type="text"
-               name="fecha_caducidad"
-               class="form-control"
-               placeholder="MM/YY"
-               pattern="\d{2}/\d{2}"
-               required>
+        <input
+            type="text"
+            name="fecha_caducidad"
+            id="fecha_caducidad"
+            class="form-control"
+            maxlength="5"
+            inputmode="numeric"
+            placeholder="MMYY"
+            required
+        >
+        <small class="text-muted">
+            Escribe solo números (ej: 0527)
+        </small>
     </div>
 
     <div class="mb-3">
         <label class="form-label">CVV</label>
-        <input type="password"
-               name="cvv"
-               class="form-control"
-               maxlength="3"
-               pattern="\d{3}"
-               required>
+        <input
+            type="password"
+            name="cvv"
+            class="form-control"
+            maxlength="3"
+            pattern="\d{3}"
+            inputmode="numeric"
+            required
+        >
     </div>
 
     <button type="submit" class="btn btn-success">
-        Pagar
+        Realizar pago
     </button>
 </form>
+
+<script>
+document.getElementById('fecha_caducidad').addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+
+    if (value.length >= 3) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+
+    e.target.value = value;
+});
+</script>
 {% endblock %}

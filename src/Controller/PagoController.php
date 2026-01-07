@@ -3,7 +3,11 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\Pedidos; 
+use App\Entity\Producto;
+use App\Entity\LineaPedido; 
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -25,21 +29,25 @@ class PagoController extends AbstractController
         return $this->render('pago/pasarela.html.twig');
     }
 
-    #[Route('/pago/procesar', name: 'pago_procesar', methods: ['POST'])]
-    public function procesar(Request $request): Response
-    {
-        // 💳 Validaciones servidor
+   #[Route('/pago/procesar', name: 'pago_procesar', methods: ['POST'])]
+    public function procesar(
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        // Validaciones tarjeta
         $numero = $request->request->get('numero_tarjeta');
         $fecha  = $request->request->get('fecha_caducidad');
         $cvv    = $request->request->get('cvv');
 
         if (!preg_match('/^\d{16}$/', $numero)) {
-            $this->addFlash('error', 'El número de tarjeta debe tener 16 dígitos.');
+            $this->addFlash('error', 'Número de tarjeta inválido.');
             return $this->redirectToRoute('pasarela_pago');
         }
 
         if (!preg_match('/^\d{2}\/\d{2}$/', $fecha)) {
-            $this->addFlash('error', 'Formato de fecha inválido (MM/YY).');
+            $this->addFlash('error', 'Fecha inválida.');
             return $this->redirectToRoute('pasarela_pago');
         }
 
@@ -50,16 +58,61 @@ class PagoController extends AbstractController
         $fechaActual  = new \DateTime('first day of this month');
 
         if (!$fechaTarjeta || $fechaTarjeta < $fechaActual) {
-            $this->addFlash('error', 'La tarjeta está caducada.');
+            $this->addFlash('error', 'Tarjeta caducada.');
             return $this->redirectToRoute('pasarela_pago');
         }
 
         if (!preg_match('/^\d{3}$/', $cvv)) {
-            $this->addFlash('error', 'El CVV debe tener 3 dígitos.');
+            $this->addFlash('error', 'CVV inválido.');
             return $this->redirectToRoute('pasarela_pago');
         }
 
-        // ✅ PAGO FICTICIO CORRECTO
-        return $this->redirectToRoute('carrito_confirmar');
+        // ✅ PAGO FICTICIO OK → crear pedido
+        $session = $request->getSession();
+        $carrito = $session->get('carrito', []);
+
+        if (empty($carrito)) {
+            $this->addFlash('error', 'El carrito está vacío.');
+            return $this->redirectToRoute('carrito_ver');
+        }
+
+        $usuario = $this->getUser();
+        $total = 0;
+
+        foreach ($carrito as $item) {
+            $total += $item['cantidad'] * $item['precio'];
+        }
+
+        $pedido = new Pedidos();
+        $pedido->setUsuario($usuario);
+        $pedido->setFecha(new \DateTime());
+        $pedido->setEstado('pagado');
+        $pedido->setTotal(number_format($total, 2, '.', ''));
+
+        $em->persist($pedido);
+
+        foreach ($carrito as $item) {
+            $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
+            if (!$producto) continue;
+
+            $linea = new LineaPedido();
+            $linea->setPedido($pedido);
+            $linea->setProducto($producto);
+            $linea->setTalla($item['talla']);
+            $linea->setColor($item['color']);
+            $linea->setCantidad($item['cantidad']);
+            $linea->setPrecioUnitario($item['precio']);
+            $linea->setSubtotal($item['cantidad'] * $item['precio']);
+
+            $em->persist($linea);
+        }
+
+        $em->flush();
+        $session->remove('carrito');
+
+        $this->addFlash('success', 'Pago realizado correctamente.');
+
+        return $this->redirectToRoute('perfil');
     }
+
 }
