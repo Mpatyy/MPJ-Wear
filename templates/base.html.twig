@@ -91,8 +91,6 @@
 			.header-acciones > * {
 				margin-left: 18px;
 			}
-
-
 		</style>
 
 		<link rel="stylesheet" href="/build/app.css">
@@ -119,23 +117,26 @@
 					{# ================= DERECHA ================= #}
 					<div class="d-flex align-items-center gap-4 ms-auto">
 
+						{# BOTÓN ADMIN: solo visible para usuarios con ROLE_ADMIN #}
+						{% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+							<a class="btn-lupa d-flex align-items-center gap-2" href="{{ path('admin_dashboard') }}" title="Panel Admin">
+								<i class="bi bi-speedometer2"></i>
+								<span class="d-none d-md-inline">Admin</span>
+							</a>
+						{% endif %}
+
 						{# BUSCAR (Zara style) #}
-						<button
-							type="button"
-							class="btn-lupa d-flex align-items-center gap-2"
-							id="btn-abrir-buscador"
-							aria-label="Abrir buscador"
-						>
+						<button type="button" class="btn-lupa d-flex align-items-center gap-2" id="btn-abrir-buscador" aria-label="Abrir buscador">
 							<i class="fa-solid fa-magnifying-glass"></i>
 							<span>Buscar</span>
 						</button>
 
+						{# CARRITO #}
 						{% set carrito = app.session.get('carrito', []) %}
 						{% set totalCarrito = 0 %}
 						{% for item in carrito %}
 							{% set totalCarrito = totalCarrito + item.cantidad %}
 						{% endfor %}
-
 						<a class="nav-link position-relative text-white" href="{{ path('carrito_ver') }}" title="Carrito">
 							<i class="bi bi-cart3 fs-5"></i>
 							{% if totalCarrito > 0 %}
@@ -145,6 +146,7 @@
 							{% endif %}
 						</a>
 
+						{# PERFIL / LOGIN #}
 						{% if app.user %}
 							<div class="dropdown">
 								<button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -215,8 +217,6 @@
 				const flash = cont.querySelector('#flash-toast');
 				if (!flash) return;
 
-				/* ✅ FIX: si vuelves con la flecha (bfcache), el navegador “revive” el toast.
-				   Lo eliminamos para que no vuelva a aparecer. */
 				window.addEventListener('pageshow', (event) => {
 					if (event.persisted) {
 						const c = document.getElementById('flash-carrito-container');
@@ -231,22 +231,14 @@
 
 					const r = icono.getBoundingClientRect();
 					const margin = 12;
-
-					// Medimos el toast
 					const w = flash.offsetWidth;
-
-					// Alinear el final del toast con el final del icono
 					let left = (r.right + window.scrollX) - w;
-
-					// Clamp para que no se salga
 					const minLeft = window.scrollX + margin;
 					const maxLeft = window.scrollX + window.innerWidth - w - margin;
 					left = Math.max(minLeft, Math.min(left, maxLeft));
-
 					cont.style.left = left + 'px';
 					cont.style.top  = (r.bottom + window.scrollY + 10) + 'px';
 
-					// Piquito: apunta al centro del icono dentro del toast
 					const centroIconoEnPantalla = r.left + (r.width / 2);
 					const centroIconoDentroToast = centroIconoEnPantalla - (left - window.scrollX);
 					const picoLeft = Math.max(14, Math.min(centroIconoDentroToast - 7, w - 18));
@@ -256,15 +248,12 @@
 				posicionar();
 				window.addEventListener('resize', posicionar);
 
-				// Cerrar
 				const btnCerrar = flash.querySelector('.flash-cerrar');
 				if (btnCerrar) btnCerrar.addEventListener('click', () => cont.remove());
 
-				// Seguir comprando
 				const btnSeguir = flash.querySelector('[data-accion="seguir"]');
 				if (btnSeguir) btnSeguir.addEventListener('click', () => cont.remove());
 
-				// Auto ocultar (más lento)
 				setTimeout(() => {
 					if (!cont.isConnected) return;
 					flash.style.opacity = '0';
@@ -274,8 +263,6 @@
 				}, 6500);
 			})();
 
-			/* ✅ Extra: por si el navegador no marca event.persisted pero sí vuelve del historial,
-			   también limpiamos el toast al volver atrás/adelante. */
 			window.addEventListener('popstate', () => {
 				const c = document.getElementById('flash-carrito-container');
 				if (c) c.remove();
