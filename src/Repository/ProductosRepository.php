@@ -149,41 +149,34 @@ class ProductosRepository extends ServiceEntityRepository
 
         if ($categoria) {
             $qb->andWhere('p.categoria = :categoria')
-               ->setParameter('categoria', $categoria);
+            ->setParameter('categoria', $categoria);
         }
 
         if ($talla) {
             $qb->andWhere('LOWER(TRIM(v.talla)) = LOWER(TRIM(:talla))')
-               ->setParameter('talla', $talla);
+            ->setParameter('talla', $talla);
         }
 
         if ($color) {
             $qb->andWhere('LOWER(TRIM(v.color)) = LOWER(TRIM(:color))')
-               ->setParameter('color', $color);
+            ->setParameter('color', $color);
         }
 
-        $hayHaving = false;
-
+        // ✅ PRECIO MAX: SOLO producto (p.precio)
         if ($precioMax !== null && $precioMax !== '' && is_numeric(str_replace(',', '.', $precioMax))) {
             $precioFloat = (float) str_replace(',', '.', $precioMax);
-
-            $qb->having('MAX(COALESCE(v.precio, p.precio)) <= :precio')
-               ->setParameter('precio', $precioFloat);
-
-            $hayHaving = true;
+            $qb->andWhere('p.precio <= :precio')
+            ->setParameter('precio', $precioFloat);
         }
 
-        if ($hayHaving) {
-            $qb->andHaving('SUM(v.stock) > 0');
-        } else {
-            $qb->having('SUM(v.stock) > 0');
-        }
+        // ✅ Stock > 0 (sobre variaciones ya filtradas por talla/color)
+        $qb->having('SUM(v.stock) > 0');
 
-        return $qb
-            ->orderBy('p.id', 'DESC')
-            ->getQuery()
-            ->getResult();
+        return $qb->orderBy('p.id', 'DESC')
+                ->getQuery()
+                ->getResult();
     }
+
 
     /**
      * ✅ Buscar filtros general:
@@ -202,43 +195,36 @@ class ProductosRepository extends ServiceEntityRepository
             ->groupBy('p.id');
 
         if ($texto) {
-            // ✅ empieza por (no contiene)
-            $qb->andWhere('LOWER(p.nombre) LIKE LOWER(:texto)')
-               ->setParameter('texto', $texto . '%');
+            $qb->andWhere('LOWER(p.nombre) LIKE LOWER(:texto) OR LOWER(p.descripcion) LIKE LOWER(:texto)')
+            ->setParameter('texto', '%' . $texto . '%');
         }
 
         if ($talla) {
             $qb->andWhere('LOWER(TRIM(v.talla)) = LOWER(TRIM(:talla))')
-               ->setParameter('talla', $talla);
+            ->setParameter('talla', $talla);
         }
 
         if ($color) {
             $qb->andWhere('LOWER(TRIM(v.color)) = LOWER(TRIM(:color))')
-               ->setParameter('color', $color);
+            ->setParameter('color', $color);
         }
 
-        $hayHaving = false;
-
+        // ✅ PRECIO MAX: SOLO producto (p.precio)
         if ($precioMax !== null && $precioMax !== '' && is_numeric(str_replace(',', '.', $precioMax))) {
             $precioFloat = (float) str_replace(',', '.', $precioMax);
-
-            $qb->having('MAX(COALESCE(v.precio, p.precio)) <= :precio')
-               ->setParameter('precio', $precioFloat);
-
-            $hayHaving = true;
+            $qb->andWhere('p.precio <= :precio')
+            ->setParameter('precio', $precioFloat);
         }
 
-        if ($hayHaving) {
-            $qb->andHaving('SUM(v.stock) > 0');
-        } else {
-            $qb->having('SUM(v.stock) > 0');
-        }
+        // ✅ Stock > 0
+        $qb->having('SUM(v.stock) > 0');
 
         return $qb->orderBy('p.nombre', 'ASC')
-            ->setMaxResults(50)
-            ->getQuery()
-            ->getResult();
+                ->setMaxResults(50)
+                ->getQuery()
+                ->getResult();
     }
+
 
     /**
      * ✅ buscarRapido: también “empieza por”
@@ -300,10 +286,10 @@ class ProductosRepository extends ServiceEntityRepository
 
         if ($precioMax !== null && $precioMax !== '' && is_numeric(str_replace(',', '.', $precioMax))) {
             $precioFloat = (float) str_replace(',', '.', $precioMax);
-
-            $qb->andHaving('MAX(COALESCE(v.precio, p.precio)) <= :precio')
-               ->setParameter('precio', $precioFloat);
+            $qb->andWhere('p.precio <= :precio')
+            ->setParameter('precio', $precioFloat);
         }
+
 
         return $qb
             ->orderBy('p.id', 'DESC')
@@ -311,4 +297,44 @@ class ProductosRepository extends ServiceEntityRepository
             ->getQuery()
             ->getArrayResult();
     }
+
+    public function buscarSimilares(Producto $producto, int $limite = 6): array
+    {
+        $cat = $producto->getCategoria();
+
+        // 1) Intentar de la misma categoría
+        $qb = $this->createQueryBuilder('p')
+            ->andWhere('p.id != :id')
+            ->setParameter('id', $producto->getId())
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($limite);
+
+        if ($cat) {
+            $qb->andWhere('p.categoria = :cat')
+            ->setParameter('cat', $cat);
+        }
+
+        $similares = $qb->getQuery()->getResult();
+
+        // 2) Si no hay suficientes, rellenar con otros productos
+        if (count($similares) < $limite) {
+            $faltan = $limite - count($similares);
+
+            $idsExcluidos = array_map(fn($p) => $p->getId(), $similares);
+            $idsExcluidos[] = $producto->getId();
+
+            $qb2 = $this->createQueryBuilder('p')
+                ->andWhere('p.id NOT IN (:ids)')
+                ->setParameter('ids', $idsExcluidos)
+                ->orderBy('p.id', 'DESC')
+                ->setMaxResults($faltan);
+
+            $extra = $qb2->getQuery()->getResult();
+            $similares = array_merge($similares, $extra);
+        }
+
+        return $similares;
+    }
+
+
 }
