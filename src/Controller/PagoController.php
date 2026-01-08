@@ -3,9 +3,10 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Entity\Pedidos; 
+use App\Entity\Pedidos;
 use App\Entity\Producto;
-use App\Entity\LineaPedido; 
+use App\Entity\LineaPedido;
+use App\Entity\ProductoVariacion;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,14 +30,11 @@ class PagoController extends AbstractController
         return $this->render('pago/pasarela.html.twig');
     }
 
-   #[Route('/pago/procesar', name: 'pago_procesar', methods: ['POST'])]
-    public function procesar(
-        Request $request,
-        EntityManagerInterface $em
-    ): Response {
+    #[Route('/pago/procesar', name: 'pago_procesar', methods: ['POST'])]
+    public function procesar(Request $request, EntityManagerInterface $em): Response
+    {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        // Validaciones tarjeta
         $numero = $request->request->get('numero_tarjeta');
         $fecha  = $request->request->get('fecha_caducidad');
         $cvv    = $request->request->get('cvv');
@@ -46,8 +44,12 @@ class PagoController extends AbstractController
             return $this->redirectToRoute('pasarela_pago');
         }
 
+        if (preg_match('/^\d{4}$/', $fecha)) {
+            $fecha = substr($fecha, 0, 2) . '/' . substr($fecha, 2, 2);
+        }
+
         if (!preg_match('/^\d{2}\/\d{2}$/', $fecha)) {
-            $this->addFlash('error', 'Fecha inválida.');
+            $this->addFlash('error', 'Fecha inválida (usa MM/AA).');
             return $this->redirectToRoute('pasarela_pago');
         }
 
@@ -67,7 +69,6 @@ class PagoController extends AbstractController
             return $this->redirectToRoute('pasarela_pago');
         }
 
-        // ✅ PAGO FICTICIO OK → crear pedido
         $session = $request->getSession();
         $carrito = $session->get('carrito', []);
 
@@ -92,8 +93,27 @@ class PagoController extends AbstractController
         $em->persist($pedido);
 
         foreach ($carrito as $item) {
+
             $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
             if (!$producto) continue;
+
+            $variacion = $em->getRepository(ProductoVariacion::class)->findOneBy([
+                'producto' => $item['producto_id'],
+                'talla'    => $item['talla'],
+                'color'    => $item['color']
+            ]);
+
+            if ($variacion) {
+                $nuevoStock = $variacion->getStock() - $item['cantidad'];
+
+                if ($nuevoStock < 0) {
+                    $this->addFlash('error', 'No hay stock suficiente para '.$item['nombre']);
+                    return $this->redirectToRoute('carrito_ver');
+                }
+
+                $variacion->setStock($nuevoStock);
+                $em->persist($variacion);
+            }
 
             $linea = new LineaPedido();
             $linea->setPedido($pedido);
@@ -114,5 +134,4 @@ class PagoController extends AbstractController
 
         return $this->redirectToRoute('perfil');
     }
-
 }
