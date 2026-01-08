@@ -1,0 +1,30 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Ver Usuario{% endblock %}
+
+{% block body %}
+<h1>Detalles del Usuario</h1>
+
+<div class="card mb-3 p-3 shadow-sm">
+    <h5>ID:</h5>
+    <p>{{ usuario.id }}</p>
+
+    <h5>Nombre de usuario:</h5>
+    <p>{{ usuario.nombre }}</p>
+
+    <h5>Email:</h5>
+    <p>{{ usuario.email }}</p>
+
+    <h5>Roles:</h5>
+    <ul>
+        {% for role in usuario.roles %}
+            <li>{{ role }}</li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-3">
+        <a href="{{ path('admin_usuarios_list') }}" class="btn btn-secondary">Volver a la lista</a>
+        <a href="{{ path('admin_usuarios_eliminar', {'id': usuario.id}) }}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar este usuario?')">Eliminar Usuario</a>
+    </div>
+</div>
+{% endblock %}

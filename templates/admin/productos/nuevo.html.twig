@@ -1,0 +1,34 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Nuevo Producto{% endblock %}
+
+{% block body %}
+<h1>Nuevo Producto</h1>
+
+{{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+
+<div class="mb-3">
+    {{ form_row(form.nombre) }}
+</div>
+<div class="mb-3">
+    {{ form_row(form.descripcion) }}
+</div>
+<div class="mb-3">
+    {{ form_row(form.precio) }}
+</div>
+
+<h4>Variaciones</h4>
+<div id="variaciones-container">
+    {% for variacionForm in form.variaciones %}
+        <div class="variacion mb-3 border p-3">
+            {{ form_row(variacionForm.talla) }}
+            {{ form_row(variacionForm.color) }}
+            {{ form_row(variacionForm.stock) }}
+            {{ form_row(variacionForm.imagen) }}
+        </div>
+    {% endfor %}
+</div>
+
+<button type="submit" class="btn btn-success">Guardar Producto</button>
+
+{{ form_end(form) }}
+{% endblock %}
