@@ -279,6 +279,15 @@
 				const flash = cont.querySelector('#flash-toast');
 				if (!flash) return;
 
+				/* ✅ FIX: si vuelves con la flecha (bfcache), el navegador “revive” el toast.
+				   Lo eliminamos para que no vuelva a aparecer. */
+				window.addEventListener('pageshow', (event) => {
+					if (event.persisted) {
+						const c = document.getElementById('flash-carrito-container');
+						if (c) c.remove();
+					}
+				});
+
 				const icono = document.getElementById('icono-carrito');
 
 				function posicionar() {
@@ -328,6 +337,13 @@
 					setTimeout(() => cont.remove(), 220);
 				}, 6500);
 			})();
+
+			/* ✅ Extra: por si el navegador no marca event.persisted pero sí vuelve del historial,
+			   también limpiamos el toast al volver atrás/adelante. */
+			window.addEventListener('popstate', () => {
+				const c = document.getElementById('flash-carrito-container');
+				if (c) c.remove();
+			});
 		</script>
 	</body>
 </html>
