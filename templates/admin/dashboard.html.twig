@@ -45,58 +45,6 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm mb-3">
-            <h5>Pedidos por estado</h5>
-            <canvas id="pedidosEstadoChart"></canvas>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card p-3 shadow-sm mb-3">
-            <h5>Ingresos por pedido</h5>
-            <canvas id="ingresosChart"></canvas>
-        </div>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Pedidos por estado (Pie)
-    const ctxPedidos = document.getElementById('pedidosEstadoChart').getContext('2d');
-    const pedidosEstadoChart = new Chart(ctxPedidos, {
-        type: 'pie',
-        data: {
-            labels: {{ pedidosPorEstado|keys|json_encode|raw }},
-            datasets: [{
-                data: {{ pedidosPorEstado|map(v => v)|json_encode|raw }},
-                backgroundColor: ['#000000', '#555555', '#AAAAAA'],
-            }]
-        },
-        options: {
-            plugins: { legend: { labels: { color: '#222' } } }
-        }
-    });
 
-    // Ingresos por pedido (Bar)
-    const ctxIngresos = document.getElementById('ingresosChart').getContext('2d');
-    const ingresosChart = new Chart(ctxIngresos, {
-        type: 'bar',
-        data: {
-            labels: {{ ingresosPorPedido|keys|json_encode|raw }},
-            datasets: [{
-                label: 'Ingresos (€)',
-                data: {{ ingresosPorPedido|json_encode|raw }},
-                backgroundColor: '#000000'
-            }]
-        },
-        options: {
-            scales: {
-                x: { ticks: { color: '#222' } },
-                y: { ticks: { color: '#222' } }
-            },
-            plugins: { legend: { labels: { color: '#222' } } }
-        }
-    });
-</script>
 {% endblock %}

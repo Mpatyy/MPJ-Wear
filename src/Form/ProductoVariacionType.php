@@ -5,9 +5,9 @@ namespace App\Form;
 use App\Entity\ProductoVariacion;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ProductoVariacionType extends AbstractType
@@ -15,13 +15,19 @@ class ProductoVariacionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('talla', TextType::class)
-            ->add('color', TextType::class)
-            ->add('stock', IntegerType::class)
+            ->add('talla', TextType::class, [
+                'label' => 'Talla',
+            ])
+            ->add('color', TextType::class, [
+                'label' => 'Color',
+            ])
+            ->add('stock', IntegerType::class, [
+                'label' => 'Stock',
+            ])
             ->add('imagen', FileType::class, [
-                'label' => 'Imagen de la variación',
+                'label' => 'Imagen de variación',
+                'mapped' => false,
                 'required' => false,
-                'mapped' => false, // Symfony no mapea automáticamente FileType
             ]);
     }
 

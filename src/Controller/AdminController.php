@@ -9,10 +9,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Pedidos;
 use App\Entity\LineaPedido;
 use App\Entity\Producto;
+use App\Entity\ProductoVariacion;
 use App\Entity\Usuario;
 use App\Entity\ResetPasswordRequest;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\ProductoType;
 
 #[Route('/admin')]
@@ -43,8 +44,6 @@ class AdminController extends AbstractController
             'Otros' => $totalPedidos - $pedidosPagados - $pedidosPendientes
         ];
 
-        $ingresosPorPedido = array_map(fn($p) => $p->getTotal(), $pedidos);
-
         return $this->render('admin/dashboard.html.twig', [
             'totalPedidos' => $totalPedidos,
             'pedidosPendientes' => $pedidosPendientes,
@@ -52,8 +51,7 @@ class AdminController extends AbstractController
             'totalUsuarios' => $totalUsuarios,
             'totalProductos' => $totalProductos,
             'ingresos' => $ingresos,
-            'pedidosPorEstado' => $pedidosPorEstado,
-            'ingresosPorPedido' => $ingresosPorPedido
+            'pedidosPorEstado' => $pedidosPorEstado
         ]);
     }
 
@@ -99,67 +97,87 @@ class AdminController extends AbstractController
         return $this->render('admin/productos/list.html.twig', ['productos' => $productos]);
     }
 
-    #[Route('/productos/nuevo', name: 'admin_productos_nuevo')]
-    public function nuevoProducto(Request $request): Response
-    {
-        $producto = new Producto();
-        $form = $this->createForm(ProductoType::class, $producto);
-        $form->handleRequest($request);
+#[Route('/productos/nuevo', name: 'admin_productos_nuevo')]
+public function nuevoProducto(Request $request, EntityManagerInterface $em)
+{
+    $producto = new Producto();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imagenFile = $form->get('imagen')->getData();
-            if ($imagenFile) {
-                $nuevoNombre = uniqid() . '.' . $imagenFile->guessExtension();
-                try {
-                    $imagenFile->move($this->getParameter('productos_imagenes'), $nuevoNombre);
-                    $producto->setImagen($nuevoNombre);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Error al subir la imagen.');
-                }
-            }
+    $form = $this->createForm(ProductoType::class, $producto);
+    $form->handleRequest($request);
 
-            $this->em->persist($producto);
-            $this->em->flush();
-            $this->addFlash('success', 'Producto creado correctamente');
-            return $this->redirectToRoute('admin_productos_list');
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Imagen principal
+        $imagenFile = $form->get('imagen')->getData();
+        if ($imagenFile) {
+            $newFilename = uniqid() . '.' . $imagenFile->guessExtension();
+            $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
+            $producto->setImagen($newFilename);
         }
 
-        return $this->render('admin/productos/nuevo.html.twig', [
-            'form' => $form->createView()
-        ]);
-    }
-
-    #[Route('/productos/editar/{id}', name: 'admin_productos_editar')]
-    public function editarProducto(Request $request, int $id): Response
-    {
-        $producto = $this->em->getRepository(Producto::class)->find($id);
-        if (!$producto) throw $this->createNotFoundException('Producto no encontrado');
-
-        $form = $this->createForm(ProductoType::class, $producto);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imagenFile = $form->get('imagen')->getData();
-            if ($imagenFile) {
-                $nuevoNombre = uniqid() . '.' . $imagenFile->guessExtension();
-                try {
-                    $imagenFile->move($this->getParameter('productos_imagenes'), $nuevoNombre);
-                    $producto->setImagen($nuevoNombre);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Error al subir la imagen.');
-                }
+        // Variaciones
+        foreach ($producto->getVariaciones() as $key => $variacion) {
+            $imagenVarFile = $form->get('variaciones')->get($key)->get('imagen')->getData();
+            if ($imagenVarFile) {
+                $newFilenameVar = uniqid() . '.' . $imagenVarFile->guessExtension();
+                $imagenVarFile->move($this->getParameter('productos_directory'), $newFilenameVar);
+                $variacion->setImagen($newFilenameVar);
             }
-
-            $this->em->flush();
-            $this->addFlash('success', 'Producto actualizado correctamente');
-            return $this->redirectToRoute('admin_productos_list');
         }
 
-        return $this->render('admin/productos/editar.html.twig', [
-            'form' => $form->createView(),
-            'producto' => $producto
-        ]);
+        $em->persist($producto);
+        $em->flush();
+
+        $this->addFlash('success', 'Producto creado correctamente');
+        return $this->redirectToRoute('admin_productos_list');
     }
+
+    return $this->render('admin/productos/nuevo.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+
+#[Route('/productos/editar/{id}', name: 'admin_productos_editar')]
+public function editarProducto(Request $request, Producto $producto, EntityManagerInterface $em)
+{
+    if ($producto->getVariaciones()->isEmpty()) {
+        $producto->addVariacion(new ProductoVariacion());
+    }
+
+    $form = $this->createForm(ProductoType::class, $producto);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Imagen principal
+        $imagenFile = $form->get('imagen')->getData();
+        if ($imagenFile) {
+            $newFilename = uniqid() . '.' . $imagenFile->guessExtension();
+            $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
+            $producto->setImagen($newFilename);
+        }
+
+        // Variaciones
+        foreach ($producto->getVariaciones() as $key => $variacion) {
+            $imagenVarFile = $form->get('variaciones')->get($key)->get('imagen')->getData();
+            if ($imagenVarFile) {
+                $newFilenameVar = uniqid() . '.' . $imagenVarFile->guessExtension();
+                $imagenVarFile->move($this->getParameter('productos_directory'), $newFilenameVar);
+                $variacion->setImagen($newFilenameVar);
+            }
+        }
+
+        $em->persist($producto);
+        $em->flush();
+
+        $this->addFlash('success', 'Producto actualizado correctamente');
+        return $this->redirectToRoute('admin_productos_list');
+    }
+
+    return $this->render('admin/productos/editar.html.twig', [
+        'producto' => $producto,
+        'form' => $form->createView(),
+    ]);
+}
+
 
     #[Route('/productos/eliminar/{id}', name: 'admin_productos_eliminar')]
     public function eliminarProducto(int $id): Response
@@ -195,17 +213,13 @@ class AdminController extends AbstractController
     public function eliminarUsuario(int $id): Response
     {
         $usuario = $this->em->getRepository(Usuario::class)->find($id);
-        if (!$usuario) {
-            throw $this->createNotFoundException('Usuario no encontrado');
-        }
+        if (!$usuario) throw $this->createNotFoundException('Usuario no encontrado');
 
-        // 1️⃣ Borrar solicitudes de restablecimiento de contraseña
         $resetRequests = $this->em->getRepository(ResetPasswordRequest::class)->findBy(['user' => $usuario]);
         foreach ($resetRequests as $request) {
             $this->em->remove($request);
         }
 
-        // 2️⃣ Borrar el usuario
         $this->em->remove($usuario);
         $this->em->flush();
 
@@ -213,6 +227,7 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('admin_usuarios_list');
     }
 
+    // ------------------ ESTADÍSTICAS ------------------
     #[Route('/estadisticas', name: 'admin_estadisticas')]
     public function estadisticas(): Response
     {
