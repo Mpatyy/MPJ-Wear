@@ -4,18 +4,65 @@
 
 {% block body %}
 <h1 class="mb-4">Pago seguro</h1>
-{% for linea in pedido.lineas %}
-    <div class="item-pago">
-        {% if linea.imagen %}
-            <img src="{{ asset(linea.imagen) }}" alt="{{ linea.producto.nombre }}" width="80">
-        {% endif %}
-        {{ linea.producto.nombre }} ({{ linea.talla }} / {{ linea.color }}) x {{ linea.cantidad }} - {{ linea.subtotal }} €
-    </div>
-{% endfor %}
+
+<h2>Tu pedido</h2>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Color</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set totalGeneral = 0 %}
+        {% for linea in pedido.lineas %}
+            {% set totalItem = linea.cantidad * linea.precioUnitario %}
+            {% set totalGeneral = totalGeneral + totalItem %}
+            <tr>
+                <td class="d-flex align-items-center">
+                    {% if linea.imagen %}
+                        <img
+                            src="{{ asset('images/' ~ linea.imagen) }}"
+                            alt="{{ linea.producto.nombre }}"
+                            style="width:80px; height:auto;"
+                            class="me-2"
+                        >
+                    {% else %}
+                        <img
+                            src="{{ asset('images/no-image.png') }}"
+                            alt="Sin imagen"
+                            style="width:80px; height:auto;"
+                            class="me-2"
+                        >
+                    {% endif %}
+                    <span>{{ linea.producto.nombre }}</span>
+                </td>
+                <td>{{ linea.talla }}</td>
+                <td>{{ linea.color }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>{{ linea.precioUnitario }} €</td>
+                <td>{{ totalItem }} €</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="5" class="text-end">Total</th>
+            <th>{{ totalGeneral }} €</th>
+        </tr>
+    </tfoot>
+</table>
 
 {% for message in app.flashes('error') %}
     <div class="alert alert-danger">{{ message }}</div>
 {% endfor %}
+
+<h2 class="mt-4">Datos de la tarjeta</h2>
 
 <form action="{{ path('pago_procesar') }}" method="post" class="col-md-6">
 
@@ -70,11 +117,9 @@
 <script>
 document.getElementById('fecha_caducidad').addEventListener('input', function (e) {
     let value = e.target.value.replace(/\D/g, '');
-
     if (value.length >= 3) {
         value = value.substring(0, 2) + '/' + value.substring(2, 4);
     }
-
     e.target.value = value;
 });
 </script>
