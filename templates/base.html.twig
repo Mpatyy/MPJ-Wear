@@ -205,6 +205,13 @@
 						</a>
 
 						{% if app.user %}
+							{# === NUEVO: Botón Admin solo si tiene ROLE_ADMIN === #}
+							{% if is_granted('ROLE_ADMIN') %}
+								<a class="btn btn-warning btn-sm" href="{{ path('admin_dashboard') }}">
+									<i class="bi bi-speedometer2"></i> Admin
+								</a>
+							{% endif %}
+
 							<div class="dropdown">
 								<button
 									class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2"
@@ -279,14 +286,11 @@
 				const flash = cont.querySelector('#flash-toast');
 				if (!flash) return;
 
-				// ✅ CLAVE: si el usuario vuelve atrás, el navegador puede restaurar el HTML.
-				// Si ya lo marcamos como "visto", lo eliminamos para que NO reaparezca.
 				const KEY = 'mpj_toast_carrito_visto';
 				if (sessionStorage.getItem(KEY) === '1') {
 					cont.remove();
 					return;
 				}
-				// marcamos que ya se mostró (solo para esta sesión del navegador)
 				sessionStorage.setItem(KEY, '1');
 
 				const icono = document.getElementById('icono-carrito');
@@ -296,11 +300,9 @@
 
 					const r = icono.getBoundingClientRect();
 					const margin = 12;
-
 					const w = flash.offsetWidth;
 
 					let left = (r.right + window.scrollX) - w;
-
 					const minLeft = window.scrollX + margin;
 					const maxLeft = window.scrollX + window.innerWidth - w - margin;
 					left = Math.max(minLeft, Math.min(left, maxLeft));
@@ -318,8 +320,6 @@
 				window.addEventListener('resize', posicionar);
 
 				function cerrarToast(){
-					// si lo cierras manualmente, dejamos que en la siguiente navegación normal pueda volver a salir
-					// (pero el "volver atrás" ya no lo re-muestra porque el HTML se restaura y lo quitamos arriba)
 					cont.remove();
 				}
 
@@ -329,7 +329,6 @@
 				const btnSeguir = flash.querySelector('[data-accion="seguir"]');
 				if (btnSeguir) btnSeguir.addEventListener('click', cerrarToast);
 
-				// Auto ocultar (más lento)
 				setTimeout(() => {
 					if (!cont.isConnected) return;
 					flash.style.opacity = '0';
@@ -338,10 +337,7 @@
 					setTimeout(() => cont.remove(), 220);
 				}, 6500);
 
-				// ✅ Cuando cambias de página hacia delante (no volver atrás), permitimos que salga otro toast en el futuro
-				// (por ejemplo, si vuelves a añadir algo al carrito más tarde).
 				window.addEventListener('pageshow', (e) => {
-					// Si no es bfcache, reseteamos para permitir nuevos toasts en otras páginas
 					if (!e.persisted) {
 						sessionStorage.removeItem(KEY);
 					}
