@@ -3,20 +3,103 @@
 {% block title %}Editar Producto{% endblock %}
 
 {% block body %}
-<h1>Editar Producto #{{ producto.id }}</h1>
+<div class="container-fluid">
+    <h1 class="mb-4">Editar Producto #{{ producto.id }}</h1>
 
-{{ form_start(form) }}
-    {{ form_row(form.nombre) }}
-    {{ form_row(form.precio) }}
-    {{ form_row(form.descripcion) }}
+    <div class="card shadow-sm p-4 mb-4">
+        {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form_label(form.nombre) }}
+                    {{ form_widget(form.nombre, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.nombre) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.precio) }}
+                    {{ form_widget(form.precio, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.precio) }}
+                </div>
+            </div>
 
-    <h3>Variaciones</h3>
-    <div class="variaciones">
-        {{ form_widget(form.variaciones) }}
+            <div class="mb-3">
+                {{ form_label(form.descripcion) }}
+                {{ form_widget(form.descripcion, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.descripcion) }}
+            </div>
+
+            <h3 class="mt-4 mb-3">Variaciones</h3>
+            <div class="variaciones mb-3">
+                {{ form_widget(form.variaciones) }}
+            </div>
+
+            <button class="btn btn-primary mt-2">
+                <i class="bi bi-save"></i> Guardar cambios
+            </button>
+        {{ form_end(form) }}
     </div>
 
-    <button class="btn btn-primary mt-2">Guardar cambios</button>
-{{ form_end(form) }}
+    <a href="{{ path('admin_productos_list') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver a productos
+    </a>
+</div>
+{% endblock %}
 
-<a href="{{ path('admin_productos_list') }}" class="btn btn-secondary mt-3">Volver a productos</a>
+{% block styles %}
+<style>
+/* Contenedor y tarjeta */
+.card {
+    border-radius: 10px;
+    background-color: #fff;
+}
+.card h3 {
+    color: #343a40;
+}
+
+/* Formularios */
+.form-control {
+    border-radius: 5px;
+    box-shadow: none;
+    border: 1px solid #ced4da;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Botones */
+.btn-primary {
+    border-radius: 5px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-primary i {
+    margin-right: 5px;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+.btn-secondary {
+    border-radius: 5px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-secondary i {
+    margin-right: 5px;
+}
+.btn-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Variaciones */
+.variaciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+</style>
 {% endblock %}
