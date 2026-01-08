@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmar pedido{% endblock %}
+
+{% block body %}
+<h1 class="mb-4">Confirmar carrito y dirección</h1>
+
+<h2>Tu carrito</h2>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Color</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set totalGeneral = 0 %}
+        {% for clave, item in carrito %}
+            {% set totalItem = item.cantidad * item.precio %}
+            {% set totalGeneral = totalGeneral + totalItem %}
+            <tr>
+                <td class="d-flex align-items-center">
+                    {% if item.imagen is defined and item.imagen %}
+                        <img src="{{ asset('images/' ~ item.imagen) }}"
+                             alt="{{ item.nombre }}"
+                             style="width:80px; height:auto;"
+                             class="me-2">
+                    {% else %}
+                        <img src="{{ asset('images/no-image.png') }}"
+                             alt="Sin imagen"
+                             style="width:80px; height:auto;"
+                             class="me-2">
+                    {% endif %}
+                    <span>{{ item.nombre }}</span>
+                </td>
+                <td>{{ item.talla }}</td>
+                <td>{{ item.color }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>{{ item.precio }} €</td>
+                <td>{{ totalItem }} €</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="5" class="text-end">Total</th>
+            <th>{{ totalGeneral }} €</th>
+        </tr>
+    </tfoot>
+</table>
+<h2 class="mt-4">Dirección de envío</h2>
+
+<form method="post">
+    {% if direcciones is not empty %}
+        <div class="mb-3">
+            <label class="form-label">Elige una dirección guardada</label>
+            <select name="direccion_id" class="form-select">
+                {% for dir in direcciones %}
+                    <option value="{{ dir.id }}">
+                        {{ dir.calle }}, {{ dir.cp }} {{ dir.ciudad }} ({{ dir.provincia }}, {{ dir.pais }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <p class="text-muted">O introduce una nueva dirección:</p>
+    {% else %}
+        <p>No tienes direcciones guardadas. Añade una:</p>
+    {% endif %}
+
+    <div class="border rounded p-3 mb-3">
+        <div class="mb-2">
+            <input type="text" name="nueva_calle" class="form-control" placeholder="Calle">
+        </div>
+        <div class="mb-2">
+            <input type="text" name="nueva_ciudad" class="form-control" placeholder="Ciudad">
+        </div>
+        <div class="mb-2">
+            <input type="text" name="nueva_cp" class="form-control" placeholder="Código postal">
+        </div>
+        <div class="mb-2">
+            <input type="text" name="nueva_provincia" class="form-control" placeholder="Provincia">
+        </div>
+        <div class="mb-2">
+            <input type="text" name="nueva_pais" class="form-control" placeholder="País">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Continuar al pago</button>
+</form>
+{% endblock %}

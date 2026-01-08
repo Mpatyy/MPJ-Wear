@@ -20,9 +20,8 @@
 		<style>
 			html, body { background: #fff !important; min-height: 100%; }
 
-			/* Lupa y botón Admin */
-			.btn-lupa,
-			.btn-admin {
+			/* Lupa */
+			.btn-lupa {
 				border: 0;
 				background: transparent;
 				color: #fff;
@@ -32,27 +31,68 @@
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 13px;
-				font-weight: 500;
-				text-transform: uppercase;
-				letter-spacing: 0.05em;
 			}
-			.btn-lupa i,
-			.btn-admin i { font-size: 16px; opacity: .9; margin-right: 4px; }
-			.btn-lupa:hover,
-			.btn-admin:hover { opacity: .85; }
+			.btn-lupa i { font-size: 16px; opacity: .9; }
+			.btn-lupa:hover { opacity: .85; }
 
 			/* Para que no tape el navbar fixed */
-			main.container { padding-top: 80px; }
+			main.container {
+				padding-top: 80px;
+			}
 
-			.nav-link i { transition: opacity .15s ease; }
-			.nav-link:hover i { opacity: .8; }
+			.nav-link i {
+				transition: opacity .15s ease;
+			}
+			.nav-link:hover i {
+				opacity: .8;
+			}
 
-			.dropdown .nav-link { text-decoration: none; }
-			.dropdown .nav-link:focus { box-shadow: none; }
+			/* Dropdown perfil: que no parezca link azul raro */
+			.dropdown .nav-link {
+				text-decoration: none;
+			}
+			.dropdown .nav-link:focus {
+				box-shadow: none;
+			}
+
+			/* ===== BUSCAR ===== */
+			.zara-buscar {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+
+				background: transparent;
+				border: 0;
+				padding: 6px 8px;
+
+				color: #fff;
+				cursor: pointer;
+
+				font-size: 12px;
+				font-weight: 500;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			.zara-buscar i {
+				font-size: 15px;
+				opacity: 0.9;
+			}
+
+			.zara-buscar span {
+				line-height: 1;
+			}
+
+			.zara-buscar:hover {
+				opacity: 0.75;
+			}
 
 			/* Espaciado fino entre acciones del header */
-			.header-acciones > * { margin-left: 18px; }
+			.header-acciones > * {
+				margin-left: 18px;
+			}
+
+
 		</style>
 
 		<link rel="stylesheet" href="/build/app.css">
@@ -71,34 +111,31 @@
 
 						<ul class="navbar-nav mb-2 mb-lg-0">
 							<li class="nav-item">
-								<a class="nav-link" href="{{ path('producto_listado') }}">
-									Productos
-								</a>
+								<a class="nav-link" href="{{ path('producto_listado') }}">Productos</a>
 							</li>
 						</ul>
 					</div>
 
-					<div class="d-flex align-items-center gap-4 ms-auto header-acciones">
+					{# ================= DERECHA ================= #}
+					<div class="d-flex align-items-center gap-4 ms-auto">
 
-						{# BOTÓN ADMIN integrado con iconos #}
-						{% if app.user and 'ROLE_ADMIN' in app.user.roles %}
-							<a class="btn-admin text-white" href="{{ path('admin_dashboard') }}" title="Panel Admin">
-								<i class="bi bi-speedometer2"></i> Admin
-							</a>
-						{% endif %}
-
-						{# BUSCAR #}
-						<button type="button" class="btn-lupa" id="btn-abrir-buscador" aria-label="Abrir buscador">
+						{# BUSCAR (Zara style) #}
+						<button
+							type="button"
+							class="btn-lupa d-flex align-items-center gap-2"
+							id="btn-abrir-buscador"
+							aria-label="Abrir buscador"
+						>
 							<i class="fa-solid fa-magnifying-glass"></i>
 							<span>Buscar</span>
 						</button>
 
-						{# CARRITO #}
 						{% set carrito = app.session.get('carrito', []) %}
 						{% set totalCarrito = 0 %}
 						{% for item in carrito %}
 							{% set totalCarrito = totalCarrito + item.cantidad %}
 						{% endfor %}
+
 						<a class="nav-link position-relative text-white" href="{{ path('carrito_ver') }}" title="Carrito">
 							<i class="bi bi-cart3 fs-5"></i>
 							{% if totalCarrito > 0 %}
@@ -108,7 +145,6 @@
 							{% endif %}
 						</a>
 
-						{# PERFIL / LOGIN #}
 						{% if app.user %}
 							<div class="dropdown">
 								<button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -130,6 +166,32 @@
 			<div id="react-buscador-avanzado"></div>
 		</header>
 
+		{# ✅ FLASH (solo success/error) -> con Ver carrito / Seguir comprando #}
+		<div class="flash-carrito-container" id="flash-carrito-container">
+			{% for label, messages in app.flashes %}
+				{% for message in messages %}
+					{% if label == 'success' %}
+						<div class="flash-carrito" id="flash-toast" role="status" aria-live="polite">
+							<button type="button" class="flash-cerrar" aria-label="Cerrar">×</button>
+
+							<div class="flash-texto">{{ message }}</div>
+
+							<div class="flash-acciones">
+								<a href="{{ path('carrito_ver') }}" class="flash-btn negro">Ver carrito</a>
+								<button type="button" class="flash-btn" data-accion="seguir">Seguir comprando</button>
+							</div>
+						</div>
+
+					{% elseif label == 'error' %}
+						<div class="flash-carrito error" id="flash-toast" role="alert">
+							<button type="button" class="flash-cerrar" aria-label="Cerrar">×</button>
+							<div class="flash-texto">{{ message }}</div>
+						</div>
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		</div>
+
 		{% block hero %}{% endblock %}
 
 		<main class="container mt-4">
@@ -142,8 +204,82 @@
 
 		<script src="/build/runtime.js"></script>
 		<script src="/build/app.js"></script>
-
 		{% block javascripts %}{% endblock %}
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+		<script>
+			(function () {
+				const cont = document.getElementById('flash-carrito-container');
+				if (!cont) return;
+
+				const flash = cont.querySelector('#flash-toast');
+				if (!flash) return;
+
+				/* ✅ FIX: si vuelves con la flecha (bfcache), el navegador “revive” el toast.
+				   Lo eliminamos para que no vuelva a aparecer. */
+				window.addEventListener('pageshow', (event) => {
+					if (event.persisted) {
+						const c = document.getElementById('flash-carrito-container');
+						if (c) c.remove();
+					}
+				});
+
+				const icono = document.getElementById('icono-carrito');
+
+				function posicionar() {
+					if (!icono) return;
+
+					const r = icono.getBoundingClientRect();
+					const margin = 12;
+
+					// Medimos el toast
+					const w = flash.offsetWidth;
+
+					// Alinear el final del toast con el final del icono
+					let left = (r.right + window.scrollX) - w;
+
+					// Clamp para que no se salga
+					const minLeft = window.scrollX + margin;
+					const maxLeft = window.scrollX + window.innerWidth - w - margin;
+					left = Math.max(minLeft, Math.min(left, maxLeft));
+
+					cont.style.left = left + 'px';
+					cont.style.top  = (r.bottom + window.scrollY + 10) + 'px';
+
+					// Piquito: apunta al centro del icono dentro del toast
+					const centroIconoEnPantalla = r.left + (r.width / 2);
+					const centroIconoDentroToast = centroIconoEnPantalla - (left - window.scrollX);
+					const picoLeft = Math.max(14, Math.min(centroIconoDentroToast - 7, w - 18));
+					flash.style.setProperty('--pico-left', picoLeft + 'px');
+				}
+
+				posicionar();
+				window.addEventListener('resize', posicionar);
+
+				// Cerrar
+				const btnCerrar = flash.querySelector('.flash-cerrar');
+				if (btnCerrar) btnCerrar.addEventListener('click', () => cont.remove());
+
+				// Seguir comprando
+				const btnSeguir = flash.querySelector('[data-accion="seguir"]');
+				if (btnSeguir) btnSeguir.addEventListener('click', () => cont.remove());
+
+				// Auto ocultar (más lento)
+				setTimeout(() => {
+					if (!cont.isConnected) return;
+					flash.style.opacity = '0';
+					flash.style.transform = 'translateY(-6px)';
+					flash.style.transition = 'opacity .18s ease, transform .18s ease';
+					setTimeout(() => cont.remove(), 220);
+				}, 6500);
+			})();
+
+			/* ✅ Extra: por si el navegador no marca event.persisted pero sí vuelve del historial,
+			   también limpiamos el toast al volver atrás/adelante. */
+			window.addEventListener('popstate', () => {
+				const c = document.getElementById('flash-carrito-container');
+				if (c) c.remove();
+			});
+		</script>
 	</body>
 </html>
