@@ -14,6 +14,106 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Portal principal</h1>
+<style>
+  .portal-wrap{ max-width: 1100px; margin: 0 auto; }
+  .portal-head{ margin: 6px 0 18px; }
+  .portal-head h1{
+    font-size: 28px;
+    letter-spacing: .02em;
+    margin: 0 0 6px;
+  }
+  .portal-head p{ margin:0; color:#666; font-size: 14px; }
+
+  .portal-acciones{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin: 18px 0 26px;
+  }
+  .portal-btn{
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    border: 1px solid #111;
+    background: transparent;
+    color:#111;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .portal-btn:hover{ opacity:.85; transform: translateY(-1px); transition: .15s; }
+  .portal-btn.negro{ background:#111; color:#fff; }
+
+  .portal-seccion-titulo{
+    font-size: 14px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color:#111;
+    margin: 0 0 12px;
+  }
+
+  .mini-card img{ aspect-ratio: 3/4; object-fit: cover; }
+  .mini-card{
+    border: 1px solid rgba(17,17,17,.10);
+    border-radius: 14px;
+    overflow:hidden;
+  }
+  .mini-card:hover{ transform: translateY(-2px); transition: .15s; }
+</style>
+
+<div class="portal-wrap">
+
+  <div class="portal-head">
+    <h1>Hola, {{ app.user ? app.user.email : 'de nuevo' }}</h1>
     <p>Has iniciado sesión correctamente.</p>
+  </div>
+
+  <div class="portal-acciones">
+    <a href="{{ path('producto_listado') }}" class="portal-btn negro">
+      <i class="bi bi-bag"></i> Ver productos
+    </a>
+
+    <a href="{{ path('carrito_ver') }}" class="portal-btn">
+      <i class="bi bi-cart3"></i> Ver carrito
+    </a>
+
+    {# ✅ cuando tengas pedidos, descomentas y creas la ruta #}
+    {# <a href="{{ path('mis_pedidos') }}" class="portal-btn">
+      <i class="bi bi-receipt"></i> Mis pedidos
+    </a> #}
+  </div>
+
+  {% if destacados is defined and destacados is not empty %}
+    <div class="mt-4">
+      <div class="portal-seccion-titulo">Continuar comprando</div>
+
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+        {% for p in destacados %}
+          <div class="col">
+            <a href="{{ path('producto_detalle', {'id': p.id}) }}" class="text-decoration-none text-dark">
+              <div class="mini-card h-100">
+                {% if p.imagen %}
+                  <img src="{{ asset('images/' ~ p.imagen) }}" class="w-100" alt="{{ p.nombre }}">
+                {% else %}
+                  <div class="d-flex align-items-center justify-content-center text-muted" style="aspect-ratio:3/4;background:#f7f7f7;">
+                    Sin imagen
+                  </div>
+                {% endif %}
+
+                <div class="p-2">
+                  <div class="small fw-semibold" style="line-height:1.2;">{{ p.nombre }}</div>
+                  <div class="small text-muted">{{ p.precio|number_format(2, ',', '.') }} €</div>
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
 {% endblock %}

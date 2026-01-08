@@ -42,10 +42,14 @@ class CarritoController extends AbstractController
 
         if (!$variacion) {
             $this->addFlash('error', 'Variación no disponible.');
-            return $this->redirectToRoute('producto_detalle', ['id' => $productoId]);
+            // mantenemos el color si venía
+            return $this->redirectToRoute('producto_detalle', [
+                'id' => $productoId,
+                'color' => $color
+            ]);
         }
 
-        $imagen = $variacion->getImagen(); 
+        $imagen = $variacion->getImagen();
 
         $session = $request->getSession();
         $carrito = $session->get('carrito', []);
@@ -62,14 +66,20 @@ class CarritoController extends AbstractController
                 'color'       => $color,
                 'cantidad'    => $cantidad,
                 'precio'      => $producto->getPrecio(),
-                'imagen'      => $imagen, 
+                'imagen'      => $imagen,
             ];
         }
 
         $session->set('carrito', $carrito);
+
+        // ✅ Mensaje UX
         $this->addFlash('success', 'Producto añadido al carrito.');
 
-        return $this->redirectToRoute('carrito_ver');
+        // ✅ UX: volver al producto (manteniendo el color)
+        return $this->redirectToRoute('producto_detalle', [
+            'id' => $productoId,
+            'color' => $color,
+        ]);
     }
 
     #[Route('/carrito', name: 'carrito_ver')]
