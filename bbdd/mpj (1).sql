@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-01-2026 a las 17:06:46
+-- Tiempo de generación: 08-01-2026 a las 19:52:10
 -- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Versión de PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -205,9 +205,9 @@ INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccio
 (3, 1, '2025-12-13 16:03:01', 'pendiente', 69.80, NULL, NULL),
 (4, 1, '2025-12-13 16:12:33', 'pendiente', 69.80, NULL, NULL),
 (5, 1, '2025-12-15 19:23:25', 'pendiente', 19.99, NULL, NULL),
-(6, 1, '2025-12-15 19:35:09', 'pendiente', 104.70, NULL, NULL),
-(7, 2, '2026-01-03 18:08:23', 'pendiente', 19.99, NULL, NULL),
-(8, 3, '2026-01-05 17:04:02', 'pendiente', 219.91, NULL, NULL),
+(6, 1, '2025-12-15 19:35:09', 'pagado', 104.70, NULL, NULL),
+(7, 2, '2026-01-03 18:08:23', 'pagado', 19.99, NULL, NULL),
+(8, 3, '2026-01-05 17:04:02', 'pagado', 219.91, NULL, NULL),
 (9, 11, '2026-01-07 21:28:04', 'pagado', 79.99, NULL, NULL),
 (10, 16, '2026-01-08 16:46:49', 'pagado', 79.99, NULL, NULL),
 (11, 16, '2026-01-08 16:51:20', 'pagado', 79.99, NULL, NULL);
@@ -389,13 +389,8 @@ CREATE TABLE `reset_password_request` (
 --
 
 INSERT INTO `reset_password_request` (`id`, `user_id`, `selector`, `hashed_token`, `requested_at`, `expires_at`) VALUES
-(1, 5, 'mzsls3XBmLzq4kT2GuO0', '0Cwh1XgCMBk6JjbT2YHcMXPOw8iN5yJWl/wJVrz8Kfk=', '2026-01-07 19:23:39', '2026-01-07 20:23:39'),
-(2, 5, 'sxA8omYuMOwsV7pGSMKx', 'x8trVVIpEUIi2iElWS27XLdCJtwEB+zhG/304yVONz0=', '2026-01-07 20:36:26', '2026-01-07 21:36:26'),
-(3, 4, 'TM5laRpeoGDHaIrzY0FE', 'mjYhaEZtuMPOiQVfysyMns1OaTqun1SWqIfY9p1YEfA=', '2026-01-07 20:38:29', '2026-01-07 21:38:29'),
 (13, 3, '9VcFmNpdTc8Sf7MUl0SN', '36lrmhQO9XRuhXUo+DhRCHzMlSlQvtBdfltZTShG5vo=', '2026-01-07 21:34:20', '2026-01-07 22:34:20'),
-(14, 2, 'uOMR9MVexkA0TZDk0C3b', 'vd11lanwwIZIy3DMIsCrOYQwfNupZJ4IAlkH7ytt1VY=', '2026-01-07 21:37:41', '2026-01-07 22:37:41'),
-(15, 4, 'RROUBAoOEUjqXFwzXfpy', '8ly+PkDYZhZbanSvc5i6DST1GdLscdZQhJjUssTvK+I=', '2026-01-07 21:40:53', '2026-01-07 22:40:53'),
-(17, 6, 'OG1omPddQnA2VGuD39k5', 'mNz7ZAmK7FfordbNPS9jiguYBX4ETV7voWq9j3vnIJY=', '2026-01-07 22:00:27', '2026-01-07 23:00:27');
+(14, 2, 'uOMR9MVexkA0TZDk0C3b', 'vd11lanwwIZIy3DMIsCrOYQwfNupZJ4IAlkH7ytt1VY=', '2026-01-07 21:37:41', '2026-01-07 22:37:41');
 
 -- --------------------------------------------------------
 
@@ -420,10 +415,6 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`
 (1, 'Mikel', 'giyouwaquize-6481@yopmail.com', '$2y$13$wBrzQRCw0vRl7gCHrVHYDupFyDQQuTMr0OyXZWh7weV/LszpZ2/cS', '612345678', '[\"ROLE_USER\"]'),
 (2, 'Armando', 'feromin417@emaxasp.com', '$2y$13$dhfcJtnXlx.cnPDro5VEIehAWbYG.l3oFMI/qYl.ISFzYBLiSyBIC', '6123456789', '[\"ROLE_USER\"]'),
 (3, 'Mikel', 'mikel140805@gmail.com', '$2y$13$WZnnFdJPFidTc384g1MID.QqjrC7j/bkIstTtQCDTSKVek0ND7idG', '620081606', '[\"ROLE_USER\"]'),
-(4, 'thor', 'thor@gmail.com', '$2y$13$L.GCScwbjIV.iSiCHwZHFuvbwbjZ4DGKASSlQbou8oNLqW7LMacbG', '647453842', '[\"ROLE_USER\"]'),
-(5, 'olvidar contra', 'fijecod975@gavrom.com', '$2y$13$3qU3sh6XnJ4C0fOgUp0KX.uDsTMPnNCeOiv/yUiGWyekvF/uO3W96', '657845367', '[\"ROLE_USER\"]'),
-(6, 'resetear prueba', 'hanepa1990@gavrom.com', '$2y$13$67aCP6C0KJZF/qS/oznLne6KXGb6z4BLpgM0VBHegJ4ZClqC1yD4O', '675845672', '[\"ROLE_USER\"]'),
-(7, 'reseteo prueba ', 'lapad56964@gavrom.com', '$2y$13$pvAVkYhHzL9xciGUfGDzNu4X10cTMfX9xdaxwN81Qga9qXruIzGUi', '6754323456', '[\"ROLE_USER\"]'),
 (8, 'susana', 'favijat741@emaxasp.com', '$2y$13$Nc/1jfBW2S6BapBR88FUn.BsDqg/Tiu6yZQOvTqJUTDzYwdtw6D3W', '657487253', '[\"ROLE_USER\"]'),
 (9, 'resetear prueba 2', 'reniteb683@gavrom.com', '$2y$13$E3c89Y95gA3cAku5sGt.yO9L5sWL3TzFsutWVn7vDsAGZoy38z4iK', '657654567', '[\"ROLE_USER\"]'),
 (10, 'reseteo 3', 'xacamos949@emaxasp.com', '$2y$13$49/zRY1AFBv1t2l1rNusx.mPePhoSe1C8sC35ayPfDOc0q2hHgciO', '654321234', '[\"ROLE_USER\"]'),
@@ -431,7 +422,8 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`
 (12, 'cliente final', 'tojihi5100@imfaya.com', '$2y$13$PgtMvfKxcyrrrcPWNINlt.08A3q5Np8lyjkkHGRvAb1xXVPSVC7.a', '654321566', '[\"ROLE_USER\"]'),
 (13, 'cliente final f', 'cipetex289@gopicta.com', '$2y$13$09918h1honLFJimB1kiEQe6B1ItS7Yt4u.J1fCGMJ9J/9hClti9P.', '675456789', '[\"ROLE_USER\"]'),
 (15, 'cliente final form', 'sakaxa1192@imfaya.com', '$2y$13$k8spvN.X4susdabbwYQVAet4F2NUlUTKjMDb8zB5fFOkrU9sX1fJa', '678457678', '[\"ROLE_USER\"]'),
-(16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$4cavHRJPw0.El.vWr6GQh.6JTixf4bXQkG8rAbIzBXNmMGt4vyO6G', '657489567', '[\"ROLE_USER\"]');
+(16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$4cavHRJPw0.El.vWr6GQh.6JTixf4bXQkG8rAbIzBXNmMGt4vyO6G', '657489567', '[\"ROLE_USER\"]'),
+(27, 'jorge', 'jorge@gmail.com', '$2y$13$bgDZwRKmL4YnxA/haRwUnech.WjtTiwS.687fZihCcBWQwoTqFFXi', '123456789', '[\"ROLE_ADMIN\"]');
 
 --
 -- Índices para tablas volcadas
@@ -635,7 +627,7 @@ ALTER TABLE `reset_password_request`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Restricciones para tablas volcadas
