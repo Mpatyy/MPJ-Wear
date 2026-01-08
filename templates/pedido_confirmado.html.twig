@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de pedido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .email-header {
+            background-color: #212529;
+            color: #ffffff;
+            padding: 16px 24px;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .email-body {
+            padding: 24px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .email-footer {
+            padding: 16px 24px;
+            font-size: 12px;
+            color: #777777;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            margin-top: 16px;
+            background-color: #198754;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 6px 4px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        th {
+            text-align: left;
+        }
+        td.num {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <h1>Mi Tienda MPJ</h1>
+    </div>
+    <div class="email-body">
+        <p>Hola <strong>{{ pedido.usuario.nombre }}</strong>,</p>
+
+        <p>
+            Hemos recibido tu pedido <strong>#{{ pedido.id }}</strong>
+            realizado el {{ pedido.fecha|date('d/m/Y H:i') }}.
+        </p>
+
+        <h3>Dirección de envío</h3>
+        <p>
+            {{ pedido.direccion.calle }}<br>
+            {{ pedido.direccion.cp }} {{ pedido.direccion.ciudad }}<br>
+            {{ pedido.direccion.provincia }}, {{ pedido.direccion.pais }}
+        </p>
+
+        <h3>Resumen de tu pedido</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Talla / Color</th>
+                <th class="num">Cant.</th>
+                <th class="num">Subtotal</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for linea in pedido.lineas %}
+                <tr>
+                    <td>{{ linea.producto.nombre }}</td>
+                    <td>{{ linea.talla }} / {{ linea.color }}</td>
+                    <td class="num">{{ linea.cantidad }}</td>
+                    <td class="num">{{ linea.subtotal }} €</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3" class="num"><strong>Total</strong></td>
+                <td class="num"><strong>{{ pedido.total }} €</strong></td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <p>
+            Gracias por confiar en <strong>MPJ WEAR</strong>.
+        </p>
+
+        <a href="http://localhost:8000/perfil" class="btn">Ver mi pedido</a>
+    </div>
+    <div class="email-footer">
+        © 2025 Mi Tienda MPJ - Todos los derechos reservados
+    </div>
+</div>
+</body>
+</html>

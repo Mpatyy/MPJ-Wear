@@ -4,37 +4,65 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Entity\Pedidos;
-use App\Entity\Producto;
-use App\Entity\LineaPedido;
-use App\Entity\ProductoVariacion;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
 
 class PagoController extends AbstractController
 {
     #[Route('/pago', name: 'pasarela_pago')]
-    public function pasarela(Request $request): Response
+    public function pasarela(Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $session = $request->getSession();
-        $carrito = $session->get('carrito', []);
+        $session  = $request->getSession();
+        $pedidoId = $session->get('pedido_id'); // ← viene del checkout del carrito
 
-        if (empty($carrito)) {
-            $this->addFlash('error', 'No hay productos en el carrito.');
+        if (!$pedidoId) {
+            $this->addFlash('error', 'No hay ningún pedido pendiente de pago.');
             return $this->redirectToRoute('carrito_ver');
         }
 
-        return $this->render('pago/pasarela.html.twig');
+        $pedido = $em->getRepository(Pedidos::class)->find($pedidoId);
+        if (!$pedido) {
+            $this->addFlash('error', 'El pedido no existe.');
+            $session->remove('pedido_id');
+            return $this->redirectToRoute('carrito_ver');
+        }
+
+        return $this->render('pago/pasarela.html.twig', [
+            'pedido' => $pedido,
+        ]);
     }
 
     #[Route('/pago/procesar', name: 'pago_procesar', methods: ['POST'])]
-    public function procesar(Request $request, EntityManagerInterface $em): Response
-    {
+    public function procesar(
+        Request $request,
+        EntityManagerInterface $em,
+        MailerInterface $mailer
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
+        $session  = $request->getSession();
+        $pedidoId = $session->get('pedido_id');
+
+        if (!$pedidoId) {
+            $this->addFlash('error', 'No hay ningún pedido pendiente de pago.');
+            return $this->redirectToRoute('carrito_ver');
+        }
+
+        $pedido = $em->getRepository(Pedidos::class)->find($pedidoId);
+        if (!$pedido) {
+            $this->addFlash('error', 'El pedido no existe.');
+            $session->remove('pedido_id');
+            return $this->redirectToRoute('carrito_ver');
+        }
+
+        // -------- VALIDACIÓN TARJETA (igual que antes) --------
         $numero = $request->request->get('numero_tarjeta');
         $fecha  = $request->request->get('fecha_caducidad');
         $cvv    = $request->request->get('cvv');
@@ -68,67 +96,27 @@ class PagoController extends AbstractController
             $this->addFlash('error', 'CVV inválido.');
             return $this->redirectToRoute('pasarela_pago');
         }
+        // -------------------------------------------------------
 
-        $session = $request->getSession();
-        $carrito = $session->get('carrito', []);
-
-        if (empty($carrito)) {
-            $this->addFlash('error', 'El carrito está vacío.');
-            return $this->redirectToRoute('carrito_ver');
-        }
-
-        $usuario = $this->getUser();
-        $total = 0;
-
-        foreach ($carrito as $item) {
-            $total += $item['cantidad'] * $item['precio'];
-        }
-
-        $pedido = new Pedidos();
-        $pedido->setUsuario($usuario);
-        $pedido->setFecha(new \DateTime());
+        // Marcar pedido como pagado (las líneas y total ya vienen del carrito/checkout)
         $pedido->setEstado('pagado');
-        $pedido->setTotal(number_format($total, 2, '.', ''));
+        $em->flush();
 
-        $em->persist($pedido);
+        // Limpiar carrito y pedido_id
+        $session->remove('carrito');
+        $session->remove('pedido_id');
 
-        foreach ($carrito as $item) {
-
-            $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
-            if (!$producto) continue;
-
-            $variacion = $em->getRepository(ProductoVariacion::class)->findOneBy([
-                'producto' => $item['producto_id'],
-                'talla'    => $item['talla'],
-                'color'    => $item['color']
+        // Enviar email de confirmación de pedido
+        $email = (new TemplatedEmail())
+            ->from(new Address('no-reply@mpj-wear.com', 'MPJ WEAR'))
+            ->to($pedido->getUsuario()->getEmail())
+            ->subject('Confirmación de pedido nº '.$pedido->getId())
+            ->htmlTemplate('pedido_confirmado.html.twig')
+            ->context([
+                'pedido' => $pedido,
             ]);
 
-            if ($variacion) {
-                $nuevoStock = $variacion->getStock() - $item['cantidad'];
-
-                if ($nuevoStock < 0) {
-                    $this->addFlash('error', 'No hay stock suficiente para '.$item['nombre']);
-                    return $this->redirectToRoute('carrito_ver');
-                }
-
-                $variacion->setStock($nuevoStock);
-                $em->persist($variacion);
-            }
-
-            $linea = new LineaPedido();
-            $linea->setPedido($pedido);
-            $linea->setProducto($producto);
-            $linea->setTalla($item['talla']);
-            $linea->setColor($item['color']);
-            $linea->setCantidad($item['cantidad']);
-            $linea->setPrecioUnitario($item['precio']);
-            $linea->setSubtotal($item['cantidad'] * $item['precio']);
-
-            $em->persist($linea);
-        }
-
-        $em->flush();
-        $session->remove('carrito');
+        $mailer->send($email); // se enviará vía Mailtrap según tu MAILER_DSN [web:39]
 
         $this->addFlash('success', 'Pago realizado correctamente.');
 

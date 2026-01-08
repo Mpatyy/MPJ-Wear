@@ -1,6 +1,8 @@
 <?php
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -32,6 +34,14 @@ class Pedidos
     #[ORM\ManyToOne(targetEntity: MetodoPago::class)]
     #[ORM\JoinColumn(name: 'metodo_pago_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?MetodoPago $metodoPago = null;
+
+    #[ORM\OneToMany(mappedBy: 'pedido', targetEntity: LineaPedido::class, cascade: ['persist', 'remove'])]
+    private Collection $lineas;
+
+    public function __construct()
+    {
+        $this->lineas = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -101,6 +111,32 @@ class Pedidos
     public function setMetodoPago(?MetodoPago $metodoPago): self
     {
         $this->metodoPago = $metodoPago;
+        return $this;
+    }
+
+        public function getLineas(): Collection
+    {
+        return $this->lineas;
+    }
+
+    public function addLinea(LineaPedido $linea): self
+    {
+        if (!$this->lineas->contains($linea)) {
+            $this->lineas[] = $linea;
+            $linea->setPedido($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLinea(LineaPedido $linea): self
+    {
+        if ($this->lineas->removeElement($linea)) {
+            if ($linea->getPedido() === $this) {
+                $linea->setPedido(null);
+            }
+        }
+
         return $this;
     }
 }

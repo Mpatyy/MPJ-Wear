@@ -13,9 +13,10 @@ class LineaPedido
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Pedidos::class)]
-    #[ORM\JoinColumn(name: 'pedido_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private Pedidos $pedido;
+    #[ORM\ManyToOne(targetEntity: Pedidos::class, inversedBy: 'lineas')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Pedidos $pedido = null;
+
 
     #[ORM\ManyToOne(targetEntity: Producto::class)]
     #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'id', nullable: false, onDelete: 'RESTRICT')]
@@ -35,6 +36,20 @@ class LineaPedido
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     private string $subtotal;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imagen = null;
+
+    public function getImagen(): ?string
+    {
+        return $this->imagen;
+    }
+
+    public function setImagen(?string $imagen): self
+    {
+        $this->imagen = $imagen;
+        return $this;
+    }
 
     public function getId(): ?int
     {
