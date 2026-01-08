@@ -42,11 +42,22 @@ class CarritoController extends AbstractController
 
         if (!$variacion) {
             $this->addFlash('error', 'Variación no disponible.');
-            // mantenemos el color si venía
             return $this->redirectToRoute('producto_detalle', [
                 'id' => $productoId,
                 'color' => $color
             ]);
+        }
+
+        // ✅ CONTROL STOCK AL AÑADIR
+        $stockDisponible = (int) $variacion->getStock();
+        if ($stockDisponible <= 0) {
+            $this->addFlash('error', 'No hay stock disponible para esa talla/color.');
+            return $this->redirectToRoute('producto_detalle', ['id' => $productoId, 'color' => $color]);
+        }
+
+        if ($cantidad > $stockDisponible) {
+            $this->addFlash('error', 'Solo quedan ' . $stockDisponible . ' unidades en stock.');
+            return $this->redirectToRoute('producto_detalle', ['id' => $productoId, 'color' => $color]);
         }
 
         $imagen = $variacion->getImagen();
@@ -57,10 +68,17 @@ class CarritoController extends AbstractController
         $clave = $productoId . '_' . $talla . '_' . $color;
 
         if (isset($carrito[$clave])) {
-            $carrito[$clave]['cantidad'] += $cantidad;
+            $nuevaCantidad = (int) $carrito[$clave]['cantidad'] + $cantidad;
+
+            if ($nuevaCantidad > $stockDisponible) {
+                $this->addFlash('error', 'No puedes añadir más. Stock disponible: ' . $stockDisponible);
+                return $this->redirectToRoute('producto_detalle', ['id' => $productoId, 'color' => $color]);
+            }
+
+            $carrito[$clave]['cantidad'] = $nuevaCantidad;
         } else {
             $carrito[$clave] = [
-                'producto_id' => $productoId,
+                'producto_id' => (int) $productoId,
                 'nombre'      => $producto->getNombre(),
                 'talla'       => $talla,
                 'color'       => $color,
@@ -68,6 +86,7 @@ class CarritoController extends AbstractController
                 'precio'      => $producto->getPrecio(),
                 'imagen'      => $imagen,
             ];
+
         }
 
         $session->set('carrito', $carrito);
@@ -126,89 +145,125 @@ class CarritoController extends AbstractController
             return $this->redirectToRoute('carrito_ver');
         }
 
-/** @var \App\Entity\Usuario $usuario */
-    $usuario     = $this->getUser();
-    $direcciones = $usuario->getDirecciones();
+        /** @var \App\Entity\Usuario $usuario */
+        $usuario     = $this->getUser();
+        $direcciones = $usuario->getDirecciones();
 
-    // GET: mostrar carrito + direcciones
-    if ($request->isMethod('GET')) {
-        return $this->render('carrito_checkout.html.twig', [
-            'carrito'     => $carrito,
-            'direcciones' => $direcciones,
-        ]);
-    }
-
-    // POST: seleccionar o crear dirección
-    $direccionId  = $request->request->get('direccion_id');
-    $nuevaCalle   = trim((string) $request->request->get('nueva_calle'));
-
-    if (!$direccionId && $nuevaCalle !== '') {
-        $direccion = new Direccion();
-        $direccion->setUsuario($usuario);
-        $direccion->setCalle($nuevaCalle);
-        $direccion->setCiudad($request->request->get('nueva_ciudad'));
-        $direccion->setCp($request->request->get('nueva_cp'));
-        $direccion->setProvincia($request->request->get('nueva_provincia'));
-        $direccion->setPais($request->request->get('nueva_pais'));
-        $direccion->setTipo('envio');
-
-        $em->persist($direccion);
-        $em->flush(); // para que tenga id
-
-        $direccionId = $direccion->getId();
-    }
-
-    if (!$direccionId) {
-        $this->addFlash('error', 'Debes seleccionar o crear una dirección.');
-        return $this->redirectToRoute('carrito_checkout');
-    }
-
-    $direccion = $em->getRepository(Direccion::class)->find($direccionId);
-    if (!$direccion || $direccion->getUsuario()->getId() !== $usuario->getId()) {
-        $this->addFlash('error', 'Dirección no válida.');
-        return $this->redirectToRoute('carrito_checkout');
-    }
-
-    // Calcular total
-    $total = 0;
-    foreach ($carrito as $item) {
-        $total += $item['cantidad'] * $item['precio'];
-    }
-
-    // Crear pedido pendiente de pago
-    $pedido = new Pedidos();
-    $pedido->setUsuario($usuario);
-    $pedido->setFecha(new \DateTime());
-    $pedido->setEstado('pendiente_pago');
-    $pedido->setTotal(number_format($total, 2, '.', ''));
-    $pedido->setDireccion($direccion);
-
-    $em->persist($pedido);
-
-    // Crear líneas de pedido
-    foreach ($carrito as $item) {
-        $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
-        if (!$producto) {
-            continue;
+        // GET: mostrar carrito + direcciones
+        if ($request->isMethod('GET')) {
+            return $this->render('carrito_checkout.html.twig', [
+                'carrito'     => $carrito,
+                'direcciones' => $direcciones,
+            ]);
         }
 
-        $linea = new LineaPedido();
-        $linea->setPedido($pedido);
-        $linea->setProducto($producto);
-        $linea->setTalla($item['talla']);
-        $linea->setColor($item['color']);
-        $linea->setCantidad($item['cantidad']);
-        $linea->setPrecioUnitario($item['precio']);
-        $linea->setSubtotal($item['cantidad'] * $item['precio']);
-        $linea->setImagen($item['imagen']);
+        // POST: seleccionar o crear dirección
+        $direccionId  = $request->request->get('direccion_id');
+        $nuevaCalle   = trim((string) $request->request->get('nueva_calle'));
 
-        $em->persist($linea);
+        if (!$direccionId && $nuevaCalle !== '') {
+            $direccion = new Direccion();
+            $direccion->setUsuario($usuario);
+            $direccion->setCalle($nuevaCalle);
+            $direccion->setCiudad($request->request->get('nueva_ciudad'));
+            $direccion->setCp($request->request->get('nueva_cp'));
+            $direccion->setProvincia($request->request->get('nueva_provincia'));
+            $direccion->setPais($request->request->get('nueva_pais'));
+            $direccion->setTipo('envio');
+
+            $em->persist($direccion);
+            $em->flush(); // para que tenga id
+
+            $direccionId = $direccion->getId();
+        }
+
+        if (!$direccionId) {
+            $this->addFlash('error', 'Debes seleccionar o crear una dirección.');
+            return $this->redirectToRoute('carrito_checkout');
+        }
+
+        $direccion = $em->getRepository(Direccion::class)->find($direccionId);
+        if (!$direccion || $direccion->getUsuario()->getId() !== $usuario->getId()) {
+            $this->addFlash('error', 'Dirección no válida.');
+            return $this->redirectToRoute('carrito_checkout');
+        }
+
+        // ✅ TRANSACCIÓN: crear pedido + líneas + descontar stock
+        $conn = $em->getConnection();
+        $conn->beginTransaction();
+
+        try {
+            // Calcular total
+            $total = 0;
+            foreach ($carrito as $item) {
+                $total += (int)$item['cantidad'] * (float)$item['precio'];
+            }
+
+            // Crear pedido pendiente de pago
+            $pedido = new Pedidos();
+            $pedido->setUsuario($usuario);
+            $pedido->setFecha(new \DateTime());
+            $pedido->setEstado('pendiente_pago');
+            $pedido->setTotal(number_format($total, 2, '.', ''));
+            $pedido->setDireccion($direccion);
+
+            $em->persist($pedido);
+
+            // Crear líneas + ✅ descontar stock de la variación
+            foreach ($carrito as $item) {
+                $producto = $em->getRepository(Producto::class)->find($item['producto_id']);
+                if (!$producto) {
+                    throw new \Exception('Producto no encontrado en el carrito.');
+                }
+
+                $variacion = $em->getRepository(ProductoVariacion::class)->findOneBy([
+                    'producto' => $producto,
+                    'talla'    => $item['talla'],
+                    'color'    => $item['color'],
+                ]);
+
+                if (!$variacion) {
+                    throw new \Exception('Variación no disponible: ' . $producto->getNombre() . ' (' . $item['talla'] . ', ' . $item['color'] . ').');
+                }
+
+                $stock = (int) $variacion->getStock();
+                $cant  = (int) $item['cantidad'];
+
+                if ($cant > $stock) {
+                    throw new \Exception('Stock insuficiente para ' . $producto->getNombre() . ' (' . $item['talla'] . ', ' . $item['color'] . ').');
+                }
+
+                // ✅ DESCUENTO
+                $variacion->setStock($stock - $cant);
+
+                $linea = new LineaPedido();
+                $linea->setPedido($pedido);
+                $linea->setProducto($producto);
+                $linea->setTalla($item['talla']);
+                $linea->setColor($item['color']);
+                $linea->setCantidad($cant);
+                $linea->setPrecioUnitario($item['precio']);
+                $linea->setSubtotal($cant * (float)$item['precio']);
+                $linea->setImagen($item['imagen']);
+
+                $em->persist($linea);
+            }
+
+            $em->flush();
+            $conn->commit();
+
+            // Guardar pedido en sesión y seguir a pasarela
+            $session->set('pedido_id', $pedido->getId());
+
+            // (Opcional) si quieres vaciar carrito ya aquí:
+            // $session->remove('carrito');
+
+            return $this->redirectToRoute('pasarela_pago');
+
+        } catch (\Throwable $e) {
+            $conn->rollBack();
+            $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('carrito_ver');
+        }
     }
-
-    $em->flush();
-
-    $session->set('pedido_id', $pedido->getId());
-
-    return $this->redirectToRoute('pasarela_pago');
-}
 }

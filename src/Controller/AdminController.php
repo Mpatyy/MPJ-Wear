@@ -93,9 +93,14 @@ class AdminController extends AbstractController
     #[Route('/productos', name: 'admin_productos_list')]
     public function productos(): Response
     {
-        $productos = $this->em->getRepository(Producto::class)->findAll();
+        $productos = $this->em->getRepository(Producto::class)->findBy(
+            ['activo' => true],
+            ['id' => 'DESC']
+        );
+
         return $this->render('admin/productos/list.html.twig', ['productos' => $productos]);
     }
+
 
 #[Route('/productos/nuevo', name: 'admin_productos_nuevo')]
 public function nuevoProducto(Request $request, EntityManagerInterface $em)
@@ -183,14 +188,17 @@ public function editarProducto(Request $request, Producto $producto, EntityManag
     public function eliminarProducto(int $id): Response
     {
         $producto = $this->em->getRepository(Producto::class)->find($id);
-        if (!$producto) throw $this->createNotFoundException('Producto no encontrado');
+        if (!$producto) {
+            throw $this->createNotFoundException('Producto no encontrado');
+        }
 
-        $this->em->remove($producto);
+        $producto->setActivo(false);
         $this->em->flush();
 
-        $this->addFlash('success', "Producto eliminado correctamente");
+        $this->addFlash('success', 'Producto desactivado correctamente');
         return $this->redirectToRoute('admin_productos_list');
     }
+
 
     // ------------------ USUARIOS ------------------
     #[Route('/usuarios', name: 'admin_usuarios_list')]

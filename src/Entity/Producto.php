@@ -27,6 +27,10 @@ class Producto
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $imagen = null;
 
+    // ✅ BORRADO LÓGICO
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $activo = true;
+
     #[ORM\ManyToOne(targetEntity: Categoria::class, inversedBy: 'productos')]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Categoria $categoria = null;
@@ -88,6 +92,18 @@ class Producto
         return $this;
     }
 
+    // ✅ GET/SET ACTIVO
+    public function isActivo(): bool
+    {
+        return $this->activo;
+    }
+
+    public function setActivo(bool $activo): self
+    {
+        $this->activo = $activo;
+        return $this;
+    }
+
     public function getCategoria(): ?Categoria
     {
         return $this->categoria;
@@ -117,7 +133,6 @@ class Producto
     public function removeVariacion(ProductoVariacion $variacion): self
     {
         if ($this->variaciones->removeElement($variacion)) {
-            // orphanRemoval=true se encarga del borrado si ya no está referenciado
             if ($variacion->getProducto() === $this) {
                 $variacion->setProducto(null);
             }
