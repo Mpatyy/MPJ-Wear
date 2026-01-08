@@ -3,59 +3,116 @@
 {% block title %}Registro{% endblock %}
 
 {% block body %}
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <h1 class="mb-4 text-center">Crear cuenta</h1>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <h1 class="mb-4 text-center">Crear cuenta</h1>
 
-            <form action="{{ path('app_registro') }}" method="post" class="card p-4 shadow-sm">
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input
-                        type="text"
-                        id="nombre"
-                        name="nombre"
-                        required
-                        class="form-control"
-                    >
-                </div>
+        {{ form_start(registrationForm, {'attr': {'class': 'card p-4 shadow-sm'}}) }}
 
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        class="form-control"
-                    >
-                </div>
+            <div class="mb-3">
+                {{ form_label(registrationForm.nombre) }}
+                {{ form_widget(registrationForm.nombre, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.nombre) }}
+            </div>
 
-                <div class="mb-3">
-                    <label for="telefono" class="form-label">Teléfono</label>
-                    <input
-                        type="text"
-                        id="telefono"
-                        name="telefono"
-                        required
-                        class="form-control"
-                    >
-                </div>
+            <div class="mb-3">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                        class="form-control"
-                    >
-                </div>
+            <div class="mb-3">
+                {{ form_label(registrationForm.telefono) }}
+                {{ form_widget(registrationForm.telefono, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.telefono) }}
+            </div>
 
-                <button type="submit" class="btn btn-success w-100">
-                    Registrarse
-                </button>
-            </form>
-        </div>
+            {# Contraseña con reglas visuales #}
+            <div class="mb-3">
+                {{ form_label(registrationForm.plainPassword.first, 'Contraseña') }}
+                {{ form_widget(registrationForm.plainPassword.first, {
+                    'attr': {
+                        'class': 'form-control',
+                        'id': 'change_password_form_plainPassword_first'
+                    }
+                }) }}
+                {{ form_errors(registrationForm.plainPassword.first) }}
+
+                <ul class="mt-2 small" id="password-rules">
+                    <li id="rule-length" class="text-danger">Mínimo 8 caracteres</li>
+                    <li id="rule-lower" class="text-danger">Al menos una letra minúscula</li>
+                    <li id="rule-upper" class="text-danger">Al menos una letra mayúscula</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(registrationForm.plainPassword.second, 'Repetir contraseña') }}
+                {{ form_widget(registrationForm.plainPassword.second, {
+                    'attr': {
+                        'class': 'form-control',
+                        'id': 'password2'
+                    }
+                }) }}
+                {{ form_errors(registrationForm.plainPassword.second) }}
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-2">Registrarse</button>
+
+        {{ form_end(registrationForm) }}
     </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const password1 = document.getElementById('registration_form_plainPassword_first');
+    const password2 = document.getElementById('registration_form_plainPassword_second');  // ← Añadido
+    
+    if (!password1 || !password2) return;
+
+    function countRules(value) {
+        let ok = 0;
+        if (value.length >= 8) ok++;
+        if (/[a-z]/.test(value)) ok++;
+        if (/[A-Z]/.test(value)) ok++;
+        return ok;
+    }
+
+    function passwordsMatch(p1, p2) {
+        return p1 === p2 && p1 !== '';
+    }
+
+    function updatePassword1(ok) {
+        password1.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-warning', 'border-success');
+        if (ok === 0) {
+            password1.classList.add('is-invalid', 'border-danger');
+        } else if (ok === 1 || ok === 2) {
+            password1.classList.add('border-warning');
+        } else if (ok === 3) {
+            password1.classList.add('is-valid', 'border-success');
+        }
+    }
+
+    function updatePassword2() {
+        password2.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-success');
+        if (passwordsMatch(password1.value, password2.value)) {
+            password2.classList.add('is-valid', 'border-success');
+        } else {
+            password2.classList.add('is-invalid', 'border-danger');
+        }
+    }
+
+    // ← Evento para primera contraseña (reglas de fuerza)
+    password1.addEventListener('input', function () {
+        const ok = countRules(password1.value);
+        updatePassword1(ok);
+        updatePassword2();  // ← También chequea coincidencia
+    });
+
+    // ← Evento para segunda contraseña (solo coincidencia)
+    password2.addEventListener('input', function () {
+        updatePassword2();
+    });
+});
+</script>
+
 {% endblock %}

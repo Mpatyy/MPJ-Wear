@@ -5,6 +5,7 @@ namespace App\Controller;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use App\Entity\Usuario;
+use App\Form\RegistrationFormType;  // ← AÑADIR ESTA LÍNEA
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,16 +22,15 @@ class RegistrationController extends AbstractController
         MailerInterface $mailer,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        if ($request->isMethod('POST')) {
-            $nombre = $request->request->get('nombre');
-            $emailUsuario = $request->request->get('email');
-            $telefono = $request->request->get('telefono');
-            $plainPassword = $request->request->get('password');
+        $usuario = new Usuario();
+        
+        // ← FORMULARIO NUEVO (reemplaza el if($request->isMethod('POST')))
+        $form = $this->createForm(RegistrationFormType::class, $usuario);
+        $form->handleRequest($request);
 
-            $usuario = new Usuario();
-            $usuario->setNombre($nombre);
-            $usuario->setEmail($emailUsuario);
-            $usuario->setTelefono($telefono);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // ← CONTRASEÑA DESDE FORMULARIO (reemplaza $request->request->get('password'))
+            $plainPassword = $form->get('plainPassword')->getData();
 
             $hashedPassword = $passwordHasher->hashPassword($usuario, $plainPassword);
             $usuario->setPassword($hashedPassword);
@@ -39,7 +39,7 @@ class RegistrationController extends AbstractController
             $em->persist($usuario);
             $em->flush();
 
-            // Enviar email de bienvenida
+            // ← TODO TU CÓDIGO DE EMAIL IGUAL
             $mensaje = (new TemplatedEmail())
                 ->from('no-reply@mpj-wear.com')
                 ->to($usuario->getEmail())
@@ -50,12 +50,14 @@ class RegistrationController extends AbstractController
                     'emailUsuario' => $usuario->getEmail(),
                 ]);
 
-
             $mailer->send($mensaje);
 
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('registro.html.twig');
+        // ← PASAR FORMULARIO A TWIG (reemplaza return $this->render('registro.html.twig'))
+        return $this->render('registro.html.twig', [
+            'registrationForm' => $form->createView(),
+        ]);
     }
 }
