@@ -4,6 +4,14 @@
 
 {% block body %}
 <h1 class="mb-4">Pago seguro</h1>
+{% for linea in pedido.lineas %}
+    <div class="item-pago">
+        {% if linea.imagen %}
+            <img src="{{ asset(linea.imagen) }}" alt="{{ linea.producto.nombre }}" width="80">
+        {% endif %}
+        {{ linea.producto.nombre }} ({{ linea.talla }} / {{ linea.color }}) x {{ linea.cantidad }} - {{ linea.subtotal }} €
+    </div>
+{% endfor %}
 
 {% for message in app.flashes('error') %}
     <div class="alert alert-danger">{{ message }}</div>
