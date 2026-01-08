@@ -20,76 +20,133 @@
 		<style>
 			html, body { background: #fff !important; min-height: 100%; }
 
-			/* Lupa */
-			.btn-lupa {
-				border: 0;
-				background: transparent;
-				color: #fff;
-				padding: 6px 10px;
-				line-height: 1;
-				cursor: pointer;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-			}
-			.btn-lupa i { font-size: 16px; opacity: .9; }
-			.btn-lupa:hover { opacity: .85; }
-
 			/* Para que no tape el navbar fixed */
-			main.container {
-				padding-top: 80px;
+			main.container { padding-top: 80px; }
+
+			/* ===== BUSCAR (Zara style) ===== */
+			.zara-buscar{
+				display:flex; align-items:center; gap:8px;
+				background:transparent; border:0; padding:6px 8px;
+				color:#fff; cursor:pointer;
+				font-size:12px; font-weight:500;
+				letter-spacing:.08em; text-transform:uppercase;
+			}
+			.zara-buscar i{ font-size:15px; opacity:.9; }
+			.zara-buscar:hover{ opacity:.75; }
+
+			/* ===== TOAST “ZARA STYLE” (sale del carrito) ===== */
+			.flash-carrito-container{
+				position: fixed;
+				top: 12px;   /* fallback */
+				left: 12px;  /* fallback */
+				z-index: 2000;
+				pointer-events: none;
+				max-width: calc(100vw - 24px);
 			}
 
-			.nav-link i {
-				transition: opacity .15s ease;
-			}
-			.nav-link:hover i {
-				opacity: .8;
-			}
+			.flash-carrito{
+				position: relative;
+				background: #fff;
+				color: #111;
+				border: 1px solid rgba(17,17,17,.12);
+				border-radius: 14px;
+				padding: 12px 12px;
+				box-shadow: 0 18px 45px rgba(0,0,0,.12);
+				pointer-events: auto;
 
-			/* Dropdown perfil: que no parezca link azul raro */
-			.dropdown .nav-link {
-				text-decoration: none;
-			}
-			.dropdown .nav-link:focus {
-				box-shadow: none;
-			}
-
-			/* ===== BUSCAR ===== */
-			.zara-buscar {
 				display: flex;
-				align-items: center;
-				gap: 8px;
+				flex-direction: column;
+				gap: 10px;
 
+				max-width: min(420px, calc(100vw - 24px));
+				animation: toastDrop .22s ease-out;
+			}
+
+			/* “Piquito” apuntando al carrito */
+			.flash-carrito::before{
+				content:"";
+				position:absolute;
+				top:-8px;
+				left: var(--pico-left, 22px);
+				width: 14px;
+				height: 14px;
+				background:#fff;
+				border-left: 1px solid rgba(17,17,17,.12);
+				border-top: 1px solid rgba(17,17,17,.12);
+				transform: rotate(45deg);
+			}
+
+			.flash-carrito .flash-texto{
+				font-size: 12px;
+				line-height: 1.35;
+				letter-spacing: .02em;
+				text-transform: uppercase;
+				padding-right: 26px; /* hueco para la X */
+			}
+
+			.flash-carrito .flash-acciones{
+				display:flex;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+
+			.flash-carrito .flash-btn{
+				border-radius: 999px;
+				padding: 8px 12px;
+				font-size: 12px;
+				letter-spacing: .06em;
+				text-transform: uppercase;
+				line-height: 1;
+				border: 1px solid #111;
+				background: transparent;
+				color: #111;
+				text-decoration: none;
+				display:inline-flex;
+				align-items:center;
+				justify-content:center;
+				transition: opacity .15s ease, transform .15s ease;
+				cursor: pointer;
+			}
+
+			.flash-carrito .flash-btn:hover{
+				opacity: .85;
+				transform: translateY(-1px);
+			}
+
+			.flash-carrito .flash-btn.negro{
+				background:#111;
+				color:#fff;
+			}
+
+			.flash-carrito .flash-cerrar{
+				position:absolute;
+				top: 8px;
+				right: 10px;
 				background: transparent;
 				border: 0;
-				padding: 6px 8px;
-
-				color: #fff;
-				cursor: pointer;
-
-				font-size: 12px;
-				font-weight: 500;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-			}
-
-			.zara-buscar i {
-				font-size: 15px;
-				opacity: 0.9;
-			}
-
-			.zara-buscar span {
+				color:#111;
+				opacity:.55;
+				font-size: 18px;
 				line-height: 1;
+				cursor:pointer;
+			}
+			.flash-carrito .flash-cerrar:hover{ opacity:.8; }
+
+			/* Variante error */
+			.flash-carrito.error{
+				border-color: rgba(127,29,29,.25);
+			}
+			.flash-carrito.error::before{
+				border-left-color: rgba(127,29,29,.25);
+				border-top-color: rgba(127,29,29,.25);
+			}
+			.flash-carrito.error .flash-texto{
+				color:#7f1d1d;
 			}
 
-			.zara-buscar:hover {
-				opacity: 0.75;
-			}
-
-			/* Espaciado fino entre acciones del header */
-			.header-acciones > * {
-				margin-left: 18px;
+			@keyframes toastDrop{
+				from{ opacity: 0; transform: translateY(-6px); }
+				to{ opacity: 1; transform: translateY(0); }
 			}
 		</style>
 
@@ -114,31 +171,32 @@
 						</ul>
 					</div>
 
-					{# ================= DERECHA ================= #}
 					<div class="d-flex align-items-center gap-4 ms-auto">
 
-						{# BOTÓN ADMIN: solo visible para usuarios con ROLE_ADMIN #}
-						{% if app.user and 'ROLE_ADMIN' in app.user.roles %}
-							<a class="btn-lupa d-flex align-items-center gap-2" href="{{ path('admin_dashboard') }}" title="Panel Admin">
-								<i class="bi bi-speedometer2"></i>
-								<span class="d-none d-md-inline">Admin</span>
-							</a>
-						{% endif %}
-
-						{# BUSCAR (Zara style) #}
-						<button type="button" class="btn-lupa d-flex align-items-center gap-2" id="btn-abrir-buscador" aria-label="Abrir buscador">
+						<button
+							type="button"
+							class="zara-buscar"
+							id="btn-abrir-buscador"
+							aria-label="Abrir buscador"
+						>
 							<i class="fa-solid fa-magnifying-glass"></i>
 							<span>Buscar</span>
 						</button>
 
-						{# CARRITO #}
 						{% set carrito = app.session.get('carrito', []) %}
 						{% set totalCarrito = 0 %}
 						{% for item in carrito %}
 							{% set totalCarrito = totalCarrito + item.cantidad %}
 						{% endfor %}
-						<a class="nav-link position-relative text-white" href="{{ path('carrito_ver') }}" title="Carrito">
+
+						<a
+							id="icono-carrito"
+							class="nav-link position-relative text-white"
+							href="{{ path('carrito_ver') }}"
+							title="Carrito"
+						>
 							<i class="bi bi-cart3 fs-5"></i>
+
 							{% if totalCarrito > 0 %}
 								<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
 									{{ totalCarrito }}
@@ -146,12 +204,16 @@
 							{% endif %}
 						</a>
 
-						{# PERFIL / LOGIN #}
 						{% if app.user %}
 							<div class="dropdown">
-								<button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
+								<button
+									class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2"
+									data-bs-toggle="dropdown"
+									aria-expanded="false"
+								>
 									<i class="bi bi-person-circle fs-5"></i>
 								</button>
+
 								<ul class="dropdown-menu dropdown-menu-end">
 									<li><a class="dropdown-item" href="{{ path('perfil') }}">Mi perfil</a></li>
 									<li><hr class="dropdown-divider"></li>
@@ -217,12 +279,15 @@
 				const flash = cont.querySelector('#flash-toast');
 				if (!flash) return;
 
-				window.addEventListener('pageshow', (event) => {
-					if (event.persisted) {
-						const c = document.getElementById('flash-carrito-container');
-						if (c) c.remove();
-					}
-				});
+				// ✅ CLAVE: si el usuario vuelve atrás, el navegador puede restaurar el HTML.
+				// Si ya lo marcamos como "visto", lo eliminamos para que NO reaparezca.
+				const KEY = 'mpj_toast_carrito_visto';
+				if (sessionStorage.getItem(KEY) === '1') {
+					cont.remove();
+					return;
+				}
+				// marcamos que ya se mostró (solo para esta sesión del navegador)
+				sessionStorage.setItem(KEY, '1');
 
 				const icono = document.getElementById('icono-carrito');
 
@@ -231,11 +296,15 @@
 
 					const r = icono.getBoundingClientRect();
 					const margin = 12;
+
 					const w = flash.offsetWidth;
+
 					let left = (r.right + window.scrollX) - w;
+
 					const minLeft = window.scrollX + margin;
 					const maxLeft = window.scrollX + window.innerWidth - w - margin;
 					left = Math.max(minLeft, Math.min(left, maxLeft));
+
 					cont.style.left = left + 'px';
 					cont.style.top  = (r.bottom + window.scrollY + 10) + 'px';
 
@@ -248,12 +317,19 @@
 				posicionar();
 				window.addEventListener('resize', posicionar);
 
+				function cerrarToast(){
+					// si lo cierras manualmente, dejamos que en la siguiente navegación normal pueda volver a salir
+					// (pero el "volver atrás" ya no lo re-muestra porque el HTML se restaura y lo quitamos arriba)
+					cont.remove();
+				}
+
 				const btnCerrar = flash.querySelector('.flash-cerrar');
-				if (btnCerrar) btnCerrar.addEventListener('click', () => cont.remove());
+				if (btnCerrar) btnCerrar.addEventListener('click', cerrarToast);
 
 				const btnSeguir = flash.querySelector('[data-accion="seguir"]');
-				if (btnSeguir) btnSeguir.addEventListener('click', () => cont.remove());
+				if (btnSeguir) btnSeguir.addEventListener('click', cerrarToast);
 
+				// Auto ocultar (más lento)
 				setTimeout(() => {
 					if (!cont.isConnected) return;
 					flash.style.opacity = '0';
@@ -261,12 +337,16 @@
 					flash.style.transition = 'opacity .18s ease, transform .18s ease';
 					setTimeout(() => cont.remove(), 220);
 				}, 6500);
-			})();
 
-			window.addEventListener('popstate', () => {
-				const c = document.getElementById('flash-carrito-container');
-				if (c) c.remove();
-			});
+				// ✅ Cuando cambias de página hacia delante (no volver atrás), permitimos que salga otro toast en el futuro
+				// (por ejemplo, si vuelves a añadir algo al carrito más tarde).
+				window.addEventListener('pageshow', (e) => {
+					// Si no es bfcache, reseteamos para permitir nuevos toasts en otras páginas
+					if (!e.persisted) {
+						sessionStorage.removeItem(KEY);
+					}
+				});
+			})();
 		</script>
 	</body>
 </html>
