@@ -109,7 +109,7 @@ public function nuevoProducto(Request $request, EntityManagerInterface $em)
         // Imagen principal
         $imagenFile = $form->get('imagen')->getData();
         if ($imagenFile) {
-            $newFilename = uniqid() . '.' . $imagenFile->guessExtension();
+            $newFilename = uniqid('prod_') . '.png';
             $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
             $producto->setImagen($newFilename);
         }
@@ -118,7 +118,7 @@ public function nuevoProducto(Request $request, EntityManagerInterface $em)
         foreach ($producto->getVariaciones() as $key => $variacion) {
             $imagenVarFile = $form->get('variaciones')->get($key)->get('imagen')->getData();
             if ($imagenVarFile) {
-                $newFilenameVar = uniqid() . '.' . $imagenVarFile->guessExtension();
+                $newFilenameVar = uniqid('var_') . '.png';
                 $imagenVarFile->move($this->getParameter('productos_directory'), $newFilenameVar);
                 $variacion->setImagen($newFilenameVar);
             }
