@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 05-01-2026 a las 17:48:00
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 08-01-2026 a las 17:06:46
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -41,8 +41,8 @@ CREATE TABLE `carrito` (
 
 CREATE TABLE `carrito_producto` (
   `id` int(11) NOT NULL,
-  `carrito_id` int(11) NOT NULL,
-  `producto_id` int(11) NOT NULL,
+  `carrito_id` int(11) DEFAULT NULL,
+  `producto_id` int(11) DEFAULT NULL,
   `cantidad` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -55,7 +55,7 @@ CREATE TABLE `carrito_producto` (
 CREATE TABLE `categoria` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
-  `descripcion` text DEFAULT NULL,
+  `descripcion` longtext DEFAULT NULL,
   `slug` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -145,7 +145,10 @@ CREATE TABLE `lineas_pedido` (
 
 INSERT INTO `lineas_pedido` (`id`, `pedido_id`, `producto_id`, `talla`, `color`, `cantidad`, `precio_unitario`, `subtotal`) VALUES
 (1, 8, 1, 'XL', 'Blanco', 5, 19.99, 99.95),
-(2, 8, 3, 'M', 'Beige', 4, 29.99, 119.96);
+(2, 8, 3, 'M', 'Beige', 4, 29.99, 119.96),
+(3, 9, 5, '43', 'Azul Marino', 1, 79.99, 79.99),
+(4, 10, 5, '43', 'Azul Marino', 1, 79.99, 79.99),
+(5, 11, 5, '43', 'Azul Marino', 1, 79.99, 79.99);
 
 -- --------------------------------------------------------
 
@@ -204,7 +207,10 @@ INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccio
 (5, 1, '2025-12-15 19:23:25', 'pendiente', 19.99, NULL, NULL),
 (6, 1, '2025-12-15 19:35:09', 'pendiente', 104.70, NULL, NULL),
 (7, 2, '2026-01-03 18:08:23', 'pendiente', 19.99, NULL, NULL),
-(8, 3, '2026-01-05 17:04:02', 'pendiente', 219.91, NULL, NULL);
+(8, 3, '2026-01-05 17:04:02', 'pendiente', 219.91, NULL, NULL),
+(9, 11, '2026-01-07 21:28:04', 'pagado', 79.99, NULL, NULL),
+(10, 16, '2026-01-08 16:46:49', 'pagado', 79.99, NULL, NULL),
+(11, 16, '2026-01-08 16:51:20', 'pagado', 79.99, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -321,7 +327,7 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (53, 5, '40', 'Blanco', 6, 'zapatillas-blancas.png'),
 (54, 5, '41', 'Negro', 4, 'zapatillas-negras.png'),
 (55, 5, '42', 'Gris', 0, 'zapatillas-grises.png'),
-(56, 5, '43', 'Azul Marino', 2, 'zapatillas-azules.png'),
+(56, 5, '43', 'Azul Marino', 0, 'zapatillas-azules.png'),
 (57, 4, 'S', 'Negro', 4, 'abrigo-negro.png'),
 (58, 4, 'M', 'Negro', 2, 'abrigo-negro.png'),
 (59, 4, 'L', 'Negro', 0, 'abrigo-negro.png'),
@@ -366,6 +372,34 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `reset_password_request`
+--
+
+CREATE TABLE `reset_password_request` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `selector` varchar(20) NOT NULL,
+  `hashed_token` varchar(100) NOT NULL,
+  `requested_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
+  `expires_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `reset_password_request`
+--
+
+INSERT INTO `reset_password_request` (`id`, `user_id`, `selector`, `hashed_token`, `requested_at`, `expires_at`) VALUES
+(1, 5, 'mzsls3XBmLzq4kT2GuO0', '0Cwh1XgCMBk6JjbT2YHcMXPOw8iN5yJWl/wJVrz8Kfk=', '2026-01-07 19:23:39', '2026-01-07 20:23:39'),
+(2, 5, 'sxA8omYuMOwsV7pGSMKx', 'x8trVVIpEUIi2iElWS27XLdCJtwEB+zhG/304yVONz0=', '2026-01-07 20:36:26', '2026-01-07 21:36:26'),
+(3, 4, 'TM5laRpeoGDHaIrzY0FE', 'mjYhaEZtuMPOiQVfysyMns1OaTqun1SWqIfY9p1YEfA=', '2026-01-07 20:38:29', '2026-01-07 21:38:29'),
+(13, 3, '9VcFmNpdTc8Sf7MUl0SN', '36lrmhQO9XRuhXUo+DhRCHzMlSlQvtBdfltZTShG5vo=', '2026-01-07 21:34:20', '2026-01-07 22:34:20'),
+(14, 2, 'uOMR9MVexkA0TZDk0C3b', 'vd11lanwwIZIy3DMIsCrOYQwfNupZJ4IAlkH7ytt1VY=', '2026-01-07 21:37:41', '2026-01-07 22:37:41'),
+(15, 4, 'RROUBAoOEUjqXFwzXfpy', '8ly+PkDYZhZbanSvc5i6DST1GdLscdZQhJjUssTvK+I=', '2026-01-07 21:40:53', '2026-01-07 22:40:53'),
+(17, 6, 'OG1omPddQnA2VGuD39k5', 'mNz7ZAmK7FfordbNPS9jiguYBX4ETV7voWq9j3vnIJY=', '2026-01-07 22:00:27', '2026-01-07 23:00:27');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -383,10 +417,21 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`) VALUES
-(1, 'Mikel', 'giyouwaquize-6481@yopmail.com', '$2y$13$pqG6QMsg0ae3LNgFfycrAO74iUw5BxCvKcNjRjljB4SPDgodN7Kf6', '612345678', '[\"ROLE_USER\"]'),
+(1, 'Mikel', 'giyouwaquize-6481@yopmail.com', '$2y$13$wBrzQRCw0vRl7gCHrVHYDupFyDQQuTMr0OyXZWh7weV/LszpZ2/cS', '612345678', '[\"ROLE_USER\"]'),
 (2, 'Armando', 'feromin417@emaxasp.com', '$2y$13$dhfcJtnXlx.cnPDro5VEIehAWbYG.l3oFMI/qYl.ISFzYBLiSyBIC', '6123456789', '[\"ROLE_USER\"]'),
 (3, 'Mikel', 'mikel140805@gmail.com', '$2y$13$WZnnFdJPFidTc384g1MID.QqjrC7j/bkIstTtQCDTSKVek0ND7idG', '620081606', '[\"ROLE_USER\"]'),
-(4, 'thor', 'thor@gmail.com', '$2y$13$L.GCScwbjIV.iSiCHwZHFuvbwbjZ4DGKASSlQbou8oNLqW7LMacbG', '647453842', '[\"ROLE_USER\"]');
+(4, 'thor', 'thor@gmail.com', '$2y$13$L.GCScwbjIV.iSiCHwZHFuvbwbjZ4DGKASSlQbou8oNLqW7LMacbG', '647453842', '[\"ROLE_USER\"]'),
+(5, 'olvidar contra', 'fijecod975@gavrom.com', '$2y$13$3qU3sh6XnJ4C0fOgUp0KX.uDsTMPnNCeOiv/yUiGWyekvF/uO3W96', '657845367', '[\"ROLE_USER\"]'),
+(6, 'resetear prueba', 'hanepa1990@gavrom.com', '$2y$13$67aCP6C0KJZF/qS/oznLne6KXGb6z4BLpgM0VBHegJ4ZClqC1yD4O', '675845672', '[\"ROLE_USER\"]'),
+(7, 'reseteo prueba ', 'lapad56964@gavrom.com', '$2y$13$pvAVkYhHzL9xciGUfGDzNu4X10cTMfX9xdaxwN81Qga9qXruIzGUi', '6754323456', '[\"ROLE_USER\"]'),
+(8, 'susana', 'favijat741@emaxasp.com', '$2y$13$Nc/1jfBW2S6BapBR88FUn.BsDqg/Tiu6yZQOvTqJUTDzYwdtw6D3W', '657487253', '[\"ROLE_USER\"]'),
+(9, 'resetear prueba 2', 'reniteb683@gavrom.com', '$2y$13$E3c89Y95gA3cAku5sGt.yO9L5sWL3TzFsutWVn7vDsAGZoy38z4iK', '657654567', '[\"ROLE_USER\"]'),
+(10, 'reseteo 3', 'xacamos949@emaxasp.com', '$2y$13$49/zRY1AFBv1t2l1rNusx.mPePhoSe1C8sC35ayPfDOc0q2hHgciO', '654321234', '[\"ROLE_USER\"]'),
+(11, 'reseteo 4', 'tojic85793@gavrom.com', '$2y$13$tia8uwUXV9lz9Dz1nL7G9.XwixNpw48mL9andjV2UTXyFNmvuoOpO', '657890987', '[\"ROLE_USER\"]'),
+(12, 'cliente final', 'tojihi5100@imfaya.com', '$2y$13$PgtMvfKxcyrrrcPWNINlt.08A3q5Np8lyjkkHGRvAb1xXVPSVC7.a', '654321566', '[\"ROLE_USER\"]'),
+(13, 'cliente final f', 'cipetex289@gopicta.com', '$2y$13$09918h1honLFJimB1kiEQe6B1ItS7Yt4u.J1fCGMJ9J/9hClti9P.', '675456789', '[\"ROLE_USER\"]'),
+(15, 'cliente final form', 'sakaxa1192@imfaya.com', '$2y$13$k8spvN.X4susdabbwYQVAet4F2NUlUTKjMDb8zB5fFOkrU9sX1fJa', '678457678', '[\"ROLE_USER\"]'),
+(16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$4cavHRJPw0.El.vWr6GQh.6JTixf4bXQkG8rAbIzBXNmMGt4vyO6G', '657489567', '[\"ROLE_USER\"]');
 
 --
 -- Índices para tablas volcadas
@@ -404,16 +449,15 @@ ALTER TABLE `carrito`
 --
 ALTER TABLE `carrito_producto`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_carrito_producto_carrito` (`carrito_id`),
-  ADD KEY `fk_carrito_producto_producto` (`producto_id`);
+  ADD KEY `IDX_62C02DC2DE2CF6E7` (`carrito_id`),
+  ADD KEY `IDX_62C02DC27645698E` (`producto_id`);
 
 --
 -- Indices de la tabla `categoria`
 --
 ALTER TABLE `categoria`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `slug` (`slug`),
-  ADD UNIQUE KEY `UNIQ_categoria_slug` (`slug`);
+  ADD UNIQUE KEY `UNIQ_4E10122D989D9B62` (`slug`);
 
 --
 -- Indices de la tabla `comentario`
@@ -491,6 +535,13 @@ ALTER TABLE `producto_variacion`
   ADD KEY `IDX_59C4E9E67645698E` (`producto_id`);
 
 --
+-- Indices de la tabla `reset_password_request`
+--
+ALTER TABLE `reset_password_request`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `IDX_7CE748AA76ED395` (`user_id`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -536,7 +587,7 @@ ALTER TABLE `direccion`
 -- AUTO_INCREMENT de la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `messenger_messages`
@@ -554,7 +605,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `pedido_producto`
@@ -575,10 +626,16 @@ ALTER TABLE `producto_variacion`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
+-- AUTO_INCREMENT de la tabla `reset_password_request`
+--
+ALTER TABLE `reset_password_request`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Restricciones para tablas volcadas
@@ -591,11 +648,17 @@ ALTER TABLE `carrito`
   ADD CONSTRAINT `fk_carrito_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `carrito_producto`
+--
+ALTER TABLE `carrito_producto`
+  ADD CONSTRAINT `FK_62C02DC27645698E` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`),
+  ADD CONSTRAINT `FK_62C02DC2DE2CF6E7` FOREIGN KEY (`carrito_id`) REFERENCES `carrito` (`id`);
+
+--
 -- Filtros para la tabla `comentario`
 --
 ALTER TABLE `comentario`
-  ADD CONSTRAINT `fk_comentario_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_comentario_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_comentario_producto` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `direccion`
@@ -636,6 +699,12 @@ ALTER TABLE `productos`
 --
 ALTER TABLE `producto_variacion`
   ADD CONSTRAINT `FK_59C4E9E67645698E` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`);
+
+--
+-- Filtros para la tabla `reset_password_request`
+--
+ALTER TABLE `reset_password_request`
+  ADD CONSTRAINT `FK_7CE748AA76ED395` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
