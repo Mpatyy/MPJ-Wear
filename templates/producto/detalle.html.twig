@@ -241,37 +241,58 @@
         </div>
     </div>
 
-    {# ✅ SIMILARES / TAMBIÉN TE PUEDE GUSTAR #}
+
+    {# ✅ SIMILARES / TAMBIÉN TE PUEDE GUSTAR (por color) #}
     {% if similares is defined and similares is not empty %}
         <hr class="my-5">
 
         <h3 class="similares-titulo">También te puede gustar</h3>
 
         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
-            {% for s in similares %}
+            {% for row in similares %}
+                {% set p = row.producto %}
+                {% set c = row.color %}
+                {% set imgColor = row.imagenColor %}
+
                 <div class="col">
-                    <a href="{{ path('producto_detalle', {'id': s.id}) }}" class="text-decoration-none text-dark">
-                        <div class="card h-100 similares-card">
-                            {% if s.imagen %}
+                    {# ✅ IMPORTANTE: pasamos ?color=... para que entre en el mismo color #}
+                    <a
+                        href="{{ path('producto_detalle', {'id': p.id}) }}?color={{ c|url_encode }}"
+                        class="text-decoration-none text-dark"
+                    >
+                        <div class="card h-100 similares-card border-0">
+                            {% if imgColor %}
                                 <img
-                                    src="{{ asset('images/' ~ s.imagen) }}"
+                                    src="{{ asset('images/' ~ imgColor) }}"
                                     class="card-img-top"
-                                    alt="Imagen de {{ s.nombre }}"
+                                    alt="Imagen de {{ p.nombre }} en color {{ c }}"
+                                    onerror="this.src='{{ asset('images/placeholder.png') }}'"
+                                >
+                            {% elseif p.imagen %}
+                                <img
+                                    src="{{ asset('images/' ~ p.imagen) }}"
+                                    class="card-img-top"
+                                    alt="Imagen de {{ p.nombre }}"
                                     onerror="this.src='{{ asset('images/placeholder.png') }}'"
                                 >
                             {% else %}
-                                <div class="card-img-top d-flex align-items-center justify-content-center text-muted"
-                                     style="aspect-ratio: 3/4; background:#f7f7f7;">
+                                <div
+                                    class="card-img-top d-flex align-items-center justify-content-center text-muted"
+                                    style="aspect-ratio: 3/4; background:#f7f7f7;"
+                                >
                                     Sin imagen
                                 </div>
                             {% endif %}
 
                             <div class="card-body p-2">
                                 <div class="small fw-semibold" style="line-height:1.2;">
-                                    {{ s.nombre }}
+                                    {{ p.nombre }}
                                 </div>
                                 <div class="small text-muted">
-                                    {{ s.precio|number_format(2, ',', '.') }} €
+                                    {{ p.precio|number_format(2, ',', '.') }} €
+                                </div>
+                                <div class="small text-muted" style="font-size:11px;">
+                                    {{ c }}
                                 </div>
                             </div>
                         </div>
@@ -280,6 +301,7 @@
             {% endfor %}
         </div>
     {% endif %}
+
 
 <script>
 (function () {

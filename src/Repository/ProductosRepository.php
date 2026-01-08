@@ -298,43 +298,89 @@ class ProductosRepository extends ServiceEntityRepository
             ->getArrayResult();
     }
 
-    public function buscarSimilares(Producto $producto, int $limite = 6): array
-    {
-        $cat = $producto->getCategoria();
 
-        // 1) Intentar de la misma categoría
+    // ✅ Similares por color: devuelve tarjetas (producto + color + imagenColor)
+    public function listarSimilaresPorColor(Producto $producto, int $limite = 12): array
+    {
+        $categoria = $producto->getCategoria();
+
         $qb = $this->createQueryBuilder('p')
-            ->andWhere('p.id != :id')
-            ->setParameter('id', $producto->getId())
+            ->innerJoin('p.variaciones', 'v')
+            ->select('p AS producto')
+            ->addSelect('LOWER(TRIM(v.color)) AS colorKey')
+            ->addSelect('MAX(v.color) AS color')
+            ->addSelect('MAX(v.imagen) AS imagenColor')
+            ->addSelect('SUM(v.stock) AS stockColor')
+            ->where('p != :actual')
+            ->setParameter('actual', $producto)
+            ->andWhere('v.color IS NOT NULL')
+            ->andWhere("TRIM(v.color) <> ''")
+            ->groupBy('p.id, colorKey')
+            ->having('SUM(v.stock) > 0')
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($limite);
 
-        if ($cat) {
+        if ($categoria) {
             $qb->andWhere('p.categoria = :cat')
-            ->setParameter('cat', $cat);
+            ->setParameter('cat', $categoria);
         }
 
-        $similares = $qb->getQuery()->getResult();
-
-        // 2) Si no hay suficientes, rellenar con otros productos
-        if (count($similares) < $limite) {
-            $faltan = $limite - count($similares);
-
-            $idsExcluidos = array_map(fn($p) => $p->getId(), $similares);
-            $idsExcluidos[] = $producto->getId();
-
-            $qb2 = $this->createQueryBuilder('p')
-                ->andWhere('p.id NOT IN (:ids)')
-                ->setParameter('ids', $idsExcluidos)
-                ->orderBy('p.id', 'DESC')
-                ->setMaxResults($faltan);
-
-            $extra = $qb2->getQuery()->getResult();
-            $similares = array_merge($similares, $extra);
-        }
-
-        return $similares;
+        return $qb->getQuery()->getArrayResult();
     }
+
+    public function buscarSimilares(Producto $producto, int $limite = 6): array
+{
+    // Intentamos por categoría si existe
+    $categoria = $producto->getCategoria();
+
+    $qb = $this->createQueryBuilder('p')
+        ->innerJoin('p.variaciones', 'v')
+        ->select('p AS producto')
+        ->addSelect('LOWER(TRIM(v.color)) AS colorKey')
+        ->addSelect('MAX(v.color) AS color')
+        ->addSelect('MAX(v.imagen) AS imagenColor')
+        ->addSelect('SUM(v.stock) AS stockColor')
+        ->where('p != :actual')
+        ->setParameter('actual', $producto)
+        ->andWhere('v.color IS NOT NULL')
+        ->andWhere("TRIM(v.color) <> ''")
+        ->groupBy('p.id, colorKey')
+        ->having('SUM(v.stock) > 0')
+        ->orderBy('p.id', 'DESC')
+        ->setMaxResults($limite);
+
+    if ($categoria) {
+        $qb->andWhere('p.categoria = :cat')
+           ->setParameter('cat', $categoria);
+    }
+
+    $res = $qb->getQuery()->getArrayResult();
+
+    // Si no hay similares por categoría, devolvemos algunos “random” con stock
+    if (count($res) === 0) {
+        $qb2 = $this->createQueryBuilder('p')
+            ->innerJoin('p.variaciones', 'v')
+            ->select('p AS producto')
+            ->addSelect('LOWER(TRIM(v.color)) AS colorKey')
+            ->addSelect('MAX(v.color) AS color')
+            ->addSelect('MAX(v.imagen) AS imagenColor')
+            ->addSelect('SUM(v.stock) AS stockColor')
+            ->where('p != :actual')
+            ->setParameter('actual', $producto)
+            ->andWhere('v.color IS NOT NULL')
+            ->andWhere("TRIM(v.color) <> ''")
+            ->groupBy('p.id, colorKey')
+            ->having('SUM(v.stock) > 0')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($limite);
+
+        $res = $qb2->getQuery()->getArrayResult();
+    }
+
+    return $res;
+}
+
+
 
 
 }

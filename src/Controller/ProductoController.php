@@ -17,11 +17,9 @@ class ProductoController extends AbstractController
     #[Route('/productos', name: 'producto_listado')]
     public function listado(Request $request, EntityManagerInterface $entityManager, ProductosRepository $repo): Response
     {
-        // ✅ Categoría (limpia)
         $slug = trim((string) $request->query->get('categoria', ''));
         $slug = $slug === '' ? null : $slug;
 
-        // ✅ Filtros (limpios)
         $talla     = trim((string) $request->query->get('talla', ''));
         $color     = trim((string) $request->query->get('color', ''));
         $precioMax = trim((string) $request->query->get('precioMax', ''));
@@ -40,7 +38,6 @@ class ProductoController extends AbstractController
                 ->findOneBy(['slug' => $slug]);
         }
 
-        // ✅ Si el slug no existe, lo tratamos como "ver todo"
         if ($slug && !$categoriaActiva) {
             $slug = null;
             $categoriaActiva = null;
@@ -49,16 +46,9 @@ class ProductoController extends AbstractController
         $productos = [];
         $tarjetas  = [];
 
-        /**
-         * ✅ CLAVE (para que salga la imagen del color filtrado):
-         * - Si hay COLOR (da igual si también hay talla o precio) -> TARJETAS con imagenColor
-         * - Si NO hay color y NO hay talla -> TARJETAS (ver todo / precioMax)
-         * - Si hay talla pero NO hay color -> PRODUCTOS normales
-         */
         $modoTarjetas = ($color !== null) || ($talla === null && $color === null);
 
         if ($modoTarjetas) {
-            // ✅ Si hay cualquier filtro (talla/color/precio), usamos tarjetas con filtros
             if ($talla !== null || $color !== null || $precioMax !== null) {
                 $tarjetas = $repo->listarTarjetasPorColorConFiltros(
                     $categoriaActiva,
@@ -67,11 +57,9 @@ class ProductoController extends AbstractController
                     $precioMax
                 );
             } else {
-                // ✅ Ver todo sin filtros
                 $tarjetas = $repo->listarTarjetasPorColor($categoriaActiva, null, null);
             }
         } else {
-            // ✅ Solo talla (sin color) -> productos
             $productos = $repo->buscarConCategoriaYFiltros(
                 $categoriaActiva,
                 $talla,
@@ -150,7 +138,7 @@ class ProductoController extends AbstractController
             }
         }
 
-        // ✅ SIMILARES
+        // ✅ SIMILARES (POR COLOR, para que coincida miniatura y color al entrar)
         $similares = $repo->buscarSimilares($producto, 6);
 
         return $this->render('producto/detalle.html.twig', [
