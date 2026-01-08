@@ -3,219 +3,283 @@
 {% block title %}Detalle de {{ producto.nombre }}{% endblock %}
 
 {% block body %}
-<style>
-    .zona-producto{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:32px;
-        align-items:start;
-    }
-    @media (max-width: 992px){
-        .zona-producto{ grid-template-columns: 1fr; }
-    }
+    <style>
+        .zona-producto{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap:32px;
+            align-items:start;
+        }
+        @media (max-width: 992px){
+            .zona-producto{ grid-template-columns: 1fr; }
+        }
 
-    .img-principal-wrap{ position: sticky; top: 16px; }
-    .img-principal{
-        width:100%;
-        border-radius:10px;
-        background:#f7f7f7;
-        object-fit:cover;
-    }
+        .img-principal-wrap{ position: sticky; top: 16px; }
+        .img-principal{
+            width:100%;
+            border-radius:10px;
+            background:#f7f7f7;
+            object-fit:cover;
+        }
 
-    .titulo-prod{ font-size:28px; letter-spacing:.2px; margin-bottom:6px; }
-    .precio-prod{ font-size:18px; font-weight:600; margin-bottom:14px; }
-    .descripcion-prod{ color:#444; margin-bottom:18px; line-height:1.4; }
+        .titulo-prod{ font-size:28px; letter-spacing:.2px; margin-bottom:6px; }
+        .precio-prod{ font-size:18px; font-weight:600; margin-bottom:14px; }
+        .descripcion-prod{ color:#444; margin-bottom:18px; line-height:1.4; }
 
-    .bloque{ border-top:1px solid #eaeaea; padding-top:16px; margin-top:16px; }
+        .bloque{ border-top:1px solid #eaeaea; padding-top:16px; margin-top:16px; }
 
-    /* ✅ SWATCHES (círculos) */
-    .swatches{
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-        margin-top:10px;
-    }
-    .swatch{
-        width:22px;
-        height:22px;
-        border-radius:999px;
-        border:1px solid #ddd;
-        cursor:pointer;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        position:relative;
-        background:#fff;
-        padding:0;
-    }
-    .swatch::after{
-        content:"";
-        position:absolute;
-        inset:-3px;
-        border-radius:999px;
-        border:2px solid transparent;
-        transition:border-color .15s ease;
-    }
-    .swatch:hover::after{ border-color:#bbb; }
-    .swatch.activo::after{ border-color:#111; }
-    .swatch.borde-fuerte{ border-color:#999; }
+        /* ✅ SWATCHES (círculos) */
+        .swatches{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:10px;
+        }
+        .swatch{
+            width:22px;
+            height:22px;
+            border-radius:999px;
+            border:1px solid #ddd;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+            background:#fff;
+            padding:0;
+        }
+        .swatch::after{
+            content:"";
+            position:absolute;
+            inset:-3px;
+            border-radius:999px;
+            border:2px solid transparent;
+            transition:border-color .15s ease;
+        }
+        .swatch:hover::after{ border-color:#bbb; }
+        .swatch.activo::after{ border-color:#111; }
+        .swatch.borde-fuerte{ border-color:#999; }
 
-    .swatch-nombre{
-        font-size:12px;
-        color:#666;
-        margin-top:8px;
-        text-transform:uppercase;
-        letter-spacing:.6px;
-    }
+        .swatch-nombre{
+            font-size:12px;
+            color:#666;
+            margin-top:8px;
+            text-transform:uppercase;
+            letter-spacing:.6px;
+        }
 
-    /* ✅ Tallas */
-    .lista-tallas{
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-        margin-top:10px;
-    }
-    .talla-pill{
-        border:1px solid #ddd;
-        padding:6px 10px;
-        border-radius:999px;
-        font-size:13px;
-        background:#fff;
-        cursor:pointer;
-        user-select:none;
-    }
-    .talla-pill:hover{ border-color:#111; }
-    .talla-pill.activa{
-        border-color:#111;
-        background:#111;
-        color:#fff;
-    }
-    .talla-pill.sin-stock{
-        opacity:.4;
-        cursor:not-allowed;
-        text-decoration:line-through;
-    }
+        /* ✅ Tallas */
+        .lista-tallas{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:10px;
+        }
+        .talla-pill{
+            border:1px solid #ddd;
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:13px;
+            background:#fff;
+            cursor:pointer;
+            user-select:none;
+        }
+        .talla-pill:hover{ border-color:#111; }
+        .talla-pill.activa{
+            border-color:#111;
+            background:#111;
+            color:#fff;
+        }
+        .talla-pill.sin-stock{
+            opacity:.4;
+            cursor:not-allowed;
+            text-decoration:line-through;
+        }
 
-    .mensaje-seleccion{ color:#777; font-size:13px; margin-top:10px; }
-    .oculto{ display:none !important; }
+        .mensaje-seleccion{ color:#777; font-size:13px; margin-top:10px; }
+        .oculto{ display:none !important; }
 
-    .btn-zara{
-        border-radius:999px;
-        padding-left:16px;
-        padding-right:16px;
-    }
-</style>
+        .btn-zara{
+            border-radius:999px;
+            padding-left:16px;
+            padding-right:16px;
+        }
 
-<div class="zona-producto">
-    <!-- IZQ: IMAGEN PRINCIPAL -->
-    <div class="img-principal-wrap">
-        {% set img = imagenInicial ?? producto.imagen %}
-        {% if img %}
-            <img
-                id="img-principal"
-                class="img-principal"
-                src="{{ asset('images/' ~ img) }}"
-                alt="Imagen de {{ producto.nombre }}"
-                onerror="this.src='{{ asset('images/placeholder.png') }}'"
-            >
-        {% else %}
-            <div class="img-principal d-flex align-items-center justify-content-center" style="height:520px;">
-                <span class="text-muted">Sin imagen</span>
-            </div>
-        {% endif %}
+        /* ✅ SIMILARES */
+        .similares-titulo{
+            letter-spacing:.2px;
+            margin-bottom:14px;
+        }
+        .similares-card img{
+            aspect-ratio: 3/4;
+            object-fit: cover;
+        }
+        .similares-card:hover{
+            transform: translateY(-2px);
+            transition: transform .15s ease;
+        }
+    </style>
+
+    <div class="mb-3">
+        <button
+            type="button"
+            class="btn btn-link text-decoration-none text-muted p-0"
+            onclick="history.back()"
+            style="font-size:14px;"
+        >
+            ← Volver
+        </button>
     </div>
 
-    <!-- DER: INFO + COLORES + TALLAS + AÑADIR -->
-    <div>
-        <h1 class="titulo-prod">{{ producto.nombre }}</h1>
-        <div class="precio-prod">{{ producto.precio|number_format(2, ',', '.') }} €</div>
-        <div class="descripcion-prod">{{ producto.descripcion }}</div>
-
-        <!-- ✅ COLORES -->
-        <div class="bloque">
-            <div class="fw-semibold">Color</div>
-
-            {% if colores is not empty %}
-                <div class="swatches" id="swatches">
-                    {% for c in colores %}
-                        {% set esBlanco = c.hex is not null and (c.hex|lower) in ['#ffffff', '#f5f5f5', '#fafafa'] %}
-
-                        <button
-                            type="button"
-                            class="swatch {{ esBlanco ? 'borde-fuerte' : '' }}"
-                            aria-label="Color {{ c.color }}"
-                            data-color="{{ c.color }}"
-                            {# ✅ CAMBIO CLAVE: images/ (no images/productos/) #}
-                            data-img="{% if c.imagen %}{{ asset('images/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{{ asset('images/placeholder.png') }}{% endif %}"
-                            style="{% if c.hex %}background: {{ c.hex }};{% endif %}"
-                            title="{{ c.color }}"
-                        ></button>
-                    {% endfor %}
-                </div>
-
-                <div class="swatch-nombre" id="color-seleccionado">
-                    Selecciona un color
-                </div>
+    <div class="zona-producto">
+        <!-- IZQ: IMAGEN PRINCIPAL -->
+        <div class="img-principal-wrap">
+            {% set img = imagenInicial ?? producto.imagen %}
+            {% if img %}
+                <img
+                    id="img-principal"
+                    class="img-principal"
+                    src="{{ asset('images/' ~ img) }}"
+                    alt="Imagen de {{ producto.nombre }}"
+                    onerror="this.src='{{ asset('images/placeholder.png') }}'"
+                >
             {% else %}
-                <div class="text-muted">No hay colores disponibles.</div>
+                <div class="img-principal d-flex align-items-center justify-content-center" style="height:520px;">
+                    <span class="text-muted">Sin imagen</span>
+                </div>
             {% endif %}
         </div>
 
-        <!-- ✅ TALLAS (OCULTAS HASTA ELEGIR COLOR) -->
-        <div class="bloque">
-            <div class="fw-semibold mb-2">Talla</div>
+        <!-- DER: INFO + COLORES + TALLAS + AÑADIR -->
+        <div>
+            <h1 class="titulo-prod">{{ producto.nombre }}</h1>
+            <div class="precio-prod">{{ producto.precio|number_format(2, ',', '.') }} €</div>
+            <div class="descripcion-prod">{{ producto.descripcion }}</div>
 
-            <div class="mensaje-seleccion" id="msg-color">
-                Primero selecciona un color para ver las tallas.
+            <!-- ✅ COLORES -->
+            <div class="bloque">
+                <div class="fw-semibold">Color</div>
+
+                {% if colores is not empty %}
+                    <div class="swatches" id="swatches">
+                        {% for c in colores %}
+                            {% set esBlanco = c.hex is not null and (c.hex|lower) in ['#ffffff', '#f5f5f5', '#fafafa'] %}
+
+                            <button
+                                type="button"
+                                class="swatch {{ esBlanco ? 'borde-fuerte' : '' }}"
+                                aria-label="Color {{ c.color }}"
+                                data-color="{{ c.color }}"
+                                data-img="{% if c.imagen %}{{ asset('images/' ~ c.imagen) }}{% elseif producto.imagen %}{{ asset('images/' ~ producto.imagen) }}{% else %}{{ asset('images/placeholder.png') }}{% endif %}"
+                                style="{% if c.hex %}background: {{ c.hex }};{% endif %}"
+                                title="{{ c.color }}"
+                            ></button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="swatch-nombre" id="color-seleccionado">
+                        Selecciona un color
+                    </div>
+                {% else %}
+                    <div class="text-muted">No hay colores disponibles.</div>
+                {% endif %}
             </div>
 
-            <div class="lista-tallas oculto" id="lista-tallas"></div>
+            <!-- ✅ TALLAS -->
+            <div class="bloque">
+                <div class="fw-semibold mb-2">Talla</div>
 
-            <div class="text-danger small mt-2 oculto" id="msg-sin-stock">
-                No hay stock disponible para este color.
-            </div>
-        </div>
+                <div class="mensaje-seleccion" id="msg-color">
+                    Primero selecciona un color para ver las tallas.
+                </div>
 
-        <!-- ✅ AÑADIR (DESACTIVADO HASTA ELEGIR TALLA) -->
-        <form action="{{ path('carrito_agregar') }}" method="post" class="mt-3" id="form-carrito">
-            <input type="hidden" name="producto_id" value="{{ producto.id }}">
-            <input type="hidden" name="color" id="input-color" value="">
-            <input type="hidden" name="talla" id="input-talla" value="">
+                <div class="lista-tallas oculto" id="lista-tallas"></div>
 
-            <div class="d-flex align-items-center gap-2">
-                <input
-                    type="number"
-                    name="cantidad"
-                    id="input-cantidad"
-                    value="1"
-                    min="1"
-                    class="form-control"
-                    style="max-width: 110px;"
-                    disabled
-                >
-                <button type="submit" class="btn btn-dark btn-zara" id="btn-add" disabled>
-                    Añadir
-                </button>
+                <div class="text-danger small mt-2 oculto" id="msg-sin-stock">
+                    No hay stock disponible para este color.
+                </div>
             </div>
 
-            <div class="text-muted small mt-2" id="msg-elegir">
-                Elige un color y una talla para poder añadir al carrito.
-            </div>
-        </form>
+            <!-- ✅ AÑADIR -->
+            <form action="{{ path('carrito_agregar') }}" method="post" class="mt-3" id="form-carrito">
+                <input type="hidden" name="producto_id" value="{{ producto.id }}">
+                <input type="hidden" name="color" id="input-color" value="">
+                <input type="hidden" name="talla" id="input-talla" value="">
 
-        <!-- Variaciones ocultas para que JS construya tallas/stock -->
-        <div id="variaciones" class="oculto">
-            {% for v in variaciones %}
-                <div
-                    class="variacion-card"
-                    data-color="{{ v.color }}"
-                    data-talla="{{ v.talla }}"
-                    data-stock="{{ v.stock }}"
-                ></div>
-            {% endfor %}
+                <div class="d-flex align-items-center gap-2">
+                    <input
+                        type="number"
+                        name="cantidad"
+                        id="input-cantidad"
+                        value="1"
+                        min="1"
+                        class="form-control"
+                        style="max-width: 110px;"
+                        disabled
+                    >
+                    <button type="submit" class="btn btn-dark btn-zara" id="btn-add" disabled>
+                        Añadir
+                    </button>
+                </div>
+
+                <div class="text-muted small mt-2" id="msg-elegir">
+                    Elige un color y una talla para poder añadir al carrito.
+                </div>
+            </form>
+
+            <!-- Variaciones ocultas -->
+            <div id="variaciones" class="oculto">
+                {% for v in variaciones %}
+                    <div
+                        class="variacion-card"
+                        data-color="{{ v.color }}"
+                        data-talla="{{ v.talla }}"
+                        data-stock="{{ v.stock }}"
+                    ></div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
+
+    {# ✅ SIMILARES / TAMBIÉN TE PUEDE GUSTAR #}
+    {% if similares is defined and similares is not empty %}
+        <hr class="my-5">
+
+        <h3 class="similares-titulo">También te puede gustar</h3>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+            {% for s in similares %}
+                <div class="col">
+                    <a href="{{ path('producto_detalle', {'id': s.id}) }}" class="text-decoration-none text-dark">
+                        <div class="card h-100 similares-card">
+                            {% if s.imagen %}
+                                <img
+                                    src="{{ asset('images/' ~ s.imagen) }}"
+                                    class="card-img-top"
+                                    alt="Imagen de {{ s.nombre }}"
+                                    onerror="this.src='{{ asset('images/placeholder.png') }}'"
+                                >
+                            {% else %}
+                                <div class="card-img-top d-flex align-items-center justify-content-center text-muted"
+                                     style="aspect-ratio: 3/4; background:#f7f7f7;">
+                                    Sin imagen
+                                </div>
+                            {% endif %}
+
+                            <div class="card-body p-2">
+                                <div class="small fw-semibold" style="line-height:1.2;">
+                                    {{ s.nombre }}
+                                </div>
+                                <div class="small text-muted">
+                                    {{ s.precio|number_format(2, ',', '.') }} €
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 <script>
 (function () {
@@ -320,7 +384,6 @@
         swatch.addEventListener('click', () => activarSwatch(swatch));
     });
 
-        // ✅ Auto-seleccionar color si viene por URL (?color=...)
     const colorUrl = "{{ colorUrl|default('')|e('js') }}".toLowerCase().trim();
     if (colorUrl) {
         const sw = Array.from(swatches).find(s => (s.dataset.color || '').toLowerCase().trim() === colorUrl);

@@ -16,13 +16,6 @@
 {% block body %}
     <h1 class="mb-4">Productos</h1>
 
-    {# ✅ Calculamos hayFiltros SIEMPRE #}
-    {% set hayFiltros =
-        (filtros.talla is defined and filtros.talla is not empty) or
-        (filtros.color is defined and filtros.color is not empty) or
-        (filtros.precioMax is defined and filtros.precioMax is not empty and filtros.precioMax != '0')
-    %}
-
     {# ================== CATEGORÍAS ================== #}
     {% if categorias is defined and categorias is not empty %}
         <div class="d-flex flex-wrap gap-2 mb-4">
@@ -111,7 +104,7 @@
     {# ✅ Si el controller decide modoTarjetas, pintamos tarjetas #}
     {% set usarTarjetas = (modoTarjetas is defined and modoTarjetas) %}
 
-    {# ================== TARJETAS =================== #}
+    {# ================== TARJETAS (imagen correcta por color) =================== #}
     {% if usarTarjetas and tarjetas is defined and tarjetas is not empty %}
 
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">
@@ -157,7 +150,7 @@
             {% endfor %}
         </div>
 
-    {# ================== PRODUCTOS (SIN COLOR FILTRADO) =================== #}
+    {# ================== PRODUCTOS (cuando solo hay talla sin color) =================== #}
     {% elseif productos is not empty %}
 
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-3 g-3">

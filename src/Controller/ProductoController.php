@@ -17,92 +17,90 @@ class ProductoController extends AbstractController
     #[Route('/productos', name: 'producto_listado')]
     public function listado(Request $request, EntityManagerInterface $entityManager, ProductosRepository $repo): Response
     {
-    // ✅ Categoría (limpia)
-    $slug = trim((string) $request->query->get('categoria', ''));
-    $slug = $slug === '' ? null : $slug;
+        // ✅ Categoría (limpia)
+        $slug = trim((string) $request->query->get('categoria', ''));
+        $slug = $slug === '' ? null : $slug;
 
-    // ✅ Filtros (limpios)
-    $talla     = trim((string) $request->query->get('talla', ''));
-    $color     = trim((string) $request->query->get('color', ''));
-    $precioMax = trim((string) $request->query->get('precioMax', ''));
+        // ✅ Filtros (limpios)
+        $talla     = trim((string) $request->query->get('talla', ''));
+        $color     = trim((string) $request->query->get('color', ''));
+        $precioMax = trim((string) $request->query->get('precioMax', ''));
 
-    $talla     = $talla === '' ? null : $talla;
-    $color     = $color === '' ? null : $color;
-    $precioMax = $precioMax === '' ? null : $precioMax;
+        $talla     = $talla === '' ? null : $talla;
+        $color     = $color === '' ? null : $color;
+        $precioMax = $precioMax === '' ? null : $precioMax;
 
-    $categorias = $entityManager->getRepository(Categoria::class)
-        ->findBy([], ['nombre' => 'ASC']);
+        $categorias = $entityManager->getRepository(Categoria::class)
+            ->findBy([], ['nombre' => 'ASC']);
 
-    $categoriaActiva = null;
-    if ($slug) {
-        $categoriaActiva = $entityManager
-            ->getRepository(Categoria::class)
-            ->findOneBy(['slug' => $slug]);
-    }
-
-    // ✅ Si el slug no existe, lo tratamos como "ver todo"
-    if ($slug && !$categoriaActiva) {
-        $slug = null;
         $categoriaActiva = null;
-    }
+        if ($slug) {
+            $categoriaActiva = $entityManager
+                ->getRepository(Categoria::class)
+                ->findOneBy(['slug' => $slug]);
+        }
 
-    // ✅ Hay filtros SOLO si hay valores reales
-    $hayFiltros = ($talla !== null) || ($color !== null) || ($precioMax !== null);
+        // ✅ Si el slug no existe, lo tratamos como "ver todo"
+        if ($slug && !$categoriaActiva) {
+            $slug = null;
+            $categoriaActiva = null;
+        }
 
-    // ✅ Modo tarjetas si:
-    // - no hay filtros (ver todo)
-    // - o hay filtro por COLOR (con o sin talla)
-    $modoTarjetas = (!$hayFiltros) || ($color !== null);
+        $productos = [];
+        $tarjetas  = [];
 
-    $productos = [];
-    $tarjetas  = [];
+        /**
+         * ✅ CLAVE (para que salga la imagen del color filtrado):
+         * - Si hay COLOR (da igual si también hay talla o precio) -> TARJETAS con imagenColor
+         * - Si NO hay color y NO hay talla -> TARJETAS (ver todo / precioMax)
+         * - Si hay talla pero NO hay color -> PRODUCTOS normales
+         */
+        $modoTarjetas = ($color !== null) || ($talla === null && $color === null);
 
-    if ($modoTarjetas) {
-        if ($hayFiltros) {
-            // 🔥 Con filtros y color -> tarjetas filtradas (para que salga la imagen del color)
-            $tarjetas = $repo->listarTarjetasPorColorConFiltros(
+        if ($modoTarjetas) {
+            // ✅ Si hay cualquier filtro (talla/color/precio), usamos tarjetas con filtros
+            if ($talla !== null || $color !== null || $precioMax !== null) {
+                $tarjetas = $repo->listarTarjetasPorColorConFiltros(
+                    $categoriaActiva,
+                    $talla,
+                    $color,
+                    $precioMax
+                );
+            } else {
+                // ✅ Ver todo sin filtros
+                $tarjetas = $repo->listarTarjetasPorColor($categoriaActiva, null, null);
+            }
+        } else {
+            // ✅ Solo talla (sin color) -> productos
+            $productos = $repo->buscarConCategoriaYFiltros(
                 $categoriaActiva,
                 $talla,
                 $color,
                 $precioMax
             );
-        } else {
-            // 🔥 Sin filtros -> ver todo por color
-            $tarjetas = $repo->listarTarjetasPorColor($categoriaActiva);
         }
-    } else {
-        // 🔹 Sin color (ej: solo talla, o talla+precio) -> productos normales
-        $productos = $repo->buscarConCategoriaYFiltros(
-            $categoriaActiva,
-            $talla,
-            $color,
-            $precioMax
-        );
+
+        $tallasDisponibles  = $repo->obtenerTallasUnicas();
+        $coloresDisponibles = $repo->obtenerColoresUnicos();
+
+        return $this->render('producto/listado.html.twig', [
+            'productos'          => $productos,
+            'tarjetas'           => $tarjetas,
+            'modoTarjetas'       => $modoTarjetas,
+            'categorias'         => $categorias,
+            'slugActiva'         => $slug,
+            'tallasDisponibles'  => $tallasDisponibles,
+            'coloresDisponibles' => $coloresDisponibles,
+            'filtros' => [
+                'talla'     => $talla,
+                'color'     => $color,
+                'precioMax' => $precioMax,
+            ],
+        ]);
     }
 
-    $tallasDisponibles  = $repo->obtenerTallasUnicas();
-    $coloresDisponibles = $repo->obtenerColoresUnicos();
-
-    return $this->render('producto/listado.html.twig', [
-        'productos'          => $productos,
-        'tarjetas'           => $tarjetas,
-        'modoTarjetas'       => $modoTarjetas,
-        'categorias'         => $categorias,
-        'slugActiva'         => $slug,
-        'tallasDisponibles'  => $tallasDisponibles,
-        'coloresDisponibles' => $coloresDisponibles,
-        'filtros' => [
-            'talla'     => $talla,
-            'color'     => $color,
-            'precioMax' => $precioMax,
-        ],
-    ]);
-}
-
-
-
     #[Route('/productos/{id}', name: 'producto_detalle', requirements: ['id' => '\d+'])]
-    public function detalle(Request $request, EntityManagerInterface $em, int $id): Response
+    public function detalle(Request $request, EntityManagerInterface $em, ProductosRepository $repo, int $id): Response
     {
         $producto = $em->getRepository(Producto::class)->find($id);
 
@@ -112,7 +110,6 @@ class ProductoController extends AbstractController
 
         $variaciones = $em->getRepository(ProductoVariacion::class)->findBy(['producto' => $id]);
 
-        // ✅ Color que viene desde el listado: /productos/1?color=Azul%20marino
         $colorUrl = trim((string) $request->query->get('color', ''));
         $colorUrl = $colorUrl === '' ? null : $colorUrl;
 
@@ -129,7 +126,6 @@ class ProductoController extends AbstractController
             'marrón' => '#7C4A2D',
         ];
 
-        // ✅ Imagen inicial: primera variación con imagen, si no la del producto
         $imagenInicial = $producto->getImagen();
         foreach ($variaciones as $v) {
             if ($v->getImagen()) {
@@ -138,7 +134,6 @@ class ProductoController extends AbstractController
             }
         }
 
-        // ✅ Colores únicos (cada color con su imagen y su hex opcional)
         $colores = [];
         foreach ($variaciones as $v) {
             $colorVar = $v->getColor();
@@ -155,12 +150,16 @@ class ProductoController extends AbstractController
             }
         }
 
+        // ✅ SIMILARES
+        $similares = $repo->buscarSimilares($producto, 6);
+
         return $this->render('producto/detalle.html.twig', [
             'producto'      => $producto,
             'variaciones'   => $variaciones,
             'colores'       => array_values($colores),
             'imagenInicial' => $imagenInicial,
             'colorUrl'      => $colorUrl,
+            'similares'     => $similares,
         ]);
     }
 }
