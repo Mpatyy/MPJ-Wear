@@ -16,7 +16,7 @@
             Este pedido no tiene líneas asociadas.
         </div>
     {% else %}
-        <table class="table table-sm">
+        <table class="table table-sm align-middle">
             <thead>
                 <tr>
                     <th>Producto</th>
@@ -30,7 +30,24 @@
             <tbody>
                 {% for linea in lineas %}
                     <tr>
-                        <td>{{ linea.producto.nombre }}</td>
+                        <td class="d-flex align-items-center">
+                            {% if linea.imagen %}
+                                <img
+                                    src="{{ asset('images/' ~ linea.imagen) }}"
+                                    alt="{{ linea.producto.nombre }}"
+                                    style="width:60px; height:auto;"
+                                    class="me-2"
+                                >
+                            {% else %}
+                                <img
+                                    src="{{ asset('images/no-image.png') }}"
+                                    alt="Sin imagen"
+                                    style="width:60px; height:auto;"
+                                    class="me-2"
+                                >
+                            {% endif %}
+                            <span>{{ linea.producto.nombre }}</span>
+                        </td>
                         <td>{{ linea.talla }}</td>
                         <td>{{ linea.color }}</td>
                         <td>{{ linea.cantidad }}</td>
