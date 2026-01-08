@@ -1,0 +1,10 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Estadísticas{% endblock %}
+{% block body %}
+<h1>Estadísticas</h1>
+<div class="row">
+    <div class="col-md-4"><div class="card p-3 mb-3">Ingresos totales: {{ ingresos }}€</div></div>
+    <div class="col-md-4"><div class="card p-3 mb-3">Pedidos pendientes: {{ pedidosPendientes }}</div></div>
+    <div class="col-md-4"><div class="card p-3 mb-3">Pedidos pagados: {{ pedidosPagados }}</div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Editar Producto{% endblock %}
+
+{% block body %}
+<h1>Editar Producto #{{ producto.id }}</h1>
+
+{{ form_start(form) }}
+    {{ form_row(form.nombre) }}
+    {{ form_row(form.precio) }}
+    {{ form_row(form.descripcion) }}
+
+    <h3>Variaciones</h3>
+    <div class="variaciones">
+        {{ form_widget(form.variaciones) }}
+    </div>
+
+    <button class="btn btn-primary mt-2">Guardar cambios</button>
+{{ form_end(form) }}
+
+<a href="{{ path('admin_productos_list') }}" class="btn btn-secondary mt-3">Volver a productos</a>
+{% endblock %}
