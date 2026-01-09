@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-01-2026 a las 18:26:38
+-- Tiempo de generación: 09-01-2026 a las 19:09:38
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -56,7 +56,7 @@ CREATE TABLE `categoria` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `descripcion` longtext DEFAULT NULL,
-  `slug` varchar(50) NOT NULL
+  `slug` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -68,7 +68,8 @@ INSERT INTO `categoria` (`id`, `nombre`, `descripcion`, `slug`) VALUES
 (2, 'Sudaderas', 'Sudaderas MPJ con y sin capucha', 'sudaderas'),
 (3, 'Pantalones', 'Pantalones MPJ cómodos y versátiles', 'pantalones'),
 (4, 'Abrigos', 'Abrigos y chaquetas MPJ', 'abrigos'),
-(5, 'Zapatillas', 'Zapatillas y calzado MPJ', 'zapatillas');
+(5, 'Zapatillas', 'Zapatillas y calzado MPJ', 'zapatillas'),
+(7, 'Complementos', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -446,6 +447,20 @@ INSERT INTO `reset_password_request` (`id`, `user_id`, `selector`, `hashed_token
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `tarjeta`
+--
+
+CREATE TABLE `tarjeta` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `numero` varchar(20) NOT NULL,
+  `caducidad` date NOT NULL,
+  `cvv` varchar(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -595,6 +610,13 @@ ALTER TABLE `reset_password_request`
   ADD KEY `IDX_7CE748AA76ED395` (`user_id`);
 
 --
+-- Indices de la tabla `tarjeta`
+--
+ALTER TABLE `tarjeta`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `IDX_TARJETA_USER` (`user_id`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -622,7 +644,7 @@ ALTER TABLE `carrito_producto`
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `comentario`
@@ -683,6 +705,12 @@ ALTER TABLE `producto_variacion`
 --
 ALTER TABLE `reset_password_request`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+
+--
+-- AUTO_INCREMENT de la tabla `tarjeta`
+--
+ALTER TABLE `tarjeta`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
@@ -758,6 +786,12 @@ ALTER TABLE `producto_variacion`
 --
 ALTER TABLE `reset_password_request`
   ADD CONSTRAINT `FK_7CE748AA76ED395` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`);
+
+--
+-- Filtros para la tabla `tarjeta`
+--
+ALTER TABLE `tarjeta`
+  ADD CONSTRAINT `FK_TARJETA_USER` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
