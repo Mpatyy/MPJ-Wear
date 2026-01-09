@@ -29,23 +29,23 @@
                     <h2 class="h6 mb-0">Mi cuenta</h2>
                 </div>
                 <div class="list-group list-group-flush">
-    <a href="{{ path('perfil') }}" class="list-group-item list-group-item-action active">
-        Perfil y pedidos
-    </a>
+                    <a href="{{ path('perfil') }}" class="list-group-item list-group-item-action active">
+                        Perfil y pedidos
+                    </a>
 
-    <a href="{{ path('mis_direcciones') }}" class="list-group-item list-group-item-action">
-        Mis direcciones
-    </a>
+                    <a href="{{ path('mis_direcciones') }}" class="list-group-item list-group-item-action">
+                        Mis direcciones
+                    </a>
 
-    <span class="list-group-item text-muted">
-        Métodos de pago (pendiente)
-    </span>
+                    {# MODIFICACIÓN: ahora es enlace clicable #}
+                    <a href="{{ path('metodos_pago') }}" class="list-group-item list-group-item-action">
+                        Métodos de pago
+                    </a>
 
-    <a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action text-danger">
-        Cerrar sesión
-    </a>
-</div>
-
+                    <a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action text-danger">
+                        Cerrar sesión
+                    </a>
+                </div>
             </div>
         </div>
 

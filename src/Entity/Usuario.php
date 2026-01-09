@@ -40,6 +40,9 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "usuario", targetEntity: Pedidos::class)]
     private Collection $pedidos;
 
+    #[ORM\OneToMany(mappedBy: "usuario", targetEntity: Tarjeta::class)]
+    private Collection $tarjetas;
+
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
@@ -49,6 +52,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         $this->comentarios = new ArrayCollection();
         $this->direcciones = new ArrayCollection();
         $this->pedidos = new ArrayCollection();
+        $this->tarjetas = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -208,6 +212,30 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+        return $this;
+    }
+
+    public function getTarjetas(): Collection
+    {
+        return $this->tarjetas;
+    }
+
+    public function addTarjeta(Tarjeta $tarjeta): self
+    {
+        if (!$this->tarjetas->contains($tarjeta)) {
+            $this->tarjetas[] = $tarjeta;
+            $tarjeta->setUsuario($this);
+        }
+        return $this;
+    }
+
+    public function removeTarjeta(Tarjeta $tarjeta): self
+    {
+        if ($this->tarjetas->removeElement($tarjeta)) {
+            if ($tarjeta->getUsuario() === $this) {
+                $tarjeta->setUsuario(null);
+            }
+        }
         return $this;
     }
 
