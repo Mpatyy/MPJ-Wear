@@ -7,46 +7,51 @@
 <a href="{{ path('admin_productos_nuevo') }}" class="btn btn-primary mb-3">Nuevo Producto</a>
 
 <div class="table-responsive">
-<table class="table table-hover shadow-sm rounded">
+<table class="table table-hover shadow-sm rounded align-middle">
     <thead class="table-dark">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Precio</th>
-            <th>Stock / Variaciones</th>
-            <th>Acciones</th>
+            <th>Stock total</th>
+            <th>Variaciones</th>
         </tr>
     </thead>
     <tbody>
         {% for producto in productos %}
-        <tr>
-            <td>{{ producto.id }}</td>
-            <td>{{ producto.nombre }}</td>
-            <td>{{ producto.precio }}€</td>
+            {% set totalStock = 0 %}
+            {% for v in producto.variaciones %}
+                {% set totalStock = totalStock + v.stock %}
+            {% endfor %}
 
-            <td>
-                {% for variacion in producto.variaciones %}
-                    <span class="badge bg-secondary me-1 mb-1">
-                        {{ variacion.stock }} ({{ variacion.talla }}/{{ variacion.color }})
+            <tr>
+                <td>{{ producto.id }}</td>
+                <td class="text-start">
+                    <strong>{{ producto.nombre }}</strong>
+                </td>
+                <td>{{ producto.precio }}€</td>
+
+                <td>
+                    <span class="badge bg-info text-dark">
+                        {{ totalStock }} uds
                     </span>
-                {% endfor %}
-            </td>
+                </td>
 
-            <td>
-                <a href="{{ path('admin_productos_editar', {'id': producto.id}) }}" class="btn btn-sm btn-primary me-1">Editar</a>
-                <a href="{{ path('admin_productos_eliminar', {'id': producto.id}) }}" class="btn btn-sm btn-danger">Eliminar</a>
-            </td>
-        </tr>
+                <td>
+                    <a href="{{ path('admin_productos_variaciones', {'id': producto.id}) }}"
+                       class="btn btn-sm btn-outline-secondary">
+                        Ver variaciones ({{ producto.variaciones|length }})
+                    </a>
+                </td>
+            </tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
-
 {% endblock %}
 
 {% block styles %}
 <style>
-/* Tabla */
 .table {
     background-color: #fff;
     border-radius: 8px;
@@ -57,33 +62,22 @@
     font-weight: 600;
 }
 .table tbody td {
-    vertical-align: middle;
     text-align: center;
+}
+.table tbody td.text-start {
+    text-align: left;
 }
 .table-hover tbody tr:hover {
     background-color: #f8f9fa;
     transition: 0.3s;
 }
-
-/* Botones */
 .btn-sm {
     border-radius: 5px;
     font-weight: 500;
 }
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-.btn-danger:hover {
-    background-color: #a71d2a;
-    border-color: #a71d2a;
-}
-
-/* Variaciones */
 .badge {
     font-size: 0.85em;
-    padding: 0.4em 0.6em;
-    display: inline-block;
+    padding: 0.35em 0.6em;
 }
 </style>
 {% endblock %}

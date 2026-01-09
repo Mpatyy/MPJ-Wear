@@ -35,7 +35,12 @@ class Producto
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Categoria $categoria = null;
 
-    #[ORM\OneToMany(mappedBy: 'producto', targetEntity: ProductoVariacion::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'producto',
+        targetEntity: ProductoVariacion::class,
+        cascade: ['persist', 'remove']
+    )]
+    #[ORM\OrderBy(['talla' => 'ASC'])]
     private Collection $variaciones;
 
     public function __construct()

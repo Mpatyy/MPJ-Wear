@@ -26,11 +26,17 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('telefono', TextType::class, [
                 'constraints' => [
+                    new Assert\NotBlank(['message' => 'El teléfono es obligatorio']),
                     new Assert\Regex([
-                        'pattern' => '/^[\+]?[0-9\s\-\(\)]{9,15}$/',
-                        'message' => 'Teléfono inválido'
-                    ])
-                ]
+                        'pattern' => '/^[0-9]{9}$/',
+                        'message' => 'El teléfono debe tener exactamente 9 dígitos numéricos',
+                    ]),
+                ],
+                'attr' => [
+                    'class'     => 'form-control',
+                    'maxlength' => 9,
+                    'pattern'   => '\d{9}',
+                ],
             ])
 
             ->add('plainPassword', RepeatedType::class, [

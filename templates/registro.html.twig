@@ -11,19 +11,33 @@
 
             <div class="mb-3">
                 {{ form_label(registrationForm.nombre) }}
-                {{ form_widget(registrationForm.nombre, {'attr': {'class': 'form-control'}}) }}
+                {{ form_widget(registrationForm.nombre, {
+                    'attr': {
+                        'class': 'form-control'
+                    }
+                }) }}
                 {{ form_errors(registrationForm.nombre) }}
             </div>
 
             <div class="mb-3">
                 {{ form_label(registrationForm.email) }}
-                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control'}}) }}
+                {{ form_widget(registrationForm.email, {
+                    'attr': {
+                        'class': 'form-control'
+                    }
+                }) }}
                 {{ form_errors(registrationForm.email) }}
             </div>
 
             <div class="mb-3">
                 {{ form_label(registrationForm.telefono) }}
-                {{ form_widget(registrationForm.telefono, {'attr': {'class': 'form-control'}}) }}
+                {{ form_widget(registrationForm.telefono, {
+                    'attr': {
+                        'class': 'form-control',
+                        'maxlength': 9,
+                        'pattern': '\\d{9}'
+                    }
+                }) }}
                 {{ form_errors(registrationForm.telefono) }}
             </div>
 
@@ -33,7 +47,7 @@
                 {{ form_widget(registrationForm.plainPassword.first, {
                     'attr': {
                         'class': 'form-control',
-                        'id': 'change_password_form_plainPassword_first'
+                        'id': 'registration_form_plainPassword_first'
                     }
                 }) }}
                 {{ form_errors(registrationForm.plainPassword.first) }}
@@ -50,7 +64,7 @@
                 {{ form_widget(registrationForm.plainPassword.second, {
                     'attr': {
                         'class': 'form-control',
-                        'id': 'password2'
+                        'id': 'registration_form_plainPassword_second'
                     }
                 }) }}
                 {{ form_errors(registrationForm.plainPassword.second) }}
@@ -65,8 +79,49 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const password1 = document.getElementById('registration_form_plainPassword_first');
-    const password2 = document.getElementById('registration_form_plainPassword_second');  // ← Añadido
-    
+    const password2 = document.getElementById('registration_form_plainPassword_second');
+
+    const nombre   = document.getElementById('registration_form_nombre');
+    const email    = document.getElementById('registration_form_email');
+    const telefono = document.getElementById('registration_form_telefono');
+
+    function marcarCampo(campo, ok) {
+        if (!campo) return;
+        campo.classList.remove('is-valid', 'is-invalid', 'border-success', 'border-danger');
+        if (ok) {
+            campo.classList.add('is-valid', 'border-success');
+        } else {
+            campo.classList.add('is-invalid', 'border-danger');
+        }
+    }
+
+    // --- Nombre ---
+    if (nombre) {
+        nombre.addEventListener('input', function () {
+            const ok = nombre.value.trim().length > 0;
+            marcarCampo(nombre, ok);
+        });
+    }
+
+    // --- Email ---
+    if (email) {
+        email.addEventListener('input', function () {
+            const valor = email.value.trim();
+            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+            marcarCampo(email, ok);
+        });
+    }
+
+    // --- Teléfono ---
+    if (telefono) {
+        telefono.addEventListener('input', function () {
+            let valor = telefono.value.replace(/\D/g, '').slice(0, 9);
+            telefono.value = valor;
+            const ok = /^[0-9]{9}$/.test(valor);
+            marcarCampo(telefono, ok);
+        });
+    }
+
     if (!password1 || !password2) return;
 
     function countRules(value) {
@@ -101,14 +156,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ← Evento para primera contraseña (reglas de fuerza)
+    // Contraseña 1: fuerza + actualizar coincidencia
     password1.addEventListener('input', function () {
         const ok = countRules(password1.value);
         updatePassword1(ok);
-        updatePassword2();  // ← También chequea coincidencia
+        updatePassword2();
     });
 
-    // ← Evento para segunda contraseña (solo coincidencia)
+    // Contraseña 2: solo coincidencia
     password2.addEventListener('input', function () {
         updatePassword2();
     });
