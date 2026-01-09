@@ -6,35 +6,34 @@
 <div class="container mt-4">
     <h1 class="mb-3">Pasarela de Pago</h1>
 
-    {# --- RESUMEN DEL PEDIDO (opcional si lo usas) -- #}
     {% if pedido is defined %}
         <div class="mb-4 p-3 border rounded">
-            <h5>Resumen del pedido</h5>
-            <p><strong>Total:</strong> {{ pedido.total }} €</p>
+            <h5 class="mb-2">Resumen del pedido</h5>
+            <p class="mb-0"><strong>Total:</strong> {{ pedido.total }} €</p>
         </div>
     {% endif %}
 
-    <form action="{{ path('procesar_pago') }}" method="POST">
+    {# ✅ RUTA CORRECTA: pago_procesar #}
+    <form action="{{ path('pago_procesar') }}" method="POST">
 
-        <!-- SELECCIÓN DE TARJETA -->
+        <!-- SELECCIÓN DE TARJETA (si algún día lo usas) -->
         <div class="mb-4">
             <label class="form-label fw-semibold">Método de pago</label>
 
             {% if tarjetas is defined and tarjetas|length > 0 %}
-                <select class="form-select" name="tarjeta_guardada" id="select-tarjeta">
-                    <option value="nueva">➕ Usar tarjeta nueva</option>
-                    {% for tarjeta in tarjetas %}
-                        <option value="{{ tarjeta.id }}">
-                            **** **** **** {{ tarjeta.numero|slice(-4) }} ({{ tarjeta.fecha_caducidad }})
-                        </option>
-                    {% endfor %}
-                </select>
+            <select class="form-select" name="tarjeta_guardada" id="select-tarjeta">
+                <option value="nueva">➕ Usar tarjeta nueva</option>
+                {% for t in tarjetas %}
+                <option value="{{ t.id }}">
+                    **** **** **** {{ t.numero|slice(-4) }} ({{ t.caducidad|date('m/Y') }})
+                </option>
+                {% endfor %}
+            </select>
             {% else %}
-                <div class="alert alert-info p-2">
-                    No tienes tarjetas guardadas. Introduce una tarjeta nueva.
-                </div>
-                <input type="hidden" name="tarjeta_guardada" value="nueva">
+            <input type="hidden" name="tarjeta_guardada" value="nueva">
             {% endif %}
+
+
         </div>
 
         <!-- FORM TARJETA NUEVA -->
@@ -43,17 +42,41 @@
 
             <div class="mb-3">
                 <label class="form-label">Número de tarjeta</label>
-                <input type="text" name="numero" class="form-control" maxlength="19" placeholder="XXXX XXXX XXXX XXXX">
+                {# ✅ name correcto: numero_tarjeta #}
+                <input
+                    type="text"
+                    name="numero_tarjeta"
+                    class="form-control"
+                    maxlength="19"
+                    inputmode="numeric"
+                    placeholder="1234 5678 9012 3456"
+                >
+                <div class="form-text">16 dígitos (puedes poner espacios).</div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Fecha caducidad</label>
-                    <input type="month" name="fecha_caducidad" class="form-control">
+                    <label class="form-label">Fecha caducidad (MM/AA)</label>
+                    {# ✅ tu controlador acepta MM/AA o MMYY, así que lo hacemos texto #}
+                    <input
+                        type="text"
+                        name="fecha_caducidad"
+                        class="form-control"
+                        placeholder="08/27"
+                        maxlength="5"
+                        inputmode="numeric"
+                    >
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">CVV</label>
-                    <input type="text" name="cvv" maxlength="4" class="form-control" placeholder="123">
+                    <input
+                        type="text"
+                        name="cvv"
+                        maxlength="3"
+                        class="form-control"
+                        placeholder="123"
+                        inputmode="numeric"
+                    >
                 </div>
             </div>
 
@@ -77,7 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById("select-tarjeta");
     const formNueva = document.getElementById("form-tarjeta-nueva");
 
-    if (select) {
+    // Mostrar/ocultar el bloque de tarjeta nueva según selector
+    if (select && formNueva) {
         select.addEventListener("change", function() {
             if (this.value === "nueva") {
                 formNueva.classList.remove("d-none");
@@ -86,7 +110,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // UX: formatear número tarjeta con espacios
+    const inputNum = document.querySelector('input[name="numero_tarjeta"]');
+    if (inputNum) {
+        inputNum.addEventListener("input", () => {
+            let v = inputNum.value.replace(/\D/g, "").slice(0, 16);
+            inputNum.value = v.replace(/(.{4})/g, "$1 ").trim();
+        });
+    }
+
+    // UX: formatear fecha MM/AA
+    const inputFecha = document.querySelector('input[name="fecha_caducidad"]');
+    if (inputFecha) {
+        inputFecha.addEventListener("input", () => {
+            let v = inputFecha.value.replace(/\D/g, "").slice(0, 4);
+            if (v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
+            inputFecha.value = v;
+        });
+    }
+
+    // UX: CVV solo números 3
+    const inputCvv = document.querySelector('input[name="cvv"]');
+    if (inputCvv) {
+        inputCvv.addEventListener("input", () => {
+            inputCvv.value = inputCvv.value.replace(/\D/g, "").slice(0, 3);
+        });
+    }
 });
 </script>
-
 {% endblock %}

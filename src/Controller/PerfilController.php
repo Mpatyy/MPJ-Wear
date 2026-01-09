@@ -105,28 +105,62 @@ class PerfilController extends AbstractController
         return $this->render('nueva_direccion.html.twig');
     }
 
-     #[Route('/perfil/metodos-pago', name: 'metodos_pago')]
+    #[Route('/perfil/metodos-pago', name: 'metodos_pago')]
     public function metodosPago(EntityManagerInterface $em, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        /** @var \App\Entity\Usuario $usuario */
         $usuario = $this->getUser();
 
         $tarjeta = new Tarjeta();
         $form = $this->createForm(TarjetaType::class, $tarjeta);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $tarjeta->setUsuario($usuario);
+
+            // ✅ 1) Limpieza: guardamos SOLO dígitos en BD
+            $numeroLimpio = preg_replace('/\D+/', '', (string) $tarjeta->getNumero());
+            $cvvLimpio    = preg_replace('/\D+/', '', (string) $tarjeta->getCvv());
+
+            $tarjeta->setNumero($numeroLimpio);
+            $tarjeta->setCvv($cvvLimpio);
+
+            // ✅ 2) Asignar usuario
+            $tarjeta->setUser($usuario);
+
+            // ✅ 3) Evitar duplicados (misma tarjeta + misma caducidad para ese usuario)
+            $existe = $em->getRepository(Tarjeta::class)->findOneBy([
+                'user'      => $usuario,
+                'numero'    => $numeroLimpio,
+                'caducidad' => $tarjeta->getCaducidad(),
+            ]);
+
+            if ($existe) {
+                $this->addFlash('error', 'Esa tarjeta ya está guardada.');
+                return $this->redirectToRoute('metodos_pago');
+            }
+
             $em->persist($tarjeta);
             $em->flush();
+
+            $this->addFlash('success', 'Tarjeta guardada correctamente.');
             return $this->redirectToRoute('metodos_pago');
         }
 
+        // ✅ 4) Mostrar tarjetas ordenadas (últimas primero)
+        $tarjetas = $em->getRepository(Tarjeta::class)->findBy(
+            ['user' => $usuario],
+            ['id' => 'DESC']
+        );
+
         return $this->render('metodos_pago.html.twig', [
-            'tarjetas' => $usuario->getTarjetas(),
-            'form' => $form->createView()
+            'tarjetas' => $tarjetas,
+            'form' => $form->createView(),
         ]);
     }
+
+
 
     #[Route('/perfil/metodos-pago/eliminar/{id}', name: 'eliminar_tarjeta')]
     public function eliminarTarjeta(int $id, EntityManagerInterface $em): Response

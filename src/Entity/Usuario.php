@@ -40,8 +40,9 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: "usuario", targetEntity: Pedidos::class)]
     private Collection $pedidos;
 
-    #[ORM\OneToMany(mappedBy: "usuario", targetEntity: Tarjeta::class)]
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: Tarjeta::class, orphanRemoval: true)]
     private Collection $tarjetas;
+
 
     #[ORM\Column(type: 'json')]
     private array $roles = [];
@@ -82,6 +83,18 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // ✅ Symfony moderno
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    // ✅ Compatibilidad (por si alguna parte lo usa)
+    public function getUsername(): string
+    {
+        return $this->email;
+    }
+
     public function getPassword(): string
     {
         return $this->password;
@@ -104,12 +117,13 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // Métodos para colecciones
+    // ===== Colecciones =====
 
     public function getCarritos(): Collection
     {
         return $this->carritos;
     }
+
     public function addCarrito(Carrito $carrito): self
     {
         if (!$this->carritos->contains($carrito)) {
@@ -121,13 +135,11 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeCarrito(Carrito $carrito): self
     {
-        if ($this->carritos->removeElement($carrito)) {
-            if ($carrito->getUsuario() === $this) {
-                $carrito->setUsuario(null);
-            }
-        }
+        $this->carritos->removeElement($carrito);
         return $this;
     }
+
+
     public function getComentarios(): Collection
     {
         return $this->comentarios;
@@ -144,13 +156,11 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeComentario(Comentario $comentario): self
     {
-        if ($this->comentarios->removeElement($comentario)) {
-            if ($comentario->getUsuario() === $this) {
-                $comentario->setUsuario(null);
-            }
-        }
+        $this->comentarios->removeElement($comentario);
         return $this;
     }
+
+
     public function getDirecciones(): Collection
     {
         return $this->direcciones;
@@ -164,6 +174,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
+
     public function removeDireccion(Direccion $direccion): self
     {
         if ($this->direcciones->removeElement($direccion)) {
@@ -190,15 +201,37 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removePedido(Pedidos $pedido): self
     {
-        if ($this->pedidos->removeElement($pedido)) {
-            if ($pedido->getUsuario() === $this) {
-                $pedido->setUsuario(null);
+        $this->pedidos->removeElement($pedido);
+        return $this;
+    }
+
+
+    // ✅ Tarjetas
+    public function getTarjetas(): Collection
+    {
+        return $this->tarjetas;
+    }
+
+    public function addTarjeta(Tarjeta $tarjeta): self
+    {
+        if (!$this->tarjetas->contains($tarjeta)) {
+            $this->tarjetas[] = $tarjeta;
+            $tarjeta->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeTarjeta(Tarjeta $tarjeta): self
+    {
+        if ($this->tarjetas->removeElement($tarjeta)) {
+            if ($tarjeta->getUser() === $this) {
+                $tarjeta->setUser(null);
             }
         }
         return $this;
     }
 
-    // Métodos de UserInterface y PasswordAuthenticatedUserInterface
+    // ===== Roles =====
 
     public function getRoles(): array
     {
@@ -215,37 +248,8 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getTarjetas(): Collection
-    {
-        return $this->tarjetas;
-    }
-
-    public function addTarjeta(Tarjeta $tarjeta): self
-    {
-        if (!$this->tarjetas->contains($tarjeta)) {
-            $this->tarjetas[] = $tarjeta;
-            $tarjeta->setUsuario($this);
-        }
-        return $this;
-    }
-
-    public function removeTarjeta(Tarjeta $tarjeta): self
-    {
-        if ($this->tarjetas->removeElement($tarjeta)) {
-            if ($tarjeta->getUsuario() === $this) {
-                $tarjeta->setUsuario(null);
-            }
-        }
-        return $this;
-    }
-
-    public function getUserIdentifier(): string
-    {
-        return $this->email;
-    }
-
     public function eraseCredentials(): void
     {
-        // Si tienes datos sensibles temporales, límpialos aquí
+        // nada
     }
 }
