@@ -10,6 +10,16 @@
 <div class="mb-3">{{ form_row(form.nombre) }}</div>
 <div class="mb-3">{{ form_row(form.descripcion) }}</div>
 <div class="mb-3">{{ form_row(form.precio) }}</div>
+<div class="mb-3 d-flex align-items-end gap-2">
+    <div class="flex-grow-1">
+        {{ form_row(form.categoria) }}
+    </div>
+    <div>
+        <a href="{{ path('admin_categorias_nueva') }}" class="btn btn-outline-secondary">
+            Nueva categoría
+        </a>
+    </div>
+</div>
 <div class="mb-3">{{ form_row(form.imagen) }}</div>
 
 <button type="submit" class="btn btn-success mt-3">Guardar Producto</button>

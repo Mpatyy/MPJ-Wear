@@ -12,6 +12,8 @@ use App\Entity\Producto;
 use App\Entity\ProductoVariacion;
 use App\Entity\Usuario;
 use App\Entity\ResetPasswordRequest;
+use App\Entity\Categoria;
+use App\Form\CategoriaType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\ProductoType;
@@ -344,6 +346,25 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/categorias/nueva', name: 'admin_categorias_nueva')]
+    public function nuevaCategoria(Request $request, EntityManagerInterface $em): Response
+    {
+        $categoria = new Categoria();
+        $form = $this->createForm(CategoriaType::class, $categoria);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($categoria);
+            $em->flush();
+
+            $this->addFlash('success', 'Categoría creada correctamente.');
+            return $this->redirectToRoute('admin_productos_nuevo'); // o a donde prefieras
+        }
+
+        return $this->render('admin/categorias/nueva.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 
 
 }

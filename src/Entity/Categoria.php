@@ -21,8 +21,9 @@ class Categoria
     private ?string $descripcion = null;
 
     // ✅ NUEVO: slug
-    #[ORM\Column(type: 'string', length: 50, unique: true)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $slug = null;
+
 
     #[ORM\OneToMany(mappedBy: "categoria", targetEntity: Producto::class)]
     private Collection $productos;

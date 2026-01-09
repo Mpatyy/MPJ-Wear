@@ -1,0 +1,16 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nueva categoría{% endblock %}
+
+{% block body %}
+<h1 class="mb-4">Nueva categoría</h1>
+
+{{ form_start(form, {'attr': {'class': 'card p-4 shadow-sm'}}) }}
+    <div class="mb-3">
+        {{ form_row(form.nombre) }}
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{{ path('admin_productos_nuevo') }}" class="btn btn-secondary ms-2">Volver a productos</a>
+{{ form_end(form) }}
+{% endblock %}
