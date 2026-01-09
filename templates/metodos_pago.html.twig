@@ -3,26 +3,158 @@
 {% block title %}Métodos de Pago{% endblock %}
 
 {% block body %}
-<h1 class="mb-4">Métodos de Pago</h1>
+{% set tarjetas = tarjetas|default([]) %}
 
-<h3>Tarjetas guardadas</h3>
-{% if tarjetas is empty %}
-    <p>No tienes tarjetas guardadas.</p>
-{% else %}
-    <ul class="list-group mb-4">
-        {% for tarjeta in tarjetas %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                **** **** **** {{ tarjeta.numero|slice(-4) }} — {{ tarjeta.caducidad|date('m/Y') }}
-                <a href="{{ path('eliminar_tarjeta', {id: tarjeta.id}) }}" class="btn btn-danger btn-sm">Eliminar</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+<div class="container my-4">
 
-<h3>Guardar nueva tarjeta</h3>
-{{ form_start(form) }}
-{{ form_widget(form) }}
-<button class="btn btn-primary mt-2">Guardar tarjeta</button>
-{{ form_end(form) }}
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h4 mb-0">Métodos de Pago</h1>
+        <a href="{{ path('perfil') }}" class="btn btn-outline-dark btn-sm">Volver a mi perfil</a>
+    </div>
 
+    {# ================== TARJETAS GUARDADAS ================== #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Tarjetas guardadas</strong>
+        </div>
+
+        <div class="card-body">
+            {% if tarjetas|length == 0 %}
+                <div class="text-muted">No tienes tarjetas guardadas.</div>
+            {% else %}
+                <div class="list-group">
+                    {% for tarjeta in tarjetas %}
+                        {% set num = (tarjeta.numero|default('')|replace({' ': '', '-': ''})) %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-credit-card fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold">**** **** **** {{ num|slice(-4) }}</div>
+                                    {% if tarjeta.caducidad %}
+                                        <div class="small text-muted">Caduca: {{ tarjeta.caducidad|date('m/Y') }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <a href="{{ path('eliminar_tarjeta', {'id': tarjeta.id}) }}"
+                               class="btn btn-outline-danger btn-sm">
+                                Eliminar
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ================== GUARDAR NUEVA TARJETA ================== #}
+    {% if form is defined %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <strong>Guardar nueva tarjeta</strong>
+            </div>
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'autocomplete': 'off', 'id': 'form-tarjeta'}}) }}
+
+                {# OJO: los IDs aquí asumen que tu TarjetaType tiene campos: numero, caducidad, cvv #}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Número de tarjeta</label>
+                        {{ form_widget(form.numero, {
+                            'attr': {
+                                'class': 'form-control',
+                                'inputmode': 'numeric',
+                                'autocomplete': 'cc-number',
+                                'placeholder': '1234 5678 9012 3456',
+                                'maxlength': '19' 
+                            }
+                        }) }}
+                        <div class="form-text">Solo se guardarán los últimos 4 dígitos visibles (**** **** **** 1234).</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Caducidad</label>
+                        {{ form_widget(form.caducidad_texto, {
+                            'attr': {
+                                'class': 'form-control',
+                                'autocomplete': 'cc-exp'
+                            }
+                        }) }}
+                        <div class="form-text">Formato: mes/año.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">CVV</label>
+                        {{ form_widget(form.cvv, {
+                            'attr': {
+                                'class': 'form-control',
+                                'inputmode': 'numeric',
+                                'autocomplete': 'cc-csc',
+                                'placeholder': '123',
+                                'maxlength': '3'
+                            }
+                        }) }}
+                        <div class="form-text">3 dígitos.</div>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-dark">
+                            Guardar tarjeta
+                        </button>
+                        <button type="reset" class="btn btn-outline-dark">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function () {
+    // Intenta detectar el input del número (por id o name)
+    const numero =
+        document.querySelector('#tarjeta_numero') ||
+        document.querySelector('input[name$="[numero]"]') ||
+        document.querySelector('input[name="numero"]');
+
+    const cvv =
+        document.querySelector('#tarjeta_cvv') ||
+        document.querySelector('input[name$="[cvv]"]') ||
+        document.querySelector('input[name="cvv"]');
+
+    // ✅ Número: permite escribir con espacios, pero SOLO 16 dígitos reales
+    if (numero) {
+        numero.addEventListener('input', () => {
+            // Nos quedamos solo con dígitos
+            let digits = numero.value.replace(/\D/g, '').slice(0, 16);
+
+            // (Opcional bonito) formatear en grupos de 4: 1234 5678...
+            const groups = digits.match(/.{1,4}/g) || [];
+            numero.value = groups.join(' ');
+        });
+
+        // Evita que pegue letras/raros
+        numero.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+            let digits = text.replace(/\D/g, '').slice(0, 16);
+            const groups = digits.match(/.{1,4}/g) || [];
+            numero.value = groups.join(' ');
+        });
+    }
+
+    // ✅ CVV: solo 3 dígitos
+    if (cvv) {
+        cvv.addEventListener('input', () => {
+            cvv.value = cvv.value.replace(/\D/g, '').slice(0, 3);
+        });
+    }
+})();
+</script>
 {% endblock %}
