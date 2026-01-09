@@ -31,13 +31,6 @@ class ProductoType extends AbstractType
                 'label' => 'Imagen de portada',
                 'mapped' => false,
                 'required' => false,
-            ])
-            ->add('variaciones', CollectionType::class, [
-                'entry_type' => ProductoVariacionType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
-                'label' => false,
             ]);
     }
 

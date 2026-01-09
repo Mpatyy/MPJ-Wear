@@ -1,0 +1,137 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Variaciones de {{ producto.nombre }}{% endblock %}
+
+{% block body %}
+<h1 class="mb-4">Variaciones de {{ producto.nombre }}</h1>
+
+<a href="{{ path('admin_productos_list') }}" class="btn btn-secondary mb-3">← Volver a productos</a>
+
+{# FORM AÑADIR VARIACIÓN #}
+<div class="card mb-4">
+    <div class="card-header fw-semibold">Añadir nueva variación</div>
+    <div class="card-body">
+        <form method="post" action="{{ path('admin_productos_variacion_nueva', {'id': producto.id}) }}" enctype="multipart/form-data">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Color</label>
+                    <input type="text" name="color" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Talla</label>
+                    <input type="text" name="talla" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Stock</label>
+                    <input type="number" name="stock" class="form-control" min="0" value="0" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Imagen (opcional)</label>
+                    <input type="file" name="imagen" class="form-control">
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-success">Añadir</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# TABLA VARIACIONES #}
+<table class="table table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Color</th>
+            <th>Talla</th>
+            <th>Stock</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if variacionesPorColor is not empty %}
+            {% for color, vars in variacionesPorColor %}
+                {% for v in vars %}
+                    <tr>
+                        {% if loop.first %}
+                            <td rowspan="{{ vars|length }}" class="fw-bold align-middle">
+                                {{ color }}
+                            </td>
+                        {% endif %}
+
+                        <td>{{ v.talla }}</td>
+
+                        <td>
+                            <form method="post"
+                                  action="{{ path('admin_productos_variacion_actualizar', {'id': v.id}) }}"
+                                  class="d-flex justify-content-center gap-2">
+                                <input type="number"
+                                       name="stock"
+                                       class="form-control form-control-sm w-auto"
+                                       min="0"
+                                       value="{{ v.stock }}">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                            </form>
+                        </td>
+
+                        <td class="text-center celda-imagen">
+                            <form method="post"
+                                  action="{{ path('admin_productos_variacion_imagen', {'id': v.id}) }}"
+                                  enctype="multipart/form-data"
+                                  class="d-inline-block">
+
+                                {% if v.imagen %}
+                                    <img src="{{ asset('images/' ~ v.imagen) }}"
+                                         alt="Var"
+                                         class="img-thumbnail mb-1">
+                                {% else %}
+                                    <span class="text-muted small d-block mb-1">Sin imagen</span>
+                                {% endif %}
+
+                                <input type="file"
+                                       name="imagen"
+                                       id="file-var-{{ v.id }}"
+                                       class="d-none"
+                                       onchange="this.form.submit()">
+
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        onclick="document.getElementById('file-var-{{ v.id }}').click();">
+                                    Cambiar
+                                </button>
+                            </form>
+                        </td>
+
+                        <td>
+                            <form method="post"
+                                  action="{{ path('admin_productos_variacion_eliminar', {'id': v.id}) }}"
+                                  onsubmit="return confirm('¿Eliminar esta variación?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    Sin variaciones registradas.
+                </td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% block styles %}
+<style>
+.celda-imagen {
+    width: 180px;
+}
+.celda-imagen img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+}
+</style>
+{% endblock %}
+
+{% endblock %}

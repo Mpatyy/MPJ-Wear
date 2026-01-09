@@ -12,22 +12,15 @@
 <div class="mb-3">{{ form_row(form.precio) }}</div>
 <div class="mb-3">{{ form_row(form.imagen) }}</div>
 
-<h4 class="mt-4">Variaciones</h4>
-<div id="variaciones-container">
-    {% for variacionForm in form.variaciones %}
-        <div class="variacion mb-3 border p-3 rounded">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-3">{{ form_row(variacionForm.talla) }}</div>
-                <div class="col-md-3">{{ form_row(variacionForm.color) }}</div>
-                <div class="col-md-2">{{ form_row(variacionForm.stock) }}</div>
-                <div class="col-md-4">{{ form_row(variacionForm.imagen) }}</div>
-            </div>
-        </div>
-    {% endfor %}
-</div>
-
 <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
 <a href="{{ path('admin_productos_list') }}" class="btn btn-secondary mt-3 ms-2">Volver a productos</a>
 
 {{ form_end(form) }}
+
+<hr class="my-4">
+
+<a href="{{ path('admin_productos_variaciones', {'id': producto.id}) }}"
+   class="btn btn-outline-secondary">
+    Gestionar variaciones
+</a>
 {% endblock %}

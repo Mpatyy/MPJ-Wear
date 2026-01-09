@@ -67,7 +67,8 @@ class AdminController extends AbstractController
     public function verPedido(int $id): Response
     {
         $pedido = $this->em->getRepository(Pedidos::class)->find($id);
-        if (!$pedido) throw $this->createNotFoundException('Pedido no encontrado');
+        if (!$pedido)
+            throw $this->createNotFoundException('Pedido no encontrado');
 
         $lineas = $this->em->getRepository(LineaPedido::class)->findBy(['pedido' => $pedido]);
         return $this->render('admin/pedidos/ver.html.twig', [
@@ -80,7 +81,8 @@ class AdminController extends AbstractController
     public function cambiarEstadoPedido(int $id, string $estado): Response
     {
         $pedido = $this->em->getRepository(Pedidos::class)->find($id);
-        if (!$pedido) throw $this->createNotFoundException('Pedido no encontrado');
+        if (!$pedido)
+            throw $this->createNotFoundException('Pedido no encontrado');
 
         $pedido->setEstado($estado);
         $this->em->flush();
@@ -102,86 +104,65 @@ class AdminController extends AbstractController
     }
 
 
-#[Route('/productos/nuevo', name: 'admin_productos_nuevo')]
-public function nuevoProducto(Request $request, EntityManagerInterface $em)
-{
-    $producto = new Producto();
+    #[Route('/productos/nuevo', name: 'admin_productos_nuevo')]
+    public function nuevoProducto(Request $request, EntityManagerInterface $em)
+    {
+        $producto = new Producto();
 
-    $form = $this->createForm(ProductoType::class, $producto);
-    $form->handleRequest($request);
+        $form = $this->createForm(ProductoType::class, $producto);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        // Imagen principal
-        $imagenFile = $form->get('imagen')->getData();
-        if ($imagenFile) {
-            $newFilename = uniqid('prod_') . '.png';
-            $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
-            $producto->setImagen($newFilename);
-        }
-
-        // Variaciones
-        foreach ($producto->getVariaciones() as $key => $variacion) {
-            $imagenVarFile = $form->get('variaciones')->get($key)->get('imagen')->getData();
-            if ($imagenVarFile) {
-                $newFilenameVar = uniqid('var_') . '.png';
-                $imagenVarFile->move($this->getParameter('productos_directory'), $newFilenameVar);
-                $variacion->setImagen($newFilenameVar);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Imagen principal
+            $imagenFile = $form->get('imagen')->getData();
+            /** @var UploadedFile $imagenFile */
+            if ($imagenFile) {
+                $extension = $imagenFile->guessExtension() ?: 'png'; // jpg, png, webp...
+                $newFilename = uniqid('prod_') . '.' . $extension;
+                $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
+                $producto->setImagen($newFilename);
             }
+
+            $em->persist($producto);
+            $em->flush();
+
+            $this->addFlash('success', 'Producto creado correctamente');
+            return $this->redirectToRoute('admin_productos_list');
         }
 
-        $em->persist($producto);
-        $em->flush();
-
-        $this->addFlash('success', 'Producto creado correctamente');
-        return $this->redirectToRoute('admin_productos_list');
+        return $this->render('admin/productos/nuevo.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
-    return $this->render('admin/productos/nuevo.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
+    #[Route('/productos/editar/{id}', name: 'admin_productos_editar')]
+    public function editarProducto(Request $request, Producto $producto, EntityManagerInterface $em)
+    {
 
-#[Route('/productos/editar/{id}', name: 'admin_productos_editar')]
-public function editarProducto(Request $request, Producto $producto, EntityManagerInterface $em)
-{
-    if ($producto->getVariaciones()->isEmpty()) {
-        $producto->addVariacion(new ProductoVariacion());
-    }
+        $form = $this->createForm(ProductoType::class, $producto);
+        $form->handleRequest($request);
 
-    $form = $this->createForm(ProductoType::class, $producto);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        // Imagen principal
-        $imagenFile = $form->get('imagen')->getData();
-        if ($imagenFile) {
-            $newFilename = uniqid() . '.' . $imagenFile->guessExtension();
-            $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
-            $producto->setImagen($newFilename);
-        }
-
-        // Variaciones
-        foreach ($producto->getVariaciones() as $key => $variacion) {
-            $imagenVarFile = $form->get('variaciones')->get($key)->get('imagen')->getData();
-            if ($imagenVarFile) {
-                $newFilenameVar = uniqid() . '.' . $imagenVarFile->guessExtension();
-                $imagenVarFile->move($this->getParameter('productos_directory'), $newFilenameVar);
-                $variacion->setImagen($newFilenameVar);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Imagen principal
+            $imagenFile = $form->get('imagen')->getData();
+            if ($imagenFile) {
+                $newFilename = uniqid() . '.' . $imagenFile->guessExtension();
+                $imagenFile->move($this->getParameter('productos_directory'), $newFilename);
+                $producto->setImagen($newFilename);
             }
+
+            $em->persist($producto);
+            $em->flush();
+
+            $this->addFlash('success', 'Producto actualizado correctamente');
+            return $this->redirectToRoute('admin_productos_list');
         }
 
-        $em->persist($producto);
-        $em->flush();
-
-        $this->addFlash('success', 'Producto actualizado correctamente');
-        return $this->redirectToRoute('admin_productos_list');
+        return $this->render('admin/productos/editar.html.twig', [
+            'producto' => $producto,
+            'form' => $form->createView(),
+        ]);
     }
-
-    return $this->render('admin/productos/editar.html.twig', [
-        'producto' => $producto,
-        'form' => $form->createView(),
-    ]);
-}
 
 
     #[Route('/productos/eliminar/{id}', name: 'admin_productos_eliminar')]
@@ -212,7 +193,8 @@ public function editarProducto(Request $request, Producto $producto, EntityManag
     public function verUsuario(int $id): Response
     {
         $usuario = $this->em->getRepository(Usuario::class)->find($id);
-        if (!$usuario) throw $this->createNotFoundException('Usuario no encontrado');
+        if (!$usuario)
+            throw $this->createNotFoundException('Usuario no encontrado');
 
         return $this->render('admin/usuarios/ver.html.twig', ['usuario' => $usuario]);
     }
@@ -221,7 +203,8 @@ public function editarProducto(Request $request, Producto $producto, EntityManag
     public function eliminarUsuario(int $id): Response
     {
         $usuario = $this->em->getRepository(Usuario::class)->find($id);
-        if (!$usuario) throw $this->createNotFoundException('Usuario no encontrado');
+        if (!$usuario)
+            throw $this->createNotFoundException('Usuario no encontrado');
 
         $resetRequests = $this->em->getRepository(ResetPasswordRequest::class)->findBy(['user' => $usuario]);
         foreach ($resetRequests as $request) {
@@ -251,4 +234,116 @@ public function editarProducto(Request $request, Producto $producto, EntityManag
             'pedidosPagados' => $pedidosPagados
         ]);
     }
+    #[Route('/productos/{id}/variaciones', name: 'admin_productos_variaciones')]
+    public function variacionesProducto(Producto $producto): Response
+    {
+        // Agrupar y ordenar en PHP
+        $variacionesPorColor = [];
+
+        foreach ($producto->getVariaciones() as $v) {
+            $color = $v->getColor();
+            if (!isset($variacionesPorColor[$color])) {
+                $variacionesPorColor[$color] = [];
+            }
+            $variacionesPorColor[$color][] = $v;
+        }
+
+        // Ordenar tallas dentro de cada color
+        foreach ($variacionesPorColor as $color => $lista) {
+    usort($lista, function (ProductoVariacion $a, ProductoVariacion $b) {
+        $orden = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+        $posA = array_search($a->getTalla(), $orden);
+        $posB = array_search($b->getTalla(), $orden);
+
+        // Si alguna talla no está en la lista, la mandamos al final
+        $posA = $posA === false ? PHP_INT_MAX : $posA;
+        $posB = $posB === false ? PHP_INT_MAX : $posB;
+
+        return $posA <=> $posB;
+    });
+
+    $variacionesPorColor[$color] = $lista;
+}
+
+
+        return $this->render('admin/productos/variaciones.html.twig', [
+            'producto' => $producto,
+            'variacionesPorColor' => $variacionesPorColor,
+        ]);
+    }
+
+    #[Route('/productos/{id}/variaciones/nueva', name: 'admin_productos_variacion_nueva', methods: ['POST'])]
+    public function nuevaVariacion(Request $request, Producto $producto, EntityManagerInterface $em): Response
+    {
+        $color = $request->request->get('color');
+        $talla = $request->request->get('talla');
+        $stock = (int) $request->request->get('stock');
+
+        $variacion = new ProductoVariacion();
+        $variacion->setProducto($producto);
+        $variacion->setColor($color);
+        $variacion->setTalla($talla);
+        $variacion->setStock($stock);
+
+        /** @var UploadedFile|null $imagenFile */
+        $imagenFile = $request->files->get('imagen');
+        if ($imagenFile) {
+            $extension = $imagenFile->guessExtension() ?: 'png';
+            $newFilenameVar = uniqid('var_') . '.' . $extension;
+            $imagenFile->move($this->getParameter('productos_directory'), $newFilenameVar);
+            $variacion->setImagen($newFilenameVar);
+        }
+
+        $em->persist($variacion);
+        $em->flush();
+
+        $this->addFlash('success', 'Variación añadida correctamente.');
+        return $this->redirectToRoute('admin_productos_variaciones', ['id' => $producto->getId()]);
+    }
+
+    #[Route('/variaciones/{id}/actualizar', name: 'admin_productos_variacion_actualizar', methods: ['POST'])]
+    public function actualizarVariacion(Request $request, ProductoVariacion $variacion, EntityManagerInterface $em): Response
+    {
+        $stock = (int) $request->request->get('stock');
+        $variacion->setStock(max(0, $stock));
+        $em->flush();
+
+        $this->addFlash('success', 'Stock actualizado.');
+        return $this->redirectToRoute('admin_productos_variaciones', ['id' => $variacion->getProducto()->getId()]);
+    }
+
+    #[Route('/variaciones/{id}/eliminar', name: 'admin_productos_variacion_eliminar', methods: ['POST'])]
+    public function eliminarVariacion(ProductoVariacion $variacion, EntityManagerInterface $em): Response
+    {
+        $productoId = $variacion->getProducto()->getId();
+
+        $em->remove($variacion);
+        $em->flush();
+
+        $this->addFlash('success', 'Variación eliminada.');
+        return $this->redirectToRoute('admin_productos_variaciones', ['id' => $productoId]);
+    }
+
+    #[Route('/variaciones/{id}/imagen', name: 'admin_productos_variacion_imagen', methods: ['POST'])]
+    public function actualizarImagenVariacion(Request $request, ProductoVariacion $variacion, EntityManagerInterface $em): Response
+    {
+        /** @var UploadedFile|null $imagenFile */
+        $imagenFile = $request->files->get('imagen');
+        if ($imagenFile) {
+            $extension = $imagenFile->guessExtension() ?: 'png';
+            $newFilenameVar = uniqid('var_') . '.' . $extension;
+            $imagenFile->move($this->getParameter('productos_directory'), $newFilenameVar);
+            $variacion->setImagen($newFilenameVar);
+            $em->flush();
+            $this->addFlash('success', 'Imagen de la variación actualizada.');
+        }
+
+        return $this->redirectToRoute('admin_productos_variaciones', [
+            'id' => $variacion->getProducto()->getId()
+        ]);
+    }
+
+
+
 }
