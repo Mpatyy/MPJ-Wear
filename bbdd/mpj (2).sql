@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-01-2026 a las 22:17:24
+-- Tiempo de generación: 09-01-2026 a las 18:26:38
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -107,7 +107,12 @@ CREATE TABLE `direccion` (
 --
 
 INSERT INTO `direccion` (`id`, `usuario_id`, `calle`, `ciudad`, `cp`, `provincia`, `pais`, `tipo`) VALUES
-(1, 17, 'calle sol', 'madrid', '28001', 'madrid', 'españa', 'envio');
+(1, 17, 'calle sol', 'madrid', '28001', 'madrid', 'españa', 'envio'),
+(2, 3, 'Ponzano', 'Madrid', '28010', 'Madrid', 'España', 'envio'),
+(3, 18, 'Ramirez Tome, 42, 18A', 'Madrid', '28038', 'Madrid', 'Rumania', 'envio'),
+(4, 23, 'Ponzano', 'Madrid', '28943', 'Madrid', 'España', 'envio'),
+(5, 28, 'calle prueba 2', 'murcia', '34543', 'murcia', 'españa', 'envio'),
+(6, 28, 'calle hostias', 'madrid', '289876', 'madrid', 'España', 'casa');
 
 -- --------------------------------------------------------
 
@@ -163,7 +168,17 @@ INSERT INTO `lineas_pedido` (`id`, `pedido_id`, `producto_id`, `talla`, `color`,
 (7, 13, 5, '41', 'Azul Marino', 2, 79.99, 159.98, 'zapatillas-azules.png'),
 (8, 14, 5, '44', 'Blanco', 1, 79.99, 79.99, 'zapatillas-blancas.png'),
 (9, 15, 4, 'M', 'Verde', 1, 89.99, 89.99, 'abrigo-verde.png'),
-(10, 16, 4, 'XL', 'Azul Marino', 1, 89.99, 89.99, 'abrigo-azul.png');
+(10, 16, 4, 'XL', 'Azul Marino', 1, 89.99, 89.99, 'abrigo-azul.png'),
+(11, 17, 4, 'XL', 'Negro', 1, 89.99, 89.99, 'abrigo-negro.png'),
+(12, 18, 4, 'M', 'Negro', 1, 89.99, 89.99, 'abrigo-negro.png'),
+(13, 19, 3, 'XL', 'Gris', 1, 29.99, 29.99, 'pantalon-gris.png'),
+(14, 20, 4, 'L', 'Azul Marino', 1, 89.99, 89.99, 'abrigo-azul.png'),
+(15, 20, 3, 'M', 'Azul marino', 1, 29.99, 29.99, 'pantalon-azul-marino.png'),
+(16, 21, 6, 'S', 'Blanco', 1, 7.99, 7.99, '69602ee6e008d.png'),
+(17, 22, 5, '42', 'Negro', 1, 79.99, 79.99, 'zapatillas-negras.png'),
+(18, 23, 6, 'S', 'Blanco', 5, 7.99, 39.95, '69602ee6e008d.png'),
+(19, 24, 5, '42', 'Azul Marino', 1, 79.99, 79.99, 'zapatillas-azules.png'),
+(20, 25, 6, 'S', 'Blanco', 1, 7.99, 7.99, '69602ee6e008d.png');
 
 -- --------------------------------------------------------
 
@@ -230,7 +245,16 @@ INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccio
 (13, 17, '2026-01-08 22:01:29', 'pagado', 159.98, 1, NULL),
 (14, 17, '2026-01-08 22:07:46', 'pagado', 79.99, 1, NULL),
 (15, 17, '2026-01-08 22:09:07', 'pagado', 89.99, 1, NULL),
-(16, 17, '2026-01-08 22:15:56', 'pagado', 89.99, 1, NULL);
+(16, 17, '2026-01-08 22:15:56', 'pagado', 89.99, 1, NULL),
+(17, 3, '2026-01-08 22:20:03', 'pagado', 89.99, 2, NULL),
+(18, 3, '2026-01-08 22:20:58', 'pendiente_pago', 89.99, 2, NULL),
+(19, 3, '2026-01-08 22:37:05', 'pagado', 29.99, 2, NULL),
+(20, 18, '2026-01-08 22:57:17', 'pagado', 119.98, 3, NULL),
+(21, 23, '2026-01-08 23:27:11', 'pagado', 7.99, 4, NULL),
+(22, 23, '2026-01-08 23:30:51', 'pagado', 79.99, 4, NULL),
+(23, 23, '2026-01-08 23:37:19', 'pagado', 39.95, 4, NULL),
+(24, 17, '2026-01-09 16:01:48', 'pendiente_pago', 79.99, 1, NULL),
+(25, 28, '2026-01-09 16:47:05', 'pendiente_pago', 7.99, 5, NULL);
 
 -- --------------------------------------------------------
 
@@ -258,19 +282,24 @@ CREATE TABLE `productos` (
   `descripcion` text DEFAULT NULL,
   `precio` decimal(10,2) NOT NULL,
   `imagen` varchar(255) DEFAULT NULL,
-  `categoria_id` int(11) DEFAULT NULL
+  `categoria_id` int(11) DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Volcado de datos para la tabla `productos`
 --
 
-INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `precio`, `imagen`, `categoria_id`) VALUES
-(1, 'Camiseta MPJ Básica', 'Camiseta de algodón con logo MPJ. Corte regular.', 19.99, 'camiseta-negra.png', 1),
-(2, 'Sudadera MPJ Essential', 'Sudadera con capucha, interior afelpado y logo MPJ.', 39.99, 'sudadera-azul-marino.png\r\n', 2),
-(3, 'Jogger MPJ Comfort', 'Pantalón jogger cómodo, cintura elástica y logo MPJ.', 29.99, 'pantalon-gris.png', 3),
-(4, 'Abrigo MPJ', 'Abrigo acolchado MPJ para invierno.', 89.99, 'abrigo-verde.png', 4),
-(5, 'Zapatillas MPJ', 'Zapatillas urbanas MPJ.', 79.99, 'zapatillas-negras.png', 5);
+INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `precio`, `imagen`, `categoria_id`, `activo`) VALUES
+(1, 'Camiseta MPJ Básica', 'Camiseta de algodón con logo MPJ. Corte regular.', 19.99, 'camiseta-negra.png', 1, 1),
+(2, 'Sudadera MPJ Essential', 'Sudadera con capucha, interior afelpado y logo MPJ.', 39.99, 'sudadera-azul-marino.png\r\n', 2, 1),
+(3, 'Jogger MPJ Comfort', 'Pantalón jogger cómodo, cintura elástica y logo MPJ.', 29.99, 'pantalon-gris.png', 3, 1),
+(4, 'Abrigo MPJ', 'Abrigo acolchado MPJ para invierno.', 89.99, 'abrigo-verde.png', 4, 1),
+(5, 'Zapatillas MPJ', 'Zapatillas urbanas MPJ.', 79.99, 'zapatillas-negras.png', 5, 1),
+(6, 'Bufanda', 'Bufanda pila guapa', 7.99, 'prod_69602eb685ef6.png', NULL, 0),
+(7, 'Gafas', 'Gafas de sol para el sol', 119.99, 'prod_6960362684104.png', NULL, 1),
+(8, 'Sombrero', 'Sombrero de Playa', 40.00, 'prod_69612a1eac8e4.png', NULL, 0),
+(9, 'Sombrero', 'Sombrero de Playa', 40.00, '69612c76996a6.jpg', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -292,7 +321,7 @@ CREATE TABLE `producto_variacion` (
 --
 
 INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`, `imagen`) VALUES
-(1, 1, 'S', 'Blanco', 12, 'camiseta-blanca.png'),
+(1, 1, 'S', 'Blanco', 19, 'camiseta-blanca.png'),
 (2, 1, 'M', 'Blanco', 10, 'camiseta-blanca.png'),
 (3, 1, 'L', 'Blanco', 0, 'camiseta-blanca.png'),
 (4, 1, 'XL', 'Blanco', 6, 'camiseta-blanca.png'),
@@ -342,19 +371,13 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (48, 3, 'XL', 'Azul marino', 0, 'pantalon-azul-marino.png'),
 (49, 4, 'M', 'Negro', 3, 'abrigo-negro.png'),
 (50, 4, 'L', 'Beige', 2, 'abrigo-beige.png'),
-(51, 4, 'XL', 'Verde', 0, 'abrigo-verde.png'),
-(52, 4, 'M', 'Azul Marino', 1, 'abrigo-azul.png'),
-(53, 5, '40', 'Blanco', 6, 'zapatillas-blancas.png'),
+(53, 5, '40', 'Blanco', 7, 'zapatillas-blancas.png'),
 (54, 5, '41', 'Negro', 4, 'zapatillas-negras.png'),
-(55, 5, '42', 'Gris', 0, 'zapatillas-grises.png'),
-(56, 5, '43', 'Azul Marino', 0, 'zapatillas-azules.png'),
 (57, 4, 'S', 'Negro', 4, 'abrigo-negro.png'),
-(58, 4, 'M', 'Negro', 2, 'abrigo-negro.png'),
 (59, 4, 'L', 'Negro', 0, 'abrigo-negro.png'),
 (60, 4, 'XL', 'Negro', 1, 'abrigo-negro.png'),
 (61, 4, 'S', 'Beige', 3, 'abrigo-beige.png'),
 (62, 4, 'M', 'Beige', 0, 'abrigo-beige.png'),
-(63, 4, 'L', 'Beige', 2, 'abrigo-beige.png'),
 (64, 4, 'XL', 'Beige', 1, 'abrigo-beige.png'),
 (65, 4, 'S', 'Verde', 1, 'abrigo-verde.png'),
 (66, 4, 'M', 'Verde', 2, 'abrigo-verde.png'),
@@ -364,14 +387,12 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (70, 4, 'M', 'Azul Marino', 2, 'abrigo-azul.png'),
 (71, 4, 'L', 'Azul Marino', 1, 'abrigo-azul.png'),
 (72, 4, 'XL', 'Azul Marino', 3, 'abrigo-azul.png'),
-(73, 5, '40', 'Blanco', 3, 'zapatillas-blancas.png'),
 (74, 5, '41', 'Blanco', 2, 'zapatillas-blancas.png'),
 (75, 5, '42', 'Blanco', 0, 'zapatillas-blancas.png'),
 (76, 5, '43', 'Blanco', 4, 'zapatillas-blancas.png'),
 (77, 5, '44', 'Blanco', 1, 'zapatillas-blancas.png'),
 (78, 5, '45', 'Blanco', 2, 'zapatillas-blancas.png'),
 (79, 5, '40', 'Negro', 1, 'zapatillas-negras.png'),
-(80, 5, '41', 'Negro', 0, 'zapatillas-negras.png'),
 (81, 5, '42', 'Negro', 3, 'zapatillas-negras.png'),
 (82, 5, '43', 'Negro', 2, 'zapatillas-negras.png'),
 (83, 5, '44', 'Negro', 1, 'zapatillas-negras.png'),
@@ -384,10 +405,14 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (90, 5, '45', 'Gris', 1, 'zapatillas-grises.png'),
 (91, 5, '40', 'Azul Marino', 0, 'zapatillas-azules.png'),
 (92, 5, '41', 'Azul Marino', 2, 'zapatillas-azules.png'),
-(93, 5, '42', 'Azul Marino', 3, 'zapatillas-azules.png'),
+(93, 5, '42', 'Azul Marino', 2, 'zapatillas-azules.png'),
 (94, 5, '43', 'Azul Marino', 1, 'zapatillas-azules.png'),
 (95, 5, '44', 'Azul Marino', 0, 'zapatillas-azules.png'),
-(96, 5, '45', 'Azul Marino', 2, 'zapatillas-azules.png');
+(96, 5, '45', 'Azul Marino', 2, 'zapatillas-azules.png'),
+(97, 6, 'S', 'Blanco', 14, '69602ee6e008d.png'),
+(98, 7, 'Unica', 'Blanco', 12, 'var_69613280653cc.jpg'),
+(99, 8, 'Unica', 'Beige', 5, NULL),
+(100, 9, 'Unica', 'Beige', 4, '69612c7699d5e.jpg');
 
 -- --------------------------------------------------------
 
@@ -453,7 +478,13 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`
 (13, 'cliente final f', 'cipetex289@gopicta.com', '$2y$13$09918h1honLFJimB1kiEQe6B1ItS7Yt4u.J1fCGMJ9J/9hClti9P.', '675456789', '[\"ROLE_USER\"]'),
 (15, 'cliente final form', 'sakaxa1192@imfaya.com', '$2y$13$k8spvN.X4susdabbwYQVAet4F2NUlUTKjMDb8zB5fFOkrU9sX1fJa', '678457678', '[\"ROLE_USER\"]'),
 (16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$4cavHRJPw0.El.vWr6GQh.6JTixf4bXQkG8rAbIzBXNmMGt4vyO6G', '657489567', '[\"ROLE_USER\"]'),
-(17, 'registro prueba', 'viceca1811@imfaya.com', '$2y$13$3u2frUQ4BnHwSw/69EIMVOg7n1GOXEdy5WbH4Lifb7BtId/u7WBfq', '654734234', '[\"ROLE_USER\"]');
+(17, 'registro prueba', 'viceca1811@imfaya.com', '$2y$13$3u2frUQ4BnHwSw/69EIMVOg7n1GOXEdy5WbH4Lifb7BtId/u7WBfq', '654734234', '[\"ROLE_USER\"]'),
+(18, 'Jorge Dominguez', 'domi@gmail.com', '$2y$13$wEOZ.J5GVYl8bshetuXkw.AZNW5Z7dyopskPO/IlW5yaDrDN3sR/2', '666777666', '[\"ROLE_USER\"]'),
+(20, 'Administrador', 'admin@mpj.com', '$2y$10$wH7lQH1wZ2m2pG0p0fZzOe4M4f9E9sN5uXz0n6Vf6x1rC3kzJm6Zy\r\n', '600000000', '[\"ROLE_ADMIN\"]'),
+(23, 'Admin', 'admin@mpjWear.com', '$2y$13$5hi1iDF7t/8FE08B.DKcSuZ1keM4pmA.yhUYhz6KfN6xvjEXQ56Xy', '600010000', '[\"ROLE_ADMIN\"]'),
+(24, 'clienta final', 'xorig59985@imfaya.com', '$2y$13$arxGUhOvfNuc3H1pKwz1QuKfqHN7uB7jtiJZayIpCoaEG4Jg3XEt2', '6123456752', '[\"ROLE_USER\"]'),
+(25, 'cliente prueba registro final', 'hodib50118@imfaya.com', '$2y$13$NNFiywMSpisXbGPxjyMdZODyPtjeA2eEy1ZnIcn/5ft6kJQuzqIry', '675482345', '[\"ROLE_USER\"]'),
+(28, 'cliente registro check', 'cipahew730@imfaya.com', '$2y$13$NivUJQ8PF8Mf3DNEP6qofuZpg4ocBQDkAdC3S29FRY832Eg5RQxXK', '675482349', '[\"ROLE_USER\"]');
 
 --
 -- Índices para tablas volcadas
@@ -603,13 +634,13 @@ ALTER TABLE `comentario`
 -- AUTO_INCREMENT de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `messenger_messages`
@@ -627,7 +658,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de la tabla `pedido_producto`
@@ -639,25 +670,25 @@ ALTER TABLE `pedido_producto`
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `producto_variacion`
 --
 ALTER TABLE `producto_variacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
 -- AUTO_INCREMENT de la tabla `reset_password_request`
 --
 ALTER TABLE `reset_password_request`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- Restricciones para tablas volcadas
