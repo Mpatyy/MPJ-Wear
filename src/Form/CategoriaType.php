@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Form;
 
 use App\Entity\Categoria;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class CategoriaType extends AbstractType
 {
@@ -13,7 +16,26 @@ class CategoriaType extends AbstractType
     {
         $builder
             ->add('nombre', TextType::class, [
-                'label' => 'Nombre de la categoría',
+                'label' => 'Nombre',
+                'attr' => ['class' => 'form-control'],
+                'constraints' => [
+                    new NotBlank(['message' => 'Introduce el nombre.']),
+                ],
+            ])
+            ->add('slug', TextType::class, [
+                'label' => 'Slug (URL)',
+                'help' => 'Ej: camisetas, sudaderas, pantalones (solo minúsculas y guiones)',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'ej: camisetas-mpj',
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Introduce el slug.']),
+                    new Regex([
+                        'pattern' => '/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                        'message' => 'Slug inválido. Usa minúsculas, números y guiones.',
+                    ]),
+                ],
             ]);
     }
 

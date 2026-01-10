@@ -1,50 +1,155 @@
 {% extends 'admin/base.html.twig' %}
 {% block title %}Dashboard{% endblock %}
+
 {% block body %}
-<h1 class="mb-4">Dashboard</h1>
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <div class="text-muted">Resumen general de tu tienda</div>
+    </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-dark text-white">
-            <h5>Pedidos totales</h5>
-            <p class="fs-4">{{ totalPedidos }}</p>
+    <div class="d-flex gap-2">
+        <a href="{{ path('admin_productos_list') }}" class="btn btn-outline-dark btn-sm">
+            Gestionar productos
+        </a>
+        <a href="{{ path('admin_pedidos_list') }}" class="btn btn-dark btn-sm">
+            Ver pedidos
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card admin-kpi shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Total pedidos</div>
+                <div class="display-6 fw-semibold">{{ totalPedidos }}</div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-secondary text-white">
-            <h5>Pedidos pendientes</h5>
-            <p class="fs-4">{{ pedidosPendientes }}</p>
+
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card admin-kpi shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Pendientes</div>
+                <div class="display-6 fw-semibold">{{ pedidosPendientes }}</div>
+                <div class="small text-muted mt-1">Estado: pendiente</div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-success text-white">
-            <h5>Pedidos pagados</h5>
-            <p class="fs-4">{{ pedidosPagados }}</p>
+
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card admin-kpi shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Pagados</div>
+                <div class="display-6 fw-semibold">{{ pedidosPagados }}</div>
+                <div class="small text-muted mt-1">Estado: pagado</div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-dark text-white">
-            <h5>Usuarios</h5>
-            <p class="fs-4">{{ totalUsuarios }}</p>
+
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card admin-kpi shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Ingresos</div>
+                <div class="display-6 fw-semibold">{{ ingresos|number_format(2, ',', '.') }} €</div>
+                <div class="small text-muted mt-1">Suma de totales</div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-secondary text-white">
-            <h5>Productos</h5>
-            <p class="fs-4">{{ totalProductos }}</p>
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold">Estado de pedidos</span>
+                    <a href="{{ path('admin_pedidos_list') }}" class="btn btn-outline-secondary btn-sm">Ver todo</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-3">
+
+                    {% set total = (pedidosPorEstado['Pagados'] + pedidosPorEstado['Pendientes'] + pedidosPorEstado['Otros']) %}
+                    {% set pctPagados = total > 0 ? (pedidosPorEstado['Pagados'] * 100 / total) : 0 %}
+                    {% set pctPendientes = total > 0 ? (pedidosPorEstado['Pendientes'] * 100 / total) : 0 %}
+                    {% set pctOtros = total > 0 ? (pedidosPorEstado['Otros'] * 100 / total) : 0 %}
+
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Pagados</span>
+                            <span class="text-muted">{{ pedidosPorEstado['Pagados'] }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ pctPagados }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Pendientes</span>
+                            <span class="text-muted">{{ pedidosPorEstado['Pendientes'] }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: {{ pctPendientes }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="d-flex justify-content-between">
+                            <span>Otros</span>
+                            <span class="text-muted">{{ pedidosPorEstado['Otros'] }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-secondary" style="width: {{ pctOtros }}%"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3 text-center shadow-sm bg-dark text-white">
-            <h5>Ingresos</h5>
-            <p class="fs-4">{{ ingresos }} €</p>
+
+    <div class="col-12 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <span class="fw-semibold">Resumen rápido</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="admin-mini card border-0">
+                            <div class="card-body">
+                                <div class="text-muted small">Usuarios</div>
+                                <div class="h3 mb-0 fw-semibold">{{ totalUsuarios }}</div>
+                                <div class="mt-2">
+                                    <a href="{{ path('admin_usuarios_list') }}" class="link-dark">Gestionar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="admin-mini card border-0">
+                            <div class="card-body">
+                                <div class="text-muted small">Productos</div>
+                                <div class="h3 mb-0 fw-semibold">{{ totalProductos }}</div>
+                                <div class="mt-2">
+                                    <a href="{{ path('admin_productos_list') }}" class="link-dark">Gestionar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ path('admin_productos_nuevo') }}" class="btn btn-dark btn-sm">+ Nuevo producto</a>
+                    <a href="{{ path('admin_estadisticas') }}" class="btn btn-outline-dark btn-sm">Estadísticas</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 {% endblock %}

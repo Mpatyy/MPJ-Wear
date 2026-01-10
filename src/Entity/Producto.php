@@ -43,6 +43,7 @@ class Producto
     #[ORM\OrderBy(['talla' => 'ASC'])]
     private Collection $variaciones;
 
+    
     public function __construct()
     {
         $this->variaciones = new ArrayCollection();

@@ -1,29 +1,112 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Nuevo Producto{% endblock %}
+{# ✅ IMPORTANTÍSIMO: aplicar tema Bootstrap 5 al form #}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Nuevo producto{% endblock %}
 
 {% block body %}
-<h1 class="mb-4">Nuevo Producto</h1>
+<div class="container-fluid">
 
-{{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h1 class="h4 mb-1">Nuevo producto</h1>
+            <div class="text-muted small">Crea un producto y súbele una imagen de portada.</div>
+        </div>
 
-<div class="mb-3">{{ form_row(form.nombre) }}</div>
-<div class="mb-3">{{ form_row(form.descripcion) }}</div>
-<div class="mb-3">{{ form_row(form.precio) }}</div>
-<div class="mb-3 d-flex align-items-end gap-2">
-    <div class="flex-grow-1">
-        {{ form_row(form.categoria) }}
-    </div>
-    <div>
-        <a href="{{ path('admin_categorias_nueva') }}" class="btn btn-outline-secondary">
-            Nueva categoría
+        <a href="{{ path('admin_productos_list') }}" class="btn btn-outline-secondary btn-sm">
+            ← Volver a productos
         </a>
     </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation'}}) }}
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="p-3 rounded border bg-light">
+                        <h2 class="h6 mb-3">Información del producto</h2>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                {{ form_row(form.nombre, {
+                                    attr: { class: 'form-control', placeholder: 'Ej: Camiseta MPJ' }
+                                }) }}
+                            </div>
+
+                            <div class="col-md-4">
+                                {{ form_row(form.precio, {
+                                    attr: { class: 'form-control', placeholder: 'Ej: 19.99' }
+                                }) }}
+                            </div>
+
+                            <div class="col-12">
+                                {# Si tu descripcion es TextType, esto igualmente mejora visualmente #}
+                                {{ form_row(form.descripcion, {
+                                    attr: { class: 'form-control', placeholder: 'Describe el producto...', rows: 4 }
+                                }) }}
+                                <div class="form-text">
+                                    Recomendación: pon una descripción corta y clara (tallas, tejido, etc.)
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Categoría</label>
+
+                                <div class="input-group">
+                                    {{ form_widget(form.categoria, { attr: { class: 'form-select' } }) }}
+
+                                    <a href="{{ path('admin_categorias_nueva') }}" class="btn btn-outline-dark">
+                                        + Nueva categoría
+                                    </a>
+                                </div>
+
+                                {{ form_errors(form.categoria) }}
+                            </div>
+
+
+                            {# Si en algún momento metes "activo" en el ProductoType, aquí quedará perfecto #}
+                            {% if form.activo is defined %}
+                                <div class="col-md-6">
+                                    {{ form_row(form.activo) }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="p-3 rounded border">
+                        <h2 class="h6 mb-3">Imagen de portada</h2>
+
+                        {{ form_row(form.imagen, {
+                            attr: { class: 'form-control' }
+                        }) }}
+
+                        <div class="form-text">
+                            Recomendado: <strong>.png</strong> o <strong>.jpg</strong>. <br>
+                            Si no subes imagen, el producto se guardará sin portada.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-dark">
+                            Guardar producto
+                        </button>
+
+                        <a href="{{ path('admin_productos_list') }}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+
+        </div>
+    </div>
+
 </div>
-<div class="mb-3">{{ form_row(form.imagen) }}</div>
-
-<button type="submit" class="btn btn-success mt-3">Guardar Producto</button>
-<a href="{{ path('admin_productos_list') }}" class="btn btn-secondary mt-3 ms-2">Volver a productos</a>
-
-{{ form_end(form) }}
 {% endblock %}
