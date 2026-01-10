@@ -1,94 +1,26 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Inicio | Mi Tienda MPJ{% endblock %}
-
-{% block hero %}
-  <div class="w-100 mb-5">
-    <img
-      src="{{ asset('images/portada.png') }}"
-      alt="MPJ WEAR"
-      class="img-fluid w-100"
-      style="max-height: 420px; object-fit: cover;"
-    >
-  </div>
-{% endblock %}
+{% block title %}Inicio{% endblock %}
 
 {% block body %}
+<div class="container py-5 text-center">
 
-<div class="text-center mb-5">
-  <h1 class="fw-bold">Bienvenido a MPJ</h1>
-  <p class="text-muted fs-5">
-    Descubre nuestras últimas prendas y novedades
-  </p>
+    <h1 class="mb-3">MPJ WEAR</h1>
+    <p class="text-muted mb-4">Moda urbana, cómoda y con estilo.</p>
 
-  <a href="{{ path('producto_listado') }}" class="btn btn-dark px-4 py-2 mt-3">
-    Ver productos
-  </a>
+    {# ✅ Foto centrada en medio #}
+    <div class="d-flex justify-content-center my-4">
+        <img
+            src="{{ asset('images/inicio.png') }}"
+            alt="Imagen de inicio"
+            class="img-fluid rounded shadow"
+            style="max-width: 700px; width: 100%; object-fit: cover;"
+        >
+    </div>
+
+    <a href="{{ path('producto_listado') }}" class="btn btn-dark px-4 py-2">
+        Ver productos
+    </a>
+
 </div>
-
-{# ✅ DESTACADOS #}
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="h5 mb-0 fw-semibold">Destacados</h2>
-  <a href="{{ path('producto_listado') }}" class="text-decoration-none text-muted small">
-    Ver todo →
-  </a>
-</div>
-
-{% if destacados is defined and destacados is not empty %}
-  <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
-    {% for p in destacados %}
-      <div class="col">
-        <a href="{{ path('producto_detalle', {'id': p.id}) }}" class="text-decoration-none text-dark">
-          <div class="card h-100 border-0 shadow-sm">
-            {% if p.imagen %}
-              <img
-                src="{{ asset('images/' ~ p.imagen) }}"
-                class="card-img-top"
-                alt="Imagen de {{ p.nombre }}"
-                style="aspect-ratio: 3/4; object-fit: cover; border-radius: 10px;"
-                onerror="this.src='{{ asset('images/placeholder.png') }}'"
-              >
-            {% else %}
-              <div class="d-flex align-items-center justify-content-center text-muted"
-                   style="aspect-ratio: 3/4; background:#f7f7f7; border-radius: 10px;">
-                Sin imagen
-              </div>
-            {% endif %}
-
-            <div class="card-body px-0 pt-2 pb-0">
-              <div class="small fw-semibold" style="line-height:1.2;">
-                {{ p.nombre }}
-              </div>
-              <div class="small text-muted">
-                {{ p.precio|number_format(2, ',', '.') }} €
-              </div>
-            </div>
-          </div>
-        </a>
-      </div>
-    {% endfor %}
-  </div>
-{% else %}
-  <div class="alert alert-light border mb-5">
-    Aún no hay productos destacados.
-  </div>
-{% endif %}
-
-<hr class="my-5">
-
-<div class="row text-center">
-  <div class="col-md-4 mb-4">
-    <h5 class="fw-semibold">Calidad</h5>
-    <p class="text-muted">Prendas seleccionadas con cuidado y buenos materiales.</p>
-  </div>
-  <div class="col-md-4 mb-4">
-    <h5 class="fw-semibold">Diseño</h5>
-    <p class="text-muted">Estilo moderno, limpio y atemporal.</p>
-  </div>
-  <div class="col-md-4 mb-4">
-    <h5 class="fw-semibold">Comodidad</h5>
-    <p class="text-muted">Pensadas para el día a día y para durar.</p>
-  </div>
-</div>
-
 {% endblock %}

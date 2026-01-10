@@ -3,36 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Administración{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        body { background: #f5f5f5; color: #222; }
-        .sidebar { background: #1a1a1a; color: #fff; min-height: 100vh; }
-        .sidebar a { color: #ccc; display: block; padding: 10px; text-decoration: none; }
-        .sidebar a:hover { background: #333; color: #fff; }
-        .content { padding: 20px; }
-        .table th, .table td { vertical-align: middle; }
-        .btn-primary { background: #000; border: none; }
-        .btn-primary:hover { background: #444; }
-        .btn-danger { background: #222; border: none; }
-        .btn-danger:hover { background: #555; }
+        :root{
+            --bg: #0f1115;
+            --panel: #141821;
+            --panel-2: #1b2230;
+            --text: #e7e7e7;
+            --muted: #a8b0bf;
+            --border: rgba(255,255,255,.08);
+            --accent: #4f8cff; /* azul moderno */
+            --success: #22c55e;
+        }
+
+        body{
+            background: #f4f6fb;
+            color:#111;
+        }
+
+        /* Layout */
+        .admin-wrap{
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar{
+            width: 260px;
+            background: linear-gradient(180deg, var(--bg), #0b0d12);
+            color: var(--text);
+            padding: 18px;
+            border-right: 1px solid var(--border);
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding: 10px 10px 14px 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+        }
+        .brand-badge{
+            width:36px; height:36px;
+            border-radius: 12px;
+            background: rgba(79,140,255,.18);
+            display:flex; align-items:center; justify-content:center;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .brand h2{
+            font-size: 16px;
+            margin:0;
+            letter-spacing: .2px;
+        }
+        .brand small{
+            color: var(--muted);
+            display:block;
+            margin-top: 2px;
+            font-size: 12px;
+        }
+
+        .nav-admin{
+            display:flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .nav-admin a{
+            color: var(--muted);
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 12px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            transition: .15s ease-in-out;
+        }
+
+        .nav-admin a:hover{
+            background: rgba(255,255,255,.06);
+            color: var(--text);
+        }
+
+        /* Activo (por ruta) */
+        .nav-admin a.is-active{
+            background: rgba(79,140,255,.18);
+            color: var(--text);
+            border: 1px solid rgba(79,140,255,.25);
+        }
+
+        .sidebar-footer{
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-tienda{
+            background: rgba(34,197,94,.15);
+            border: 1px solid rgba(34,197,94,.35);
+            color: #dfffe9;
+            border-radius: 12px;
+            padding: 10px 12px;
+            width: 100%;
+            text-align: center;
+            display:block;
+            text-decoration:none;
+        }
+        .btn-tienda:hover{
+            background: rgba(34,197,94,.25);
+            color: #ffffff;
+        }
+
+        /* Main */
+        .main{
+            flex:1;
+            display:flex;
+            flex-direction: column;
+        }
+
+        .topbar{
+            background: #fff;
+            border-bottom: 1px solid #e9ecf4;
+            padding: 14px 18px;
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .topbar h1{
+            font-size: 18px;
+            margin:0;
+        }
+        .topbar .hint{
+            color:#6b7280;
+            font-size: 13px;
+        }
+
+        .content{
+            padding: 18px;
+        }
+
+        /* Cards & tables */
+        .card-admin{
+            border: 1px solid #e9ecf4;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(17,24,39,.06);
+        }
+
+        .table{
+            margin:0;
+        }
+
+        .table thead th{
+            color:#6b7280;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #eef1f7;
+        }
+
+        .table td{
+            border-top: 1px solid #eef1f7;
+            vertical-align: middle;
+        }
+
+        .btn{
+            border-radius: 12px;
+        }
+        .btn-primary{
+            background: var(--accent);
+            border: none;
+        }
+        .btn-primary:hover{
+            filter: brightness(.92);
+        }
+        .btn-danger{
+            background: #ef4444;
+            border: none;
+        }
+        .btn-danger:hover{
+            filter: brightness(.92);
+        }
+
+        /* Alerts */
+        .alert{
+            border-radius: 14px;
+            border: 1px solid #eef1f7;
+        }
+
+        @media (max-width: 992px){
+            .sidebar{ width: 220px; }
+        }
+        @media (max-width: 768px){
+            .admin-wrap{ flex-direction: column; }
+            .sidebar{ width: 100%; min-height:auto; }
+        }
     </style>
 </head>
+
 <body>
-<div class="d-flex">
-    <div class="sidebar p-3">
-        <h2>Admin</h2>
-        <a href="{{ path('admin_dashboard') }}">Dashboard</a>
-        <a href="{{ path('admin_pedidos_list') }}">Pedidos</a>
-        <a href="{{ path('admin_productos_list') }}">Productos</a>
-        <a href="{{ path('admin_usuarios_list') }}">Usuarios</a>
-        <a href="{{ path('admin_estadisticas') }}">Estadísticas</a>
-    </div>
-    <div class="content flex-grow-1">
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-        {% block body %}{% endblock %}
-    </div>
+<div class="admin-wrap">
+    <aside class="sidebar d-flex flex-column">
+        <div class="brand">
+            <div class="brand-badge">MPJ</div>
+            <div>
+                <h2>Panel de administración</h2>
+                <small>MPJ WEAR</small>
+            </div>
+        </div>
+
+        {# Ruta actual para marcar activo #}
+        {% set current = app.request.attributes.get('_route') %}
+
+        <nav class="nav-admin">
+            <a href="{{ path('admin_dashboard') }}" class="{{ current == 'admin_dashboard' ? 'is-active' : '' }}">
+                📊 <span>Dashboard</span>
+            </a>
+            <a href="{{ path('admin_pedidos_list') }}" class="{{ current starts with 'admin_pedidos' ? 'is-active' : '' }}">
+                📦 <span>Pedidos</span>
+            </a>
+            <a href="{{ path('admin_productos_list') }}" class="{{ current starts with 'admin_productos' ? 'is-active' : '' }}">
+                👕 <span>Productos</span>
+            </a>
+            <a href="{{ path('admin_usuarios_list') }}" class="{{ current starts with 'admin_usuarios' ? 'is-active' : '' }}">
+                👤 <span>Usuarios</span>
+            </a>
+            <a href="{{ path('admin_estadisticas') }}" class="{{ current == 'admin_estadisticas' ? 'is-active' : '' }}">
+                📈 <span>Estadísticas</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('home') }}" class="btn-tienda">
+                🏠 Volver a la tienda
+            </a>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <h1>{% block header_title %}Administración{% endblock %}</h1>
+                <div class="hint">Gestiona productos, pedidos y usuarios</div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="/" class="btn btn-outline-secondary">Ver web</a>
+            </div>
+        </header>
+
+        <section class="content">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endfor %}
+
+            <div class="card-admin bg-white p-3 p-md-4">
+                {% block body %}{% endblock %}
+            </div>
+        </section>
+    </main>
 </div>
 </body>
 </html>
