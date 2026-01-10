@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 10-01-2026 a las 04:45:23
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 10-01-2026 a las 07:10:21
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -71,7 +71,9 @@ INSERT INTO `categoria` (`id`, `nombre`, `descripcion`, `slug`) VALUES
 (5, 'Zapatillas', 'Zapatillas y calzado MPJ', 'zapatillas'),
 (7, 'Complementos', 'complementos de joyeria y todo', 'complementos'),
 (8, 'Accesorios', NULL, 'accesorios'),
-(9, 'Sombreros', NULL, 'sombrero');
+(9, 'Sombreros', NULL, 'sombrero'),
+(10, 'Invierno', NULL, 'invierno'),
+(11, 'Verano', NULL, 'verano');
 
 -- --------------------------------------------------------
 
@@ -115,7 +117,11 @@ INSERT INTO `direccion` (`id`, `usuario_id`, `calle`, `ciudad`, `cp`, `provincia
 (3, 18, 'Ramirez Tome, 42, 18A', 'Madrid', '28038', 'Madrid', 'Rumania', 'envio'),
 (4, 23, 'Ponzano', 'Madrid', '28943', 'Madrid', 'España', 'envio'),
 (5, 28, 'calle prueba 2', 'murcia', '34543', 'murcia', 'españa', 'envio'),
-(6, 28, 'calle hostias', 'madrid', '289876', 'madrid', 'España', 'casa');
+(6, 28, 'calle hostias', 'madrid', '289876', 'madrid', 'España', 'casa'),
+(7, 29, 'calle peñazo 3 bj 2', 'Soria', '4444444444', 'Soria', '', 'envio'),
+(8, 29, 'Calle hostias 23 bj 4', 'madrid ', '28034', 'Madrid', 'España', 'casa'),
+(9, 30, 'calle soledad 1', 'madrid', '28009', 'madrid', 'España', ''),
+(10, 30, 'calle castro', 'madrid', '28009', 'madrid', 'España', '');
 
 -- --------------------------------------------------------
 
@@ -162,11 +168,6 @@ CREATE TABLE `lineas_pedido` (
 --
 
 INSERT INTO `lineas_pedido` (`id`, `pedido_id`, `producto_id`, `talla`, `color`, `cantidad`, `precio_unitario`, `subtotal`, `imagen`) VALUES
-(1, 8, 1, 'XL', 'Blanco', 5, 19.99, 99.95, NULL),
-(2, 8, 3, 'M', 'Beige', 4, 29.99, 119.96, NULL),
-(3, 9, 5, '43', 'Azul Marino', 1, 79.99, 79.99, NULL),
-(4, 10, 5, '43', 'Azul Marino', 1, 79.99, 79.99, NULL),
-(5, 11, 5, '43', 'Azul Marino', 1, 79.99, 79.99, NULL),
 (6, 12, 5, '41', 'Azul Marino', 2, 79.99, 159.98, 'zapatillas-azules.png'),
 (7, 13, 5, '41', 'Azul Marino', 2, 79.99, 159.98, 'zapatillas-azules.png'),
 (8, 14, 5, '44', 'Blanco', 1, 79.99, 79.99, 'zapatillas-blancas.png'),
@@ -177,13 +178,13 @@ INSERT INTO `lineas_pedido` (`id`, `pedido_id`, `producto_id`, `talla`, `color`,
 (13, 19, 3, 'XL', 'Gris', 1, 29.99, 29.99, 'pantalon-gris.png'),
 (14, 20, 4, 'L', 'Azul Marino', 1, 89.99, 89.99, 'abrigo-azul.png'),
 (15, 20, 3, 'M', 'Azul marino', 1, 29.99, 29.99, 'pantalon-azul-marino.png'),
-(16, 21, 6, 'S', 'Blanco', 1, 7.99, 7.99, '69602ee6e008d.png'),
 (17, 22, 5, '42', 'Negro', 1, 79.99, 79.99, 'zapatillas-negras.png'),
-(18, 23, 6, 'S', 'Blanco', 5, 7.99, 39.95, '69602ee6e008d.png'),
 (19, 24, 5, '42', 'Azul Marino', 1, 79.99, 79.99, 'zapatillas-azules.png'),
-(20, 25, 6, 'S', 'Blanco', 1, 7.99, 7.99, '69602ee6e008d.png'),
 (21, 26, 11, 'Niño', 'Marron', 1, 35.98, 35.98, 'var_6961c7821031d.png'),
-(22, 27, 10, 'Unica', 'Azul', 1, 16.99, 16.99, 'var_696145391b80d.png');
+(22, 27, 10, 'Unica', 'Azul', 1, 16.99, 16.99, 'var_696145391b80d.png'),
+(23, 28, 2, 'XL', 'Negro', 1, 39.99, 39.99, 'sudadera-negra.png'),
+(24, 28, 5, '42', 'Negro', 2, 79.99, 159.98, 'zapatillas-negras.png'),
+(26, 30, 13, 'M', 'Rosa', 1, 20.99, 20.99, 'var_6961cf9c782d9.jpg');
 
 -- --------------------------------------------------------
 
@@ -235,17 +236,6 @@ CREATE TABLE `pedidos` (
 --
 
 INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccion_id`, `metodo_pago_id`) VALUES
-(1, 1, '2025-12-13 16:00:18', 'pendiente', 54.89, NULL, NULL),
-(2, 1, '2025-12-13 16:00:28', 'pendiente', 19.99, NULL, NULL),
-(3, 1, '2025-12-13 16:03:01', 'pendiente', 69.80, NULL, NULL),
-(4, 1, '2025-12-13 16:12:33', 'pendiente', 69.80, NULL, NULL),
-(5, 1, '2025-12-15 19:23:25', 'pendiente', 19.99, NULL, NULL),
-(6, 1, '2025-12-15 19:35:09', 'pendiente', 104.70, NULL, NULL),
-(7, 2, '2026-01-03 18:08:23', 'pendiente', 19.99, NULL, NULL),
-(8, 3, '2026-01-05 17:04:02', 'pendiente', 219.91, NULL, NULL),
-(9, 11, '2026-01-07 21:28:04', 'pagado', 79.99, NULL, NULL),
-(10, 16, '2026-01-08 16:46:49', 'pagado', 79.99, NULL, NULL),
-(11, 16, '2026-01-08 16:51:20', 'pagado', 79.99, NULL, NULL),
 (12, 17, '2026-01-08 21:55:34', 'pendiente_pago', 159.98, 1, NULL),
 (13, 17, '2026-01-08 22:01:29', 'pagado', 159.98, 1, NULL),
 (14, 17, '2026-01-08 22:07:46', 'pagado', 79.99, 1, NULL),
@@ -261,7 +251,9 @@ INSERT INTO `pedidos` (`id`, `usuario_id`, `fecha`, `estado`, `total`, `direccio
 (24, 17, '2026-01-09 16:01:48', 'pendiente_pago', 79.99, 1, NULL),
 (25, 28, '2026-01-09 16:47:05', 'pagado', 7.99, 5, NULL),
 (26, 23, '2026-01-10 04:29:35', 'pagado', 35.98, 4, NULL),
-(27, 23, '2026-01-10 04:31:07', 'pagado', 16.99, 4, NULL);
+(27, 23, '2026-01-10 04:31:07', 'pagado', 16.99, 4, NULL),
+(28, 29, '2026-01-10 05:14:13', 'pagado', 199.97, 7, NULL),
+(30, 30, '2026-01-10 07:08:31', 'pagado', 20.99, 9, NULL);
 
 -- --------------------------------------------------------
 
@@ -303,12 +295,10 @@ INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `precio`, `imagen`, `cat
 (3, 'Jogger MPJ Comfort', 'Pantalón jogger cómodo, cintura elástica y logo MPJ.', 29.99, 'pantalon-gris.png', 3, 1),
 (4, 'Abrigo MPJ', 'Abrigo acolchado MPJ para invierno.', 89.99, 'abrigo-verde.png', 4, 1),
 (5, 'Zapatillas MPJ', 'Zapatillas urbanas MPJ.', 79.99, 'zapatillas-negras.png', 5, 1),
-(6, 'Bufanda', 'Bufanda pila guapa', 7.99, 'prod_69602eb685ef6.png', NULL, 0),
-(7, 'Gafas', 'Gafas de sol para el sol', 119.99, 'prod_6960362684104.png', NULL, 1),
-(8, 'Sombrero', 'Sombrero de Playa', 40.00, 'prod_69612a1eac8e4.png', NULL, 0),
-(9, 'Sombrero', 'Sombrero de Playa', 40.00, '69612c76996a6.jpg', NULL, 1),
 (10, 'Collar', 'Collar de perlas', 16.99, 'prod_6961450e20481.png', 8, 1),
-(11, 'Sombrerazo', 'Sombrero grande', 35.98, 'prod_6961c7581c418.jpg', 9, 1);
+(11, 'Sombrerazo', 'Sombrero grande', 35.98, 'prod_6961c7581c418.jpg', 9, 1),
+(12, 'Guantes Invierno', 'Guantes Invierno', 20.99, 'prod_6961cdd919ebd.jpg', 10, 1),
+(13, 'Bikini', 'Bikini verano', 20.99, 'prod_6961cf779813e.jpg', 11, 1);
 
 -- --------------------------------------------------------
 
@@ -349,7 +339,7 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (17, 2, 'S', 'Negro', 6, 'sudadera-negra.png'),
 (18, 2, 'M', 'Negro', 4, 'sudadera-negra.png'),
 (19, 2, 'L', 'Negro', 0, 'sudadera-negra.png'),
-(20, 2, 'XL', 'Negro', 2, 'sudadera-negra.png'),
+(20, 2, 'XL', 'Negro', 1, 'sudadera-negra.png'),
 (21, 2, 'S', 'Blanco', 3, 'sudadera-blanca.png'),
 (22, 2, 'M', 'Blanco', 0, 'sudadera-blanca.png'),
 (23, 2, 'L', 'Blanco', 5, 'sudadera-blanca.png'),
@@ -402,7 +392,7 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (77, 5, '44', 'Blanco', 1, 'zapatillas-blancas.png'),
 (78, 5, '45', 'Blanco', 2, 'zapatillas-blancas.png'),
 (79, 5, '40', 'Negro', 1, 'zapatillas-negras.png'),
-(81, 5, '42', 'Negro', 3, 'zapatillas-negras.png'),
+(81, 5, '42', 'Negro', 1, 'zapatillas-negras.png'),
 (82, 5, '43', 'Negro', 2, 'zapatillas-negras.png'),
 (83, 5, '44', 'Negro', 1, 'zapatillas-negras.png'),
 (84, 5, '45', 'Negro', 0, 'zapatillas-negras.png'),
@@ -418,10 +408,10 @@ INSERT INTO `producto_variacion` (`id`, `producto_id`, `talla`, `color`, `stock`
 (94, 5, '43', 'Azul Marino', 1, 'zapatillas-azules.png'),
 (95, 5, '44', 'Azul Marino', 0, 'zapatillas-azules.png'),
 (96, 5, '45', 'Azul Marino', 2, 'zapatillas-azules.png'),
-(97, 6, 'S', 'Blanco', 14, '69602ee6e008d.png'),
-(99, 8, 'Unica', 'Beige', 5, NULL),
 (101, 10, 'Unica', 'Azul', 10, 'var_696145391b80d.png'),
-(102, 11, 'Niño', 'Marron', 9, 'var_6961c7821031d.png');
+(102, 11, 'Niño', 'Marron', 9, 'var_6961c7821031d.png'),
+(104, 13, 'S', 'Beige', 2, 'var_6961cf88dca2a.jpg'),
+(105, 13, 'M', 'Rosa', 0, 'var_6961cf9c782d9.jpg');
 
 -- --------------------------------------------------------
 
@@ -447,7 +437,6 @@ INSERT INTO `reset_password_request` (`id`, `user_id`, `selector`, `hashed_token
 (2, 5, 'sxA8omYuMOwsV7pGSMKx', 'x8trVVIpEUIi2iElWS27XLdCJtwEB+zhG/304yVONz0=', '2026-01-07 20:36:26', '2026-01-07 21:36:26'),
 (3, 4, 'TM5laRpeoGDHaIrzY0FE', 'mjYhaEZtuMPOiQVfysyMns1OaTqun1SWqIfY9p1YEfA=', '2026-01-07 20:38:29', '2026-01-07 21:38:29'),
 (13, 3, '9VcFmNpdTc8Sf7MUl0SN', '36lrmhQO9XRuhXUo+DhRCHzMlSlQvtBdfltZTShG5vo=', '2026-01-07 21:34:20', '2026-01-07 22:34:20'),
-(14, 2, 'uOMR9MVexkA0TZDk0C3b', 'vd11lanwwIZIy3DMIsCrOYQwfNupZJ4IAlkH7ytt1VY=', '2026-01-07 21:37:41', '2026-01-07 22:37:41'),
 (15, 4, 'RROUBAoOEUjqXFwzXfpy', '8ly+PkDYZhZbanSvc5i6DST1GdLscdZQhJjUssTvK+I=', '2026-01-07 21:40:53', '2026-01-07 22:40:53'),
 (17, 6, 'OG1omPddQnA2VGuD39k5', 'mNz7ZAmK7FfordbNPS9jiguYBX4ETV7voWq9j3vnIJY=', '2026-01-07 22:00:27', '2026-01-07 23:00:27'),
 (20, 3, 'NOP7O2qq2QosRY9LqHRK', 'vCuHsNy9lIHf7QjtQtIX2hRfjTwA2JMTRMkPIFL+mIw=', '2026-01-08 17:20:15', '2026-01-08 18:20:15');
@@ -471,7 +460,8 @@ CREATE TABLE `tarjeta` (
 --
 
 INSERT INTO `tarjeta` (`id`, `user_id`, `numero`, `caducidad`, `cvv`) VALUES
-(1, 23, '1212121212121212', '2027-11-01', '121');
+(1, 23, '1212121212121212', '2027-11-01', '121'),
+(3, 30, '2345432347786754', '2028-12-01', '344');
 
 -- --------------------------------------------------------
 
@@ -493,28 +483,28 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `roles`) VALUES
-(1, 'Mikel', 'giyouwaquize-6481@yopmail.com', '$2y$13$wBrzQRCw0vRl7gCHrVHYDupFyDQQuTMr0OyXZWh7weV/LszpZ2/cS', '612345678', '[\"ROLE_USER\"]'),
-(2, 'Armando', 'feromin417@emaxasp.com', '$2y$13$dhfcJtnXlx.cnPDro5VEIehAWbYG.l3oFMI/qYl.ISFzYBLiSyBIC', '6123456789', '[\"ROLE_USER\"]'),
 (3, 'Mikel', 'mikel140805@gmail.com', '$2y$13$WZnnFdJPFidTc384g1MID.QqjrC7j/bkIstTtQCDTSKVek0ND7idG', '620081606', '[\"ROLE_USER\"]'),
 (4, 'thor', 'thor@gmail.com', '$2y$13$L.GCScwbjIV.iSiCHwZHFuvbwbjZ4DGKASSlQbou8oNLqW7LMacbG', '647453842', '[\"ROLE_USER\"]'),
 (5, 'olvidar contra', 'fijecod975@gavrom.com', '$2y$13$3qU3sh6XnJ4C0fOgUp0KX.uDsTMPnNCeOiv/yUiGWyekvF/uO3W96', '657845367', '[\"ROLE_USER\"]'),
 (6, 'resetear prueba', 'hanepa1990@gavrom.com', '$2y$13$67aCP6C0KJZF/qS/oznLne6KXGb6z4BLpgM0VBHegJ4ZClqC1yD4O', '675845672', '[\"ROLE_USER\"]'),
 (7, 'reseteo prueba ', 'lapad56964@gavrom.com', '$2y$13$pvAVkYhHzL9xciGUfGDzNu4X10cTMfX9xdaxwN81Qga9qXruIzGUi', '6754323456', '[\"ROLE_USER\"]'),
-(8, 'susana', 'favijat741@emaxasp.com', '$2y$13$Nc/1jfBW2S6BapBR88FUn.BsDqg/Tiu6yZQOvTqJUTDzYwdtw6D3W', '657487253', '[\"ROLE_USER\"]'),
+(8, 'susana', 'favijat741@emaxasp.com', '$2y$13$k7UpL1IRzuTQixy8UDZgi.BUWiBbTWnuX0I.1rlx7uwc7Vecgo1kK', '657487253', '[\"ROLE_USER\"]'),
 (9, 'resetear prueba 2', 'reniteb683@gavrom.com', '$2y$13$E3c89Y95gA3cAku5sGt.yO9L5sWL3TzFsutWVn7vDsAGZoy38z4iK', '657654567', '[\"ROLE_USER\"]'),
 (10, 'reseteo 3', 'xacamos949@emaxasp.com', '$2y$13$49/zRY1AFBv1t2l1rNusx.mPePhoSe1C8sC35ayPfDOc0q2hHgciO', '654321234', '[\"ROLE_USER\"]'),
 (11, 'reseteo 4', 'tojic85793@gavrom.com', '$2y$13$tia8uwUXV9lz9Dz1nL7G9.XwixNpw48mL9andjV2UTXyFNmvuoOpO', '657890987', '[\"ROLE_USER\"]'),
 (12, 'cliente final', 'tojihi5100@imfaya.com', '$2y$13$PgtMvfKxcyrrrcPWNINlt.08A3q5Np8lyjkkHGRvAb1xXVPSVC7.a', '654321566', '[\"ROLE_USER\"]'),
 (13, 'cliente final f', 'cipetex289@gopicta.com', '$2y$13$09918h1honLFJimB1kiEQe6B1ItS7Yt4u.J1fCGMJ9J/9hClti9P.', '675456789', '[\"ROLE_USER\"]'),
 (15, 'cliente final form', 'sakaxa1192@imfaya.com', '$2y$13$k8spvN.X4susdabbwYQVAet4F2NUlUTKjMDb8zB5fFOkrU9sX1fJa', '678457678', '[\"ROLE_USER\"]'),
-(16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$4cavHRJPw0.El.vWr6GQh.6JTixf4bXQkG8rAbIzBXNmMGt4vyO6G', '657489567', '[\"ROLE_USER\"]'),
+(16, 'cliente final form 2', 'waviy38044@imfaya.com', '$2y$13$6UoPQnvtZDW/XDJh6SPEX.2.hJkW3JRD.Y22qLiG/hPJClafAzPqW', '657489567', '[\"ROLE_USER\"]'),
 (17, 'registro prueba', 'viceca1811@imfaya.com', '$2y$13$3u2frUQ4BnHwSw/69EIMVOg7n1GOXEdy5WbH4Lifb7BtId/u7WBfq', '654734234', '[\"ROLE_USER\"]'),
 (18, 'Jorge Dominguez', 'domi@gmail.com', '$2y$13$wEOZ.J5GVYl8bshetuXkw.AZNW5Z7dyopskPO/IlW5yaDrDN3sR/2', '666777666', '[\"ROLE_USER\"]'),
 (20, 'Administrador', 'admin@mpj.com', '$2y$10$wH7lQH1wZ2m2pG0p0fZzOe4M4f9E9sN5uXz0n6Vf6x1rC3kzJm6Zy\r\n', '600000000', '[\"ROLE_ADMIN\"]'),
 (23, 'Admin', 'admin@mpjWear.com', '$2y$13$5hi1iDF7t/8FE08B.DKcSuZ1keM4pmA.yhUYhz6KfN6xvjEXQ56Xy', '600010000', '[\"ROLE_ADMIN\"]'),
 (24, 'clienta final', 'xorig59985@imfaya.com', '$2y$13$arxGUhOvfNuc3H1pKwz1QuKfqHN7uB7jtiJZayIpCoaEG4Jg3XEt2', '6123456752', '[\"ROLE_USER\"]'),
 (25, 'cliente prueba registro final', 'hodib50118@imfaya.com', '$2y$13$NNFiywMSpisXbGPxjyMdZODyPtjeA2eEy1ZnIcn/5ft6kJQuzqIry', '675482345', '[\"ROLE_USER\"]'),
-(28, 'cliente registro check', 'cipahew730@imfaya.com', '$2y$13$NivUJQ8PF8Mf3DNEP6qofuZpg4ocBQDkAdC3S29FRY832Eg5RQxXK', '675482349', '[\"ROLE_USER\"]');
+(28, 'cliente registro check', 'cipahew730@imfaya.com', '$2y$13$NivUJQ8PF8Mf3DNEP6qofuZpg4ocBQDkAdC3S29FRY832Eg5RQxXK', '675482349', '[\"ROLE_USER\"]'),
+(29, 'Prueba final', 'cacale7825@imfaya.com', '$2y$13$dDWsoBnKCjMlyzfjUDlNCeqYuTstHanXG9HZRqsuu1GGbSYyg10lW', '654321345', '[\"ROLE_USER\"]'),
+(30, 'registro final', 'woyopir555@gopicta.com', '$2y$13$QB0vshh7MOf69RhfCzGRbO4iOAOGdSPjA2Xpcv6By9pMFOkNw9H0u', '675432123', '[\"ROLE_USER\"]');
 
 --
 -- Índices para tablas volcadas
@@ -659,7 +649,7 @@ ALTER TABLE `carrito_producto`
 -- AUTO_INCREMENT de la tabla `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `comentario`
@@ -671,13 +661,13 @@ ALTER TABLE `comentario`
 -- AUTO_INCREMENT de la tabla `direccion`
 --
 ALTER TABLE `direccion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `lineas_pedido`
 --
 ALTER TABLE `lineas_pedido`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de la tabla `messenger_messages`
@@ -695,7 +685,7 @@ ALTER TABLE `metodo_pago`
 -- AUTO_INCREMENT de la tabla `pedidos`
 --
 ALTER TABLE `pedidos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT de la tabla `pedido_producto`
@@ -707,31 +697,31 @@ ALTER TABLE `pedido_producto`
 -- AUTO_INCREMENT de la tabla `productos`
 --
 ALTER TABLE `productos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `producto_variacion`
 --
 ALTER TABLE `producto_variacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 
 --
 -- AUTO_INCREMENT de la tabla `reset_password_request`
 --
 ALTER TABLE `reset_password_request`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT de la tabla `tarjeta`
 --
 ALTER TABLE `tarjeta`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- Restricciones para tablas volcadas

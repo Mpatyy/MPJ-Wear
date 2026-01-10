@@ -20,9 +20,10 @@
 				{{ form_label(resetForm.plainPassword.first, 'Nueva contraseña', {
                     label_attr: { class: 'form-label fw-semibold mb-2' }
                 }) }}
-				{{ form_widget(resetForm.plainPassword.first, {
+                {{ form_widget(resetForm.plainPassword.first, {
                     attr: {
                         class: 'form-control',
+                        id: 'change_password_form_plainPassword_first'
                     }
                 }) }}
 				{{ form_errors(resetForm.plainPassword.first) }}
@@ -38,10 +39,10 @@
 				{{ form_label(resetForm.plainPassword.second, 'Repetir contraseña', {
                     label_attr: { class: 'form-label fw-semibold mb-2' }
                 }) }}
-				{{ form_widget(resetForm.plainPassword.second, {
+                {{ form_widget(resetForm.plainPassword.second, {
                     attr: {
                         class: 'form-control',
-                        id: 'password2'
+                        id: 'change_password_form_plainPassword_second'
                     }
                 }) }}
 				{{ form_errors(resetForm.plainPassword.second) }}
@@ -55,49 +56,94 @@
 		</div>
 	</div>
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-        const input = document.getElementById('change_password_form_plainPassword_first');
-        if (! input) 
-        return;
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const password1 = document.getElementById('change_password_form_plainPassword_first');
+    const password2 = document.getElementById('change_password_form_plainPassword_second');
 
-        function countRules(value) {
+    const ruleLength = document.getElementById('rule-length');
+    const ruleLower  = document.getElementById('rule-lower');
+    const ruleUpper  = document.getElementById('rule-upper');
+
+    if (!password1 || !password2 || !ruleLength || !ruleLower || !ruleUpper) return;
+
+    function countRules(value) {
         let ok = 0;
+        if (value.length >= 8) ok++;
+        if (/[a-z]/.test(value)) ok++;
+        if (/[A-Z]/.test(value)) ok++;
+        return ok;
+    }
 
-        // 1) Mínimo 8 caracteres
-        if (value.length >= 8) 
-        ok++;
+    function passwordsMatch(p1, p2) {
+        return p1 === p2 && p1 !== '';
+    }
 
-        // 2) Al menos una minúscula
-        if (/[a-z]/.test(value)) 
-        ok++;
-
-        // 3) Al menos una mayúscula
-        if (/[A-Z]/.test(value)) 
-        ok++;
-
-        return ok; // 0 a 3
+    function updatePasswordRules(value) {
+        if (value.length >= 8) {
+            ruleLength.classList.remove('text-danger');
+            ruleLength.classList.add('text-success');
+        } else {
+            ruleLength.classList.remove('text-success');
+            ruleLength.classList.add('text-danger');
         }
 
-        function updateColor(ok) {
-        input.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-warning', 'border-success');
+        if (/[a-z]/.test(value)) {
+            ruleLower.classList.remove('text-danger');
+            ruleLower.classList.add('text-success');
+        } else {
+            ruleLower.classList.remove('text-success');
+            ruleLower.classList.add('text-danger');
+        }
+
+        if (/[A-Z]/.test(value)) {
+            ruleUpper.classList.remove('text-danger');
+            ruleUpper.classList.add('text-success');
+        } else {
+            ruleUpper.classList.remove('text-success');
+            ruleUpper.classList.add('text-danger');
+        }
+    }
+
+    function updatePassword1() {
+        const value = password1.value;
+        const ok = countRules(value);
+
+        password1.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-warning', 'border-success');
 
         if (ok === 0) {
-        input.classList.add('is-invalid', 'border-danger'); // rojo
+            password1.classList.add('is-invalid', 'border-danger');
         } else if (ok === 1 || ok === 2) {
-        input.classList.add('border-warning'); // naranja
+            password1.classList.add('border-warning');
         } else if (ok === 3) {
-        input.classList.add('is-valid', 'border-success'); // verde
-        }
+            password1.classList.add('is-valid', 'border-success');
         }
 
-        input.addEventListener('input', function () {
-        const value = input.value;
-        const ok = countRules(value);
-        updateColor(ok);
-        });
-        });
-	</script>
+        updatePasswordRules(value);
+    }
+
+    function updatePassword2() {
+        password2.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-success');
+        if (passwordsMatch(password1.value, password2.value)) {
+            password2.classList.add('is-valid', 'border-success');
+        } else {
+            password2.classList.add('is-invalid', 'border-danger');
+        }
+    }
+
+    password1.addEventListener('input', function () {
+        updatePassword1();
+        updatePassword2();
+    });
+
+    password2.addEventListener('input', function () {
+        updatePassword2();
+    });
+
+    updatePassword1();
+    updatePassword2();
+});
+</script>
 
 
 {% endblock %}

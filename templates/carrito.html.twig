@@ -3,6 +3,11 @@
 {% block title %}Mi carrito{% endblock %}
 
 {% block body %}
+<div class="d-flex justify-content-end mb-3">
+    <a href="{{ path('producto_listado') }}" class="btn btn-outline-dark btn-sm">
+        Volver a productos
+    </a>
+</div>
 <h1 class="mb-4">Mi carrito</h1>
 
 {% if carrito is empty %}

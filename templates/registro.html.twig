@@ -85,6 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const email    = document.getElementById('registration_form_email');
     const telefono = document.getElementById('registration_form_telefono');
 
+    // Reglas de contraseña (solo están en registro)
+    const ruleLength = document.getElementById('rule-length');
+    const ruleLower  = document.getElementById('rule-lower');
+    const ruleUpper  = document.getElementById('rule-upper');
+
     function marcarCampo(campo, ok) {
         if (!campo) return;
         campo.classList.remove('is-valid', 'is-invalid', 'border-success', 'border-danger');
@@ -136,6 +141,37 @@ document.addEventListener('DOMContentLoaded', function () {
         return p1 === p2 && p1 !== '';
     }
 
+    function updatePasswordRules(value) {
+        if (!ruleLength || !ruleLower || !ruleUpper) return;
+
+        // longitud
+        if (value.length >= 8) {
+            ruleLength.classList.remove('text-danger');
+            ruleLength.classList.add('text-success');
+        } else {
+            ruleLength.classList.remove('text-success');
+            ruleLength.classList.add('text-danger');
+        }
+
+        // minúscula
+        if (/[a-z]/.test(value)) {
+            ruleLower.classList.remove('text-danger');
+            ruleLower.classList.add('text-success');
+        } else {
+            ruleLower.classList.remove('text-success');
+            ruleLower.classList.add('text-danger');
+        }
+
+        // mayúscula
+        if (/[A-Z]/.test(value)) {
+            ruleUpper.classList.remove('text-danger');
+            ruleUpper.classList.add('text-success');
+        } else {
+            ruleUpper.classList.remove('text-success');
+            ruleUpper.classList.add('text-danger');
+        }
+    }
+
     function updatePassword1(ok) {
         password1.classList.remove('is-invalid', 'is-valid', 'border-danger', 'border-warning', 'border-success');
         if (ok === 0) {
@@ -156,11 +192,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Contraseña 1: fuerza + actualizar coincidencia
+    // Contraseña 1: fuerza + actualizar coincidencia + reglas visuales
     password1.addEventListener('input', function () {
         const ok = countRules(password1.value);
         updatePassword1(ok);
         updatePassword2();
+        updatePasswordRules(password1.value); // ← aquí cambiamos rojo/verde
     });
 
     // Contraseña 2: solo coincidencia
@@ -168,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updatePassword2();
     });
 });
+
 </script>
 
 {% endblock %}

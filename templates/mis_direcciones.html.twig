@@ -1,53 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mis direcciones
-{% endblock %}
+{% block title %}Mis direcciones{% endblock %}
 
 {% block body %}
-	<div class="row justify-content-center">
-		<div class="col-md-8">
-			<div class="card shadow-sm mb-4">
-				<div class="card-header bg-dark text-white">
-					<h2 class="h5 mb-0">Mis direcciones</h2>
-				</div>
-				<div class="card-body">
-					<a href="{{ path('nueva_direccion') }}" class="btn btn-success btn-sm mb-3">
-						Añadir dirección
-					</a>
-					{% if direcciones is empty %}
-						<p class="text-muted mb-0">
-							Todavía no tienes ninguna dirección guardada.
-						</p>
-					{% else %}
-						<div class="table-responsive">
-							<table class="table table-sm align-middle">
-								<thead>
-									<tr>
-										<th>Calle</th>
-										<th>Ciudad</th>
-										<th>CP</th>
-										<th>Provincia</th>
-										<th>País</th>
-										<th>Tipo</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for dir in direcciones %}
-										<tr>
-											<td>{{ dir.calle }}</td>
-											<td>{{ dir.ciudad }}</td>
-											<td>{{ dir.cp }}</td>
-											<td>{{ dir.provincia }}</td>
-											<td>{{ dir.pais }}</td>
-											<td>{{ dir.tipo }}</td>
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
-					{% endif %}
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        {# Botón fuera de la tarjeta, alineado a la derecha #}
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ path('perfil') }}" class="btn btn-outline-dark btn-sm">
+                Volver a mi perfil
+            </a>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Mis direcciones</h2>
+
+                <a href="{{ path('nueva_direccion') }}" class="btn btn-success btn-sm">
+                    Añadir dirección
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% if direcciones is empty %}
+                    <p class="text-muted mb-0">
+                        Todavía no tienes ninguna dirección guardada.
+                    </p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Calle</th>
+                                    <th>Ciudad</th>
+                                    <th>CP</th>
+                                    <th>Provincia</th>
+                                    <th>País</th>
+                                    <th>Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dir in direcciones %}
+                                    <tr>
+                                        <td>{{ dir.calle }}</td>
+                                        <td>{{ dir.ciudad }}</td>
+                                        <td>{{ dir.cp }}</td>
+                                        <td>{{ dir.provincia }}</td>
+                                        <td>{{ dir.pais }}</td>
+                                        <td>{{ dir.tipo }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -5,6 +5,14 @@
 {% block body %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
+
+        {# Botón fuera de la tarjeta, a la derecha #}
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ path('mis_direcciones') }}" class="btn btn-outline-dark btn-sm">
+                Volver a mis direcciones
+            </a>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-header bg-dark text-white">
                 <h2 class="h5 mb-0">Añadir dirección</h2>
@@ -12,33 +20,52 @@
             <div class="card-body">
                 <form method="post" action="{{ path('nueva_direccion') }}">
                     <div class="mb-3">
-                        <label class="form-label" for="calle">Calle Completa <br>  Ej: Calle ejemplo 21 Bj A</label>
+                        <label class="form-label" for="calle">
+                            Calle Completa *<br>Ej: Calle ejemplo 21 Bj A
+                        </label>
                         <input type="text" id="calle" name="calle" required class="form-control">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="ciudad">Ciudad</label>
+                        <label class="form-label" for="ciudad">Ciudad *</label>
                         <input type="text" id="ciudad" name="ciudad" required class="form-control">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="cp">Código postal</label>
-                        <input type="text" id="cp" name="cp" required class="form-control">
+                        <label class="form-label" for="cp">Código postal *</label>
+                        <input
+                            type="text"
+                            id="cp"
+                            name="cp"
+                            required
+                            class="form-control"
+                            maxlength="5"
+                            inputmode="numeric"
+                            pattern="\d{5}"
+                            placeholder="28001"
+                        >
+                        <div class="form-text">Debe tener exactamente 5 dígitos.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="provincia">Provincia</label>
+                        <label class="form-label" for="provincia">Provincia *</label>
                         <input type="text" id="provincia" name="provincia" required class="form-control">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="pais">País</label>
+                        <label class="form-label" for="pais">País *</label>
                         <input type="text" id="pais" name="pais" required class="form-control" value="España">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="tipo">Tipo</label>
-                        <input type="text" id="tipo" name="tipo" required class="form-control" placeholder="Casa, trabajo...">
+                        <label class="form-label" for="tipo">Alias / tipo (opcional)</label>
+                        <input
+                            type="text"
+                            id="tipo"
+                            name="tipo"
+                            class="form-control"
+                            placeholder="Casa, trabajo..."
+                        >
                     </div>
 
                     <button type="submit" class="btn btn-success w-100">

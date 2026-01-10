@@ -86,34 +86,33 @@
     </a> #}
   </div>
 
-  {% if destacados is defined and destacados is not empty %}
+{% if destacados is defined and destacados is not empty %}
     <div class="mt-4">
-      <div class="portal-seccion-titulo">Continuar comprando</div>
+        <div class="portal-seccion-titulo">Continuar comprando</div>
 
-      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
-        {% for p in destacados %}
-          <div class="col">
-            <a href="{{ path('producto_detalle', {'id': p.id}) }}" class="text-decoration-none text-dark">
-              <div class="mini-card h-100">
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+            {% for p in destacados %}
                 {% if p.imagen %}
-                  <img src="{{ asset('images/' ~ p.imagen) }}" class="w-100" alt="{{ p.nombre }}">
-                {% else %}
-                  <div class="d-flex align-items-center justify-content-center text-muted" style="aspect-ratio:3/4;background:#f7f7f7;">
-                    Sin imagen
-                  </div>
-                {% endif %}
+                    <div class="col">
+                        <a href="{{ path('producto_detalle', {'id': p.id}) }}" class="text-decoration-none text-dark">
+                            <div class="mini-card h-100">
+                                <img src="{{ asset('images/' ~ p.imagen) }}" class="w-100" alt="{{ p.nombre }}">
 
-                <div class="p-2">
-                  <div class="small fw-semibold" style="line-height:1.2;">{{ p.nombre }}</div>
-                  <div class="small text-muted">{{ p.precio|number_format(2, ',', '.') }} €</div>
-                </div>
-              </div>
-            </a>
-          </div>
-        {% endfor %}
-      </div>
+                                <div class="p-2">
+                                    <div class="small fw-semibold" style="line-height:1.2;">{{ p.nombre }}</div>
+                                    <div class="small text-muted">
+                                        {{ p.precio|number_format(2, ',', '.') }} €
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
-  {% endif %}
+{% endif %}
+
 
 </div>
 {% endblock %}

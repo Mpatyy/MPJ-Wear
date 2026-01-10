@@ -4,6 +4,11 @@
 
 {% block body %}
 <div class="container mt-4">
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ path('carrito_checkout') }}" class="btn btn-outline-dark btn-sm">
+            Volver al resumen
+        </a>
+    </div>
     <h1 class="mb-3">Pasarela de Pago</h1>
 
     {% if pedido is defined %}

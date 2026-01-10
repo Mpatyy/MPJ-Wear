@@ -76,30 +76,37 @@ class PerfilController extends AbstractController
     public function nuevaDireccion(Request $request, EntityManagerInterface $em): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
         $usuario = $this->getUser();
 
         if ($request->isMethod('POST')) {
-            $calle     = $request->request->get('calle');
-            $ciudad    = $request->request->get('ciudad');
-            $cp        = $request->request->get('cp');
-            $provincia = $request->request->get('provincia');
-            $pais      = $request->request->get('pais');
-            $tipo      = $request->request->get('tipo');
+            $calle     = trim((string) $request->request->get('calle'));
+            $ciudad    = trim((string) $request->request->get('ciudad'));
+            $cp        = trim((string) $request->request->get('cp'));
+            $provincia = trim((string) $request->request->get('provincia'));
+            $pais      = trim((string) $request->request->get('pais'));
+            $tipo      = trim((string) $request->request->get('tipo'));
 
-            $dir = new Direccion();
-            $dir->setUsuario($usuario);
-            $dir->setCalle($calle);
-            $dir->setCiudad($ciudad);
-            $dir->setCp($cp);
-            $dir->setProvincia($provincia);
-            $dir->setPais($pais);
-            $dir->setTipo($tipo);
+            // Validaciones simples
+            if ($calle === '' || $ciudad === '' || $cp === '' || $provincia === '' || $pais === '') {
+                $this->addFlash('error', 'Todos los campos marcados con * son obligatorios.');
+            } elseif (!preg_match('/^\d{5}$/', $cp)) {
+                $this->addFlash('error', 'El código postal debe tener exactamente 5 dígitos.');
+            } else {
+                $dir = new Direccion();
+                $dir->setUsuario($usuario);
+                $dir->setCalle($calle);
+                $dir->setCiudad($ciudad);
+                $dir->setCp($cp);
+                $dir->setProvincia($provincia);
+                $dir->setPais($pais);
+                $dir->setTipo($tipo); // puede ir vacío
 
-            $em->persist($dir);
-            $em->flush();
+                $em->persist($dir);
+                $em->flush();
 
-            return $this->redirectToRoute('mis_direcciones');
+                $this->addFlash('success', 'Dirección guardada correctamente.');
+                return $this->redirectToRoute('mis_direcciones');
+            }
         }
 
         return $this->render('nueva_direccion.html.twig');
